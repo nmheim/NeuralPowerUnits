@@ -1,0 +1,205 @@
+\documentclass[9pt]{article}
+
+% if you need to pass options to natbib, use, e.g.:
+%     \PassOptionsToPackage{numbers, compress}{natbib}
+% before loading neurips_2020
+
+% ready for submission
+% \usepackage{neurips_2020}
+
+% to compile a preprint version, e.g., for submission to arXiv, add add the
+% [preprint] option:
+\usepackage[preprint]{neurips_2020}
+
+% to compile a camera-ready version, add the [final] option, e.g.:
+%     \usepackage[final]{neurips_2020}
+
+% to avoid loading the natbib package, add option nonatbib:
+%     \usepackage[nonatbib]{neurips_2020}
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+
+\usepackage{bm}
+\usepackage{amsmath}
+\usepackage{graphicx}
+
+\graphicspath{{./../../plots/}}
+\newcommand{\real}{\text{real}}
+
+\title{Bayesian Neural Arithmetic Units -- Leveraging The Complex Plane}
+\author{
+  Niklas Heim,
+  V\'aclav \v Sm\'idl,
+  Tom\'a\v s Pevn\'y \\
+  Artificial Intelligence Center\\
+  Czech Technical University\\
+  Prague, CZ 120 00\\
+  \texttt{\{niklas.heim, vasek.smidl, tomas.pevny\}@aic.fel.cvut.cz}\\
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+  Common Neural Networks poorly approximate simple arithmetic operations.  The
+  new Neural Arithmetic Units aim to overcome this difficulty, but are limited
+  either limited to operate on positive numbers (NALU by
+  \citet{trask_neural_2018}), or can only represent simple addition and
+  multiplication (NAU & NMU by \citet{madsen_neural_2020}).
+  We present the first Neural Arithmetic Unit that operates on the full domain
+  of real numbers and is capable of learning arbitrary power functions.
+  For a theoretically grounded sparsification of the units we employ Bayesian
+  compression on the model weights via Automatic Relevance Determination.
+\end{abstract}
+
+\section{Introduction}%
+\label{sec:introduction}
+
+It is known that Neural Networks can approximate functions arbitrarily well but
+do not necessarily generalize beyond the range inputs that were seen during
+training. Neural Arithmetic Units can help to overcome this problem
+\cite{trask_neural_2018,madsen_neural_2020}
+
+
+\section{Introduction}%
+\label{sec:introduction}
+
+We fuse the ideas of the \emph{Neural Multiplication Unit} (NMU) by
+\citet{madsen_neural_2020} and the \emph{Neural Arithmetic Logic Unit} (NALU)
+by \citet{trask_neural_2018}.
+
+The NALU in its original form is capable of addition, subtraction, and
+multiplication of \textbf{positive}, high-dimensional vectors. However, for
+small inputs convergence is complicated by the use of the logarithm in the
+NALU. The logarithm further prevents the NALU of processing negative inputs
+correctly.
+
+The NMU fixes both the previous issues, but can only multiply two inputs, and
+not represent arbitrary power functions.  Addition is taken care of by the
+\emph{Neural Addition Unit} (NAU), which is essentially a dense layer without
+bias. A chain of NAU and NMU can thus learn the task defined in
+Eq.~\ref{eq:nmu_task}.
+
+\begin{equation}
+  \label{eq:nmu_task}
+  y = (x_1 + x_2) \cdot (x_1 + x_2 + x_3 + x_4)
+\end{equation}
+
+
+\section{Complex Neural Multiplication Unit}%
+\label{sec:complex_neural_multiplication_unit}
+
+Our \emph{complex NMU} (NMUX) can learn arbitrary power functions while still
+being able to correctly deal with negative inputs.
+The NMUX layer is defined by
+\begin{align}
+  k_i &= \begin{cases}
+     0  & x_i \leq 0 \\
+    \pi & x_i > 0
+  \end{cases} \\
+  \bm r &= |\bm x| \\
+  \bm m &= \exp(\bm M \log(\bm r)) \odot \cos(\bm M \bm k)
+\end{align}
+where $\bm k$ is a vector that is zero where $\bm x$ is positive and $\pi$
+where it is negative, $\bm r$ is the elementwise absolute value, and $\bm M$
+the multiplication matrix that we want to learn.
+
+The NMUX is inspired by the multiplication part of the NALU, extended to
+negative inputs by leveraging taking advantage of the complex logarithm.
+The multiplication part of the NALU reads:
+\begin{equation}
+  \bm m = \exp(\bm M \log(|\bm x| + \epsilon)),
+\end{equation}
+where $\epsilon$ is a small constant that ensures positive inputs to the real
+logarithm.  If use the complex logarithm, this constant becomes superfluous,
+but we end up with a complex output in case of negative $x_i$.  In general, for
+any complex number $z$\footnote{Note that complex numbers can be represented in
+the polar, complex plane where $z=re^{i\varphi}$ with $r>0$ and $\varphi \in
+(0,2\pi)$.}
+\begin{align}
+  \log(z) = \log\left(r\cdot e^{i\varphi}\right)
+     = \log(r) + i\varphi.
+\end{align}
+However, as $z$ is assumed to be real, we can simplify as follows:
+\begin{align}
+  \log(z) = \log(r) + ik\pi,
+\end{align}
+where $k \in [0,1]$.
+
+\begin{align}
+  \bm m &= \exp(\bm M \log(\bm x)) \\
+    &= \exp(\bm M ( \log(\bm r) + i\pi\bm k ))
+\end{align}
+
+\begin{align}
+  \bm m_{\text{re}} &= \real(\exp(\bm M \log \bm r + i\pi\bm M\bm k)) \\
+    &= \real(\exp(\bm M \log \bm r) \odot (\cos(\pi \bm M \bm k) + i \sin(\pi \bm M \bm k))) \\
+    &= \exp(\bm M \log \bm r) \odot \cos(\pi \bm M \bm k)
+\end{align}
+
+\section{Experimetns}%
+\label{sec:experimetns}
+
+\subsection{10 param func}%
+\label{sub:10_param_func}
+
+
+% \begin{figure}
+%   \centering
+%   \includegraphics[width=0.8\linewidth]{10-param-func-task-nmu-paper.pdf}
+%   \caption{MSE optimization result}%
+%   \label{fig:10-param-func-task-nmu-paper}
+% \end{figure}
+% \begin{figure}
+%   \centering
+%   \includegraphics[width=0.8\linewidth]{10-param-func-bayes-task-nmu-paper.pdf}
+%   \caption{ARD result with MSE starting point}%
+%   \label{fig:10-param-func-bayes-task-nmu-paper}
+% \end{figure}
+% \begin{figure}
+%   \centering
+%   \includegraphics[width=0.8\linewidth]{10-param-func-bayes-task-nmu-paper-history.pdf}
+%   \caption{ARD history}%
+%   \label{fig:history}
+% \end{figure}
+% 
+% \subsection{10 param func with sqrt and power}%
+% \label{sub:10_param_func_with_sqrt_and_power}
+% 
+% \begin{figure}
+%   \centering
+%   \includegraphics[width=0.8\linewidth]{10-param-func-task-sqrt-power.pdf}
+%   \caption{10-param-func-task-sqrt-Power}%
+%   \label{fig:10-param-func-task-sqrt-power}
+% \end{figure}
+% \begin{figure}
+%   \centering
+%   \includegraphics[width=0.8\linewidth]{10-param-func-bayes-task-sqrt-power.pdf}
+%   \caption{10-param-func-bayes-task-sqrt-Power}%
+%   \label{fig:10-param-func-bayes-task-sqrt-power}
+% \end{figure}
+% \begin{figure}
+%   \centering
+%   \includegraphics[width=0.8\linewidth]{10-param-func-bayes-task-sqrt-power-history.pdf}
+%   \caption{10-param-func-bayes-task-sqrt-Power-history}%
+%   \label{fig:10-param-func-bayes-task-sqrt-power-history}
+% \end{figure}
+
+
+\subsection{Gradient surfaces}%
+\label{sub:gradient_surfaces}
+
+
+
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\end{document}
