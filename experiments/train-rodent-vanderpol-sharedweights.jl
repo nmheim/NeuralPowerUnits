@@ -8,6 +8,7 @@ using Plots
 using StatsPlots
 using LaTeXStrings
 
+using LinearAlgebra
 using Flux
 using OrdinaryDiffEq
 using Random: randn!
@@ -30,8 +31,6 @@ mintlen   = 5
 slen      = 2
 T         = Float32
 dt        = T(0.1)
-#initf     = (s...) -> randn(T, s...)
-initf     = Flux.glorot_uniform
 
 save_name = datadir("train-rodent-vanderpol.bson")
 
@@ -42,23 +41,74 @@ curriculum = [
     Dict(:tlen=>40, :niter=>200, :lr=> 0.001),
 ]
 
+function init_diag(T, a::Int, b::Int)
+    m = zeros(T,a,b)
+    m[diagind(m,0)] .= T(1)
+    return m
+end
+init_diag(a::Int,b::Int) = init_diag(T,a,b)
+#init(s...) = randn(T, s...) / 10
+init(s...) = rand(T, s...) / 2
+#init(s...) = init_diag(s...)
+
 ode = Chain(
-    ReNMUX(slen,   2*slen),
-    NAU(2*slen, 2*slen),
-
-    ReNMUX(2*slen, 2*slen),
-    NAU(2*slen, 2*slen),
-
-    ReNMUX(2*slen, 2*slen),
+    ReNMUX(slen,   2*slen, init=init),
+    # NAU(2*slen, 2*slen, init=init),
+    # ReNMUX(2*slen, 2*slen, init=init),
+    # NAU(2*slen, 2*slen, init=init),
+    # ReNMUX(2*slen, 2*slen, init=init),
     NAU(2*slen, slen),
    )
 
+function shared_encoder(slen, zlen, mintlen)
+    odenet(x) = ones(T,1,size(x,3)) .* Flux.destructure(ode)[1]
+
+    act = tanh
+    conv_zlen = zlen-slen
+    dense_zlen = slen
+
+    # densenet = Chain(
+    #     x -> reshape(x[:,1:mintlen,:], :, size(x,3)),
+    #     Dense(slen*mintlen, 50, act),
+    #     Dense(50, 50, act),
+    #     Dense(50, dense_zlen)
+    #    )
+    densenet(x) = x[:,1,:]
+
+    CatLayer(odenet, densenet)
+end
+
+function rodent(slen::Int, tlen::Int, dt::T, encoder;
+                ode=Dense(slen,slen),
+                observe=sol->reshape(hcat(sol.u...), :),
+                olen=slen*tlen) where T
+    zlen = length(Flux.destructure(ode)[1]) + slen
+
+    # hyperprior
+    hyperprior = InverseGamma(T(1), T(1), zlen, true)
+
+    # prior
+    μpz = NoGradArray(zeros(T, zlen))
+    λ2z = ones(T, zlen) / 10
+    prior = Gaussian(μpz, λ2z)
+
+    # encoder
+    σ2z = ones(T, zlen) / 10
+    enc_dist = CMeanGaussian{DiagVar}(encoder, σ2z)
+
+    # decoder
+    σ2x = ones(T, 1)
+    decoder = FluxODEDecoder(slen, tlen, dt, ode, observe)
+    dec_dist = CMeanGaussian{ScalarVar}(decoder, σ2x, olen)
+
+    Rodent(hyperprior, prior, enc_dist, dec_dist)
+end
+
+
 zlen = length(Flux.destructure(ode)[1]) + slen
 tlen = curriculum[1][:tlen]
-enc = conv_encoder(slen, zlen, mintlen,
-                   init_conv=initf, init_dense=initf)
+enc = shared_encoder(slen, zlen, mintlen)
 H(sol) = reshape(hcat(sol.u...)[1:end,:], :)
-rec(x) = mean(model.decoder, mean(model.encoder, x))
 
 function GenerativeModels.elbo(m::Rodent, x::AbstractArray{T,3}; β=1) where T
     xf = reshape(x, :, size(x,3))
@@ -76,8 +126,9 @@ function GenerativeModels.elbo(m::Rodent, x::AbstractArray{T,3}; β=1) where T
 end
 
 loss(x) = -elbo(model, x)
-model = Rodent(slen, tlen, dt, enc, ode=ode, observe=H, olen=2*tlen)
+model = rodent(slen, tlen, dt, enc, ode=ode, observe=H, olen=2*tlen)
 history = MVHistory()
+rec(x) = mean(model.decoder, mean(model.encoder, x))
 
 data = vanderpol_dataset()[:u]
 # TODO: find a better solution for reshaping to vec because of convolutions in encoder #
