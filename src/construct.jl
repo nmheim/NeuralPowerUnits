@@ -40,3 +40,11 @@ end
 
 Parameters.reconstruct(m::Rodent, tlen::Int, dt::Real, olen::Int) =
     Rodent(m.hyperprior,m.prior,m.encoder,reconstruct(m.decoder,tlen,dt,olen))
+
+function init_diag(T, a::Int, b::Int)
+    m = zeros(T,a,b)
+    m[diagind(m,0)] .= T(1)
+    return m
+end
+init_diag(a::Int,b::Int) = init_diag(T,a,b)
+

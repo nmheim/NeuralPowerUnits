@@ -38,9 +38,9 @@ version = "3.5.0+3"
 
 [[ArrayInterface]]
 deps = ["LinearAlgebra", "Requires", "SparseArrays"]
-git-tree-sha1 = "94d8001d8609eeb241729bb4eda552059be30297"
+git-tree-sha1 = "c851f4dab787f78ab3389657a0a50c8d3270dd6a"
 uuid = "4fba245c-0d91-5ea0-9b3e-6abc04ee57a9"
-version = "2.7.0"
+version = "2.8.1"
 
 [[ArrayLayouts]]
 deps = ["FillArrays", "LinearAlgebra"]
@@ -223,10 +223,10 @@ deps = ["Mmap"]
 uuid = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 
 [[DiffEqBase]]
-deps = ["ArrayInterface", "ChainRulesCore", "ConsoleProgressMonitor", "DataStructures", "Distributed", "DocStringExtensions", "FunctionWrappers", "IterativeSolvers", "IteratorInterfaceExtensions", "LinearAlgebra", "Logging", "LoggingExtras", "MuladdMacro", "Parameters", "Printf", "ProgressLogging", "RecipesBase", "RecursiveArrayTools", "RecursiveFactorization", "Requires", "Roots", "SparseArrays", "StaticArrays", "Statistics", "SuiteSparse", "TableTraits", "TerminalLoggers", "TreeViews", "ZygoteRules"]
-git-tree-sha1 = "420c6f8c67632e8f52fdfc9c56e2b80ef2ed9f0b"
+deps = ["ArrayInterface", "ChainRulesCore", "ConsoleProgressMonitor", "DataStructures", "Distributed", "DocStringExtensions", "FunctionWrappers", "IterativeSolvers", "IteratorInterfaceExtensions", "LabelledArrays", "LinearAlgebra", "Logging", "LoggingExtras", "MuladdMacro", "Parameters", "Printf", "ProgressLogging", "RecipesBase", "RecursiveArrayTools", "RecursiveFactorization", "Requires", "Roots", "SparseArrays", "StaticArrays", "Statistics", "SuiteSparse", "TableTraits", "TerminalLoggers", "TreeViews", "ZygoteRules"]
+git-tree-sha1 = "ee7c0e244457d3c3e83c1ebf303a50f6f6df607c"
 uuid = "2b5f629d-d688-5b77-993f-72d75c75574e"
-version = "6.26.0"
+version = "6.27.0"
 
 [[DiffResults]]
 deps = ["StaticArrays"]
@@ -482,6 +482,12 @@ git-tree-sha1 = "de44b395389b84fd681394d4e8d39ef14e3a2ea8"
 uuid = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 version = "1.1.0"
 
+[[LabelledArrays]]
+deps = ["LinearAlgebra", "MacroTools", "StaticArrays"]
+git-tree-sha1 = "559e1bd9a0b072ce3a946e5c3ae08789235c5c4b"
+uuid = "2ee39098-c373-598a-b85f-a56591580800"
+version = "1.1.0"
+
 [[LeftChildRightSiblingTrees]]
 deps = ["AbstractTrees"]
 git-tree-sha1 = "71be1eb5ad19cb4f61fa8c73395c0338fd092ae0"
@@ -609,7 +615,9 @@ version = "0.4.4"
 
 [[NeuralArithmetic]]
 deps = ["Flux", "Zygote"]
-git-tree-sha1 = "f59647e70531f57ca5e3c755e6fff9b1f7cf6efe"
+git-tree-sha1 = "46c82439efeded806e4dba5d830ac2f792cdc706"
+repo-rev = "master"
+repo-url = "https://github.com/nmheim/NeuralArithmetic.jl.git"
 uuid = "ab1feca7-9272-4c7d-b713-789d3461e743"
 version = "0.2.0"
 
@@ -781,9 +789,9 @@ version = "0.8.0"
 
 [[RecursiveArrayTools]]
 deps = ["ArrayInterface", "LinearAlgebra", "RecipesBase", "Requires", "StaticArrays", "Statistics", "ZygoteRules"]
-git-tree-sha1 = "8001f10de9886389e347064bcd5c998500fa8287"
+git-tree-sha1 = "48a8ce7a8cb156231de0477372dcaa6ada1472ef"
 uuid = "731186ca-8d62-57ce-b412-fbd966d074cd"
-version = "2.3.0"
+version = "2.3.1"
 
 [[RecursiveFactorization]]
 deps = ["LinearAlgebra"]
@@ -870,9 +878,9 @@ uuid = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [[SparseDiffTools]]
 deps = ["Adapt", "ArrayInterface", "Compat", "DataStructures", "FiniteDiff", "ForwardDiff", "InteractiveUtils", "LightGraphs", "LinearAlgebra", "Requires", "SparseArrays", "VertexSafeGraphs"]
-git-tree-sha1 = "0ec9d7294a581faa2afa2d48c0eff185456d5e78"
+git-tree-sha1 = "132c55cf302f1faf1d0d1c8205453764066cb018"
 uuid = "47a9eef4-7e08-11e9-0b38-333d64bd3804"
-version = "1.5.0"
+version = "1.6.0"
 
 [[SpecialFunctions]]
 deps = ["OpenSpecFun_jll"]
@@ -1025,9 +1033,9 @@ version = "1.2.11+9"
 
 [[Zygote]]
 deps = ["AbstractFFTs", "ArrayLayouts", "DiffRules", "FillArrays", "ForwardDiff", "IRTools", "InteractiveUtils", "LinearAlgebra", "MacroTools", "NNlib", "NaNMath", "Random", "Requires", "SpecialFunctions", "Statistics", "ZygoteRules"]
-git-tree-sha1 = "1ccbfbe8930376e31752b812daa2532c723dc332"
+git-tree-sha1 = "4268f22d083daffacb3b8c49c8623026170cacf8"
 uuid = "e88e6eb3-aa80-5325-afca-941959d7151f"
-version = "0.4.13"
+version = "0.4.14"
 
 [[ZygoteRules]]
 deps = ["MacroTools"]
