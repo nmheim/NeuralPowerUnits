@@ -3,8 +3,6 @@ using DrWatson
 
 using Flux
 using Plots
-using GenerativeModels
-using GMExtensions
 using NeuralArithmetic
 using Distributions: Uniform
 using Parameters
@@ -12,7 +10,6 @@ using ValueHistories
 using LinearAlgebra
 
 include(joinpath(@__DIR__, "utils.jl"))
-include(joinpath(@__DIR__, "ard_utils.jl"))
 include(srcdir("utils.jl"))
 
 @with_kw struct Config
@@ -20,8 +17,6 @@ include(srcdir("utils.jl"))
     inlen::Int      = 4
     outlen::Int     = 1
     niters::Int     = 30000
-    α0::Float32     = 1f0
-    β0::Float32     = 1f0
     lr::Real        = 0.001
     lowlim::Int     = 1
     uplim::Int      = 3
@@ -66,10 +61,10 @@ end
 
 function run(config)
     @unpack initnau, initnmu, lowlim, uplim = config
-    @unpack niters, batch, inlen, outlen, α0, β0, lr = config
-    net     = mapping(inlen, outlen, initf(initnau), initf(initnmu))
-    model   = ardnet(net, α0, β0, outlen)
-    loss    = (x,y) -> notelbo(model,x,y,α0=α0,β0=β0)
+    @unpack niters, batch, inlen, outlen, lr = config
+    model   = mapping(inlen, outlen, initf(initnau), initf(initnmu))
+    ps      = params(model)
+    loss    = (x,y) -> Flux.mse(x,y) + norm(ps, 2)
     range   = Uniform(lowlim,uplim)
     data    = (generate(inlen,batch,range) for _ in 1:niters)
     opt     = RMSProp(lr)
@@ -101,8 +96,6 @@ end
 
 # set up dict which will be permuted to yield all config combinations
 config_dicts = Dict(
-    :α0 => 10f0 .^ (-4f0:1f0),
-    :β0 => 10f0 .^ (-4f0:1f0),
     :init => [("diag", "zero"), ("rand","rand"),
               ("glorotuniform", "glorotuniform"),
               ("randn","randn")])
@@ -122,7 +115,7 @@ Threads.@threads for d in config_dicts
     config = reconstruct(config, d)
     for nr in 1:10
         res, fname = produce_or_load(
-            datadir("division_ard_xovery_run$nr"),
+            datadir("division_msel2_xovery_run$nr"),
             config, run)
     end
 end
