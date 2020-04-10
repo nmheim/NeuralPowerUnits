@@ -62,6 +62,11 @@ net = Chain(
             NAU(inlen, inlen, init=(s...)->init_nau(T,s...)),
             ReNMUX(inlen, outlen, init=(s...)->init_nmu(T,s...))
            )
+# net = Chain(
+#             NAU(inlen, inlen),
+#             ReNMUX(inlen, outlen)
+#            )
+
 
 zlen = length(Flux.destructure(net)[1])
 μz = Flux.destructure(net)[1]
@@ -89,7 +94,7 @@ file = produce_or_load(
     setup,
     prefix="bayes-$task",
     run,
-    # force=true
+    force=true
 )
 
 pyplot()

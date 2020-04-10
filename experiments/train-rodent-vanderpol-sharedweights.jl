@@ -51,12 +51,15 @@ init_diag(a::Int,b::Int) = init_diag(T,a,b)
 init(s...) = rand(T, s...) / 2
 #init(s...) = init_diag(s...)
 
+Mul = ReNMUX
+Mul = NMU
+
 ode = Chain(
-    ReNMUX(slen,   2*slen, init=init),
+    Mul(slen,   2*slen, init=init),
     # NAU(2*slen, 2*slen, init=init),
-    # ReNMUX(2*slen, 2*slen, init=init),
+    # Mul(2*slen, 2*slen, init=init),
     # NAU(2*slen, 2*slen, init=init),
-    # ReNMUX(2*slen, 2*slen, init=init),
+    # Mul(2*slen, 2*slen, init=init),
     NAU(2*slen, slen),
    )
 
@@ -166,7 +169,8 @@ else
                 z  = mean(model.encoder,train_data[1][1]);
                 p1 = plot!(p1, reshape(mean(model.decoder,z[:,1]), 2, tlen)');
                 p2 = latentboxplot(z,1:zlen);
-                display(plot(p1,p2))), 1),
+                #display(plot(p1,p2))), 0.1),
+                display(p2)), 0.1),
             #Flux.throttle(mvhistory_callback(history, model, loss, train_data[1]...), 0.2),
             Flux.throttle(()->(save_checkpoint(save_name, model, history)), 20),
         ]

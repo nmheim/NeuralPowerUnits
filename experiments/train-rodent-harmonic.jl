@@ -29,12 +29,12 @@ batchsize = 10
 mintlen   = 5
 T         = Float32
 dt        = T(0.1)
-slen      = 3
+slen      = 2
 tlen      = 30
 dt        = 0.2f0
 noise     = 0.02f0
-#initf     = (s...) -> Flux.glorot_uniform(s...)
-initf = (s...) -> rand(T,s...)/100
+initf     = (s...) -> Flux.glorot_uniform(s...)
+#initf = (s...) -> rand(T,s...)/100
 
 generate(ω,tlen) = generate_harmonic(ω, batchsize; ω0=0.5, noise=noise,
                                      dt=dt, steps=tlen)[1]
@@ -51,8 +51,8 @@ curriculum = [
 ]
 
 ode = Chain(
-    NMUX(slen, slen),
-    #NAU(slen, slen),
+    ReNMUX(slen, slen),
+    NAU(slen, slen),
    )
 
 zlen = length(Flux.destructure(ode)[1]) + slen
@@ -68,6 +68,7 @@ function GenerativeModels.elbo(m::Rodent, x::AbstractArray{T,3}; β=1) where T
     σ2z = var(m.encoder, xf)
     rz = randn!(similar(μz))
     z = μz .+ sqrt.(σ2z) .* rz
+    #display(z[1:4,:])
 
     llh = sum(logpdf(m.decoder, xf, z))
     kld = sum(IPMeasures._kld_gaussian(μz,σ2z,mean_var(m.prior)...))
@@ -90,7 +91,7 @@ else
         @unpack niter, lr, ω = c
     
         train_data = [(generate(ω,tlen),) for _ in 1:niter]
-        opt = RMSProp(lr)
+        opt = Descent(lr)
     
         cb = [
             () -> (curr_iter[1] += 1),

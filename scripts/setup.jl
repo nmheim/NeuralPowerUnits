@@ -47,7 +47,7 @@ function run(d)
     p = Gaussian(NoGradArray(zeros(T, zlen)), λz)
     h = InverseGamma(α0,β0,zlen,true)
     d = CMeanGaussian{ScalarVar}(FluxDecoder(net), σx, outlen)
-    model = ARDNet(p, h, e, d)
+    model = ARDNet(h, p, e, d)
 
 
     loss(x,y) = notelbo(model,x,y,α0=α0,β0=β0,esamples=esamples)
