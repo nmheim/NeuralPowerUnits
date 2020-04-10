@@ -165,7 +165,9 @@ version = "1.4.1"
 
 [[ConditionalDists]]
 deps = ["Distributions", "Flux", "LinearAlgebra", "PDMats", "Random", "SpecialFunctions", "Statistics", "StatsFuns"]
-path = "../../.julia/dev/ConditionalDists"
+git-tree-sha1 = "28b16abb7fe6ed1a811c0cb5127379a4392b7131"
+repo-rev = "wishart"
+repo-url = "https://github.com/aicenter/ConditionalDists.jl.git"
 uuid = "c648c4dd-c1e0-49a6-84b9-144ae7fd2468"
 version = "0.3.0"
 
@@ -381,7 +383,9 @@ version = "0.48.0"
 
 [[GenerativeModels]]
 deps = ["BSON", "ConditionalDists", "DiffEqBase", "Distributions", "DrWatson", "Flux", "ForwardDiff", "IPMeasures", "OrdinaryDiffEq", "Random", "Reexport", "Statistics", "ValueHistories"]
-path = "/home/niklas/.julia/dev/GenerativeModels"
+git-tree-sha1 = "a6afb1184225e1dd4a2d4b90af585f698af6c10d"
+repo-rev = "ard-net"
+repo-url = "https://github.com/aicenter/GenerativeModels.jl.git"
 uuid = "6ac2c632-c4cd-11e9-0501-33c4b9b2f9c9"
 version = "0.1.1"
 
