@@ -39,7 +39,7 @@ function train!(loss, model, data, opt, history=MVHistory())
                 (tot, llh, kld, lpλ) = loss(d...)
                 return tot
             end
-            logging(i)
+            # logging(i)
             pushhist(i)
             Flux.Optimise.update!(opt, ps, gs)
             i += 1
