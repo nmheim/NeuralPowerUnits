@@ -11,7 +11,7 @@ using Parameters
 using ValueHistories
 using LinearAlgebra
 
-include(joinpath(@__DIR__, "setup.jl"))
+include(joinpath(@__DIR__, "utils.jl"))
 include(srcdir("utils.jl"))
 
 function f(x::Array{T,2}) where T
@@ -82,7 +82,7 @@ setup = @dict(T, batch, inlen, outlen, niters, α0, β0, lr,
               initnau, initnmu, uplim, lowlim)
 
 run(setup)
-error("asdf")
+error("yeeeeeeah")
 
 res, fname = produce_or_load(datadir("division_xovery"), setup, run, force=true)
 
