@@ -48,3 +48,19 @@ function init_diag(T, a::Int, b::Int)
 end
 init_diag(a::Int,b::Int) = init_diag(T,a,b)
 
+function GenerativeModels.elbo(m::Rodent, x::AbstractArray{T,3}; β=1) where T
+    xf = reshape(x, :, size(x,3))
+
+    μz = mean(m.encoder, x)
+    σ2z = var(m.encoder, xf)
+    rz = randn!(similar(μz))
+    z = μz .+ sqrt.(σ2z) .* rz
+
+    llh = sum(logpdf(m.decoder, xf, z))
+    kld = sum(IPMeasures._kld_gaussian(μz,σ2z,mean_var(m.prior)...))
+    lpλ = sum(logpdf(m.hyperprior, var(m.prior)))
+
+    llh - β*(kld - lpλ)
+end
+
+
