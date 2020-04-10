@@ -7,12 +7,12 @@ end
 function ardnet(mapping, α0, β0, out)
     μz = Flux.destructure(mapping)[1]
     zlen = length(μz)
-    λz = ones(T,zlen)/10
-    σz = ones(T,zlen)/10
-    σx = ones(T,1)
+    λz = ones(Float32,zlen)/10
+    σz = ones(Float32,zlen)/10
+    σx = ones(Float32,1)
 
     e = Gaussian(μz, σz)
-    p = Gaussian(NoGradArray(zeros(T, zlen)), λz)
+    p = Gaussian(NoGradArray(zeros(Float32,zlen)), λz)
     h = InverseGamma(α0,β0,zlen,true)
     d = CMeanGaussian{ScalarVar}(FluxDecoder(mapping), σx, out)
     ARDNet(h, p, e, d)
