@@ -15,6 +15,8 @@ include(joinpath(@__DIR__, "utils.jl"))
 include(joinpath(@__DIR__, "ard_utils.jl"))
 include(srcdir("utils.jl"))
 
+pattern = "ard_x12_x14"
+
 @with_kw struct Config
     batch::Int      = 50
     inlen::Int      = 4
@@ -44,7 +46,6 @@ end
 
 #################### Single run with default params ############################
 
-# pattern = "ard_x12_x14"
 # config = Config()
 # res, fname = produce_or_load(datadir(pattern), config, run, force=true)
 # 
