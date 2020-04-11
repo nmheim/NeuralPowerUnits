@@ -9,22 +9,30 @@ using NeuralArithmetic
 using ConditionalDists
 using GenerativeModels
 using ProgressMeter
+using LinearAlgebra
+using Parameters
 
 strdict2symdict(d) = Dict([Symbol(k)=>v for (k,v) in d]...)
 strdict2symtuple(d) = (;strdict2symdict(d)...)
 
 function readrows(dir::String)
+    if isfile(dir) return Dict[] end
+
+    pattern = basename(dir)
     files = readdir(dir, join=true)
-    p = Progress(length(files), desc="$(basename(dir)) ")
+    p = Progress(length(files), desc="$pattern: ")
     rows = map(files) do fn
         ps = strdict2symdict(parse_savename(fn)[2])
         ps[:id]  = reduce(*, [string(v) for v in values(ps)])
-        h  = load(fn)[:history]
-        ls = hcat(get(h, :loss)[2]...)[:,end]
+
+        @unpack model, history = load(fn)
+        ls = hcat(get(history, :loss)[2]...)[:,end]
         ps[:loss] = ls[1]
-        ps[:llh]  = ls[2]
-        ps[:kld]  = ls[3]
-        ps[:lpλ]  = ls[4]
+        if occursin("ard", pattern)
+            ps[:llh]  = ls[2]
+        end
+        ps[:L1]   = norm(params(model), 1)
+        ps[:L2]   = norm(params(model), 2)
         next!(p)
         ps
     end
@@ -50,6 +58,10 @@ function aggregateruns(runs::DataFrame, pattern::String)
              β0=first(r.β0),
              initnmu=first(r.initnmu),
              initnau=first(r.initnau),
+             μL1=mean(r.L1),
+             σL1=std(r.L1),
+             μL2=mean(r.L2),
+             σL2=std(r.L2),
              μllh=mean(r.llh),
              σllh=std(r.llh))
         end
@@ -58,8 +70,12 @@ function aggregateruns(runs::DataFrame, pattern::String)
         mean_runs = by(runs, :id) do r
             (initnmu=first(r.initnmu),
              initnau=first(r.initnau),
-             μllh=mean(r.llh),
-             σllh=std(r.llh))
+             μL1=mean(r.L1),
+             σL1=std(r.L1),
+             μL2=mean(r.L2),
+             σL2=std(r.L2),
+             μllh=mean(r.loss),
+             σllh=std(r.loss))
         end
         return mean_runs
     else
@@ -67,9 +83,10 @@ function aggregateruns(runs::DataFrame, pattern::String)
     end
 end
 
-pattern = "msel2_xovery"
+force   = true
+pattern = "ard_xovery"
 
-res, fname = produce_or_load(datadir(), @dict(pattern), readruns)
+res, fname = produce_or_load(datadir(), @dict(pattern), readruns, force=force)
 runs = res[:runs]
 mean_runs = aggregateruns(runs, pattern)
 sort!(mean_runs, :μllh)
