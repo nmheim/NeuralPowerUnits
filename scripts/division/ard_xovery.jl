@@ -35,35 +35,6 @@ function init_diag(T, a::Int, b::Int)
     return m
 end
 
-function initf(s::String)
-    if s == "diag"
-        return (a,b) -> init_diag(Float32,a,b)
-    elseif s == "glorotuniform"
-        return (a,b) -> Flux.glorot_uniform(a,b)
-    elseif s == "rand"
-        return (a,b) -> rand(Float32,a,b)
-    elseif s == "randn"
-        return (a,b) -> randn(Float32,a,b)
-    elseif s == "zero"
-        return (a,b) -> zeros(Float32,a,b)
-    else
-        throw(ArgumentError("Unkown init: $init"))
-    end
-end
-
-function xovery(x::Array{T,2}) where T
-    x1 = x[1,:]
-    x2 = x[2,:]
-    y = x1 ./ x2
-    reshape(y, 1, :)
-end
-
-function generate(inlen::Int, batch::Int, r::Uniform)
-    x = Float32.(rand(r, inlen, batch))
-    y = xovery(x)
-    (x,y)
-end
-
 function run(config)
     @unpack initnau, initnmu, lowlim, uplim = config
     @unpack niters, batch, inlen, outlen, α0, β0, lr = config
@@ -103,8 +74,8 @@ end
 config_dicts = Dict(
     :α0 => 10f0 .^ (-4f0:1f0),
     :β0 => 10f0 .^ (-4f0:1f0),
-    :init => [("diag", "zero"), ("rand","rand"),
-              ("glorotuniform", "glorotuniform"),
+    :init => [("diag", "zero"), ("diag","one"),
+              ("rand","rand"), ("glorotuniform", "glorotuniform"),
               ("randn","randn")])
 
 # permute and flatten :init -> :initnau, initnmu
