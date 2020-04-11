@@ -84,7 +84,7 @@ Threads.@threads for d in config_dicts
     config = reconstruct(config, d)
     for nr in 1:10
         res, fname = produce_or_load(
-            datadir("mult_$(pattern)_run$nr"),
+            datadir("$(pattern)_run$nr"),
             config, run)
     end
 end
