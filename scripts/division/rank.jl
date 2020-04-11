@@ -83,7 +83,7 @@ function aggregateruns(runs::DataFrame, pattern::String)
     end
 end
 
-force   = true
+force   = false
 pattern = "ard_xovery"
 
 res, fname = produce_or_load(datadir(), @dict(pattern), readruns, force=force)
