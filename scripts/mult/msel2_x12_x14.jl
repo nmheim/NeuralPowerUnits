@@ -43,21 +43,21 @@ end
 
 #################### Single run with default params ############################
 
-config = Config()
-res, fname = produce_or_load(datadir(pattern), config, run, force=true)
-
-m = res[:model]
-h = res[:history]
-
-pyplot()
-p1 = plothistory(h)
-p2 = plot(
-    annotatedheatmap(m[1].W[end:-1:1,:], c=:bluesreds, title="NAU", clim=(-1,1)),
-    annotatedheatmap(m[2].W[end:-1:1,:], c=:bluesreds, title="ReNMUX", clim=(-1,1)),
-    size=(600,300))
-wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-history.svg"), p1)
-wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-mapping.svg"), p2)
-error()
+# config = Config()
+# res, fname = produce_or_load(datadir(pattern), config, run, force=true)
+# 
+# m = res[:model]
+# h = res[:history]
+# 
+# pyplot()
+# p1 = plothistory(h)
+# p2 = plot(
+#     annotatedheatmap(m[1].W[end:-1:1,:], c=:bluesreds, title="NAU", clim=(-1,1)),
+#     annotatedheatmap(m[2].W[end:-1:1,:], c=:bluesreds, title="ReNMUX", clim=(-1,1)),
+#     size=(600,300))
+# wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-history.svg"), p1)
+# wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-mapping.svg"), p2)
+# error()
 
 ################################################################################
 
