@@ -4,7 +4,7 @@ author: Niklas Heim
 date: 13th April 2020
 
 options:
-        doctype: md2pdf
+        doctype: md2html
         latex_cmd: pdflatex
 ---
 
