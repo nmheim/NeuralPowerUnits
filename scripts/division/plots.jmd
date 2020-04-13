@@ -108,9 +108,9 @@ for pattern in ["ard_xovery", "msel1_xovery", "msel2_xovery"]
 end
 
 n = 10
-first3n = copy(first(frames[1], n))
-append!(first3n, first(frames[2], n))
-append!(first3n, first(frames[3], n))
+first3n = copy(first(mean_frames[1], n))
+append!(first3n, first(mean_frames[2], n))
+append!(first3n, first(mean_frames[3], n))
 sort!(first3n[:,2:end], :μmse)
 ```
 
@@ -127,15 +127,6 @@ end
 get_mapping(m::Chain) = identity(m)
 
 patterns = ["ard_xovery", "msel1_xovery", "msel2_xovery"]
-
-frames = map(patterns) do pattern
-    runs = load(datadir("pattern=$pattern.bson"))[:runs]
-end
-
-mean_frames = map(frames) do runs
-    mean_runs = aggregateruns(runs)
-    sort!(mean_runs, :μmse)
-end
 ```
 
 ```julia

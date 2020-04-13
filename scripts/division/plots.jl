@@ -82,8 +82,9 @@ function aggregateruns(runs::DataFrame)
 end
 
 
-force   = true
-frames = Dict{Symbol,DataFrame}()
+force  = false
+frames = []
+mean_frames = []
 for pattern in ["ard_xovery", "msel1_xovery", "msel2_xovery"]
     res, fname = produce_or_load(
         datadir(), @dict(pattern), readruns, force=force)
@@ -91,12 +92,44 @@ for pattern in ["ard_xovery", "msel1_xovery", "msel2_xovery"]
     insertcols!(runs, 1, :loss_func=>split(pattern,"_")[1])
     mean_runs = aggregateruns(runs)
     sort!(mean_runs, :μmse)
-    frames[Symbol(pattern)] = mean_runs
+    push!(frames, runs)
+    push!(mean_frames, mean_runs)
 end
 
 n = 10
-first3n = copy(first(frames[:ard_xovery], n))
-append!(first3n, first(frames[:msel1_xovery], n))
-append!(first3n, first(frames[:msel2_xovery], n))
+first3n = copy(first(mean_frames[1], n))
+append!(first3n, first(mean_frames[2], n))
+append!(first3n, first(mean_frames[3], n))
 sort!(first3n[:,2:end], :μmse)
+
+
+function find_best(mean_df::DataFrame, df::DataFrame)
+    name = mean_df[1,:name]
+    df = filter!(row->row[:name]==name, copy(df))
+    sort!(df, :mse)
+    run = df[1,:run]
+    name = df[1,:name]
+    run, name
+end
+
+get_mapping(m::Chain) = identity(m)
+
+patterns = ["ard_xovery", "msel1_xovery", "msel2_xovery"]
+
+
+for (pattern,mean_df,df) in zip(patterns,mean_frames,frames)
+    run, name = find_best(mean_df, df)
+    res = load(datadir("division_$(pattern)_run$run", name))
+    @unpack model, history = res
+    p1 = plothistory(history)
+    net = get_mapping(model)
+    p2 = plot(
+        annotatedheatmap(net[1].W[end:-1:1,:], c=:bluesreds, title="NAU", clim=(-1,1)),
+        annotatedheatmap(net[2].W[end:-1:1,:], c=:bluesreds, title="ReNMUX", clim=(-1,1)),
+        size=(600,300))
+    # display(p1)
+    # display(p2)
+    wsave(plotsdir("division_xovery_best", "$pattern-$(basename(name))-history.svg"), p1)
+    wsave(plotsdir("division_xovery_best", "$pattern-$(basename(name))-mapping.svg"), p2)
+end
 

@@ -82,7 +82,7 @@ function aggregateruns(runs::DataFrame)
    end
 end
 
-force   = true
+force   = false
 
 frames = Dict{Symbol,DataFrame}()
 for pattern in ["ard_xovery", "msel1_xovery", "msel2_xovery"]
