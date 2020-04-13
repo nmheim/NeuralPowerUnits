@@ -64,7 +64,7 @@ end
 
 # set up dict which will be permuted to yield all config combinations
 config_dicts = Dict(
-    :βL1 => 10f0 .^ (-1f0:2f0),
+    :βL2 => 10f0 .^ (-1f0:2f0),
     :init => [("diag", "zero"), ("diag","one"), ("rand","rand"),
               ("glorotuniform", "glorotuniform"),
               ("randn","randn")])
