@@ -13,7 +13,7 @@ using GMExtensions
 include(joinpath(@__DIR__, "utils.jl"))
 include(srcdir("utils.jl"))
 
-pattern = "mult_msel1_x12_x14"
+pattern = "mult_msel2_x12_x14"
 
 @with_kw struct Config
     batch::Int      = 50

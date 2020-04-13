@@ -13,7 +13,7 @@ using GMExtensions
 include(joinpath(@__DIR__, "utils.jl"))
 include(srcdir("utils.jl"))
 
-pattern = "mult_msel2_x12_x14"
+pattern = "mult_msel1_x12_x14"
 
 @with_kw struct Config
     batch::Int      = 50
@@ -44,7 +44,7 @@ end
 #################### Single run with default params ############################
 
 # config = Config()
-# res, fname = produce_or_load(datadir(pattern), config, run, force=true)
+# res, fname = produce_or_load(datadir("$(pattern)_run1"), config, run, force=true)
 # 
 # m = res[:model]
 # h = res[:history]
