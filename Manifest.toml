@@ -38,9 +38,9 @@ version = "3.5.0+3"
 
 [[ArrayInterface]]
 deps = ["LinearAlgebra", "Requires", "SparseArrays"]
-git-tree-sha1 = "b34d74dc877e6083c4c5c553a685e89e10ea4662"
+git-tree-sha1 = "fbd3561b9cfb426fb6eb20219165c1b5457fa285"
 uuid = "4fba245c-0d91-5ea0-9b3e-6abc04ee57a9"
-version = "2.8.3"
+version = "2.8.4"
 
 [[ArrayLayouts]]
 deps = ["FillArrays", "LinearAlgebra"]
@@ -213,9 +213,9 @@ version = "0.20.2"
 
 [[DataStructures]]
 deps = ["InteractiveUtils", "OrderedCollections"]
-git-tree-sha1 = "73eb18320fe3ba58790c8b8f6f89420f0a622773"
+git-tree-sha1 = "4dead20a1606a60292529023d6eac18a1ef6432e"
 uuid = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
-version = "0.17.11"
+version = "0.17.12"
 
 [[DataValueInterfaces]]
 git-tree-sha1 = "bfc1187b79289637fa0ef6d4436ebdfe6905cbd6"
@@ -238,9 +238,9 @@ uuid = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 
 [[DiffEqBase]]
 deps = ["ArrayInterface", "ChainRulesCore", "ConsoleProgressMonitor", "DataStructures", "Distributed", "DocStringExtensions", "FunctionWrappers", "IterativeSolvers", "IteratorInterfaceExtensions", "LabelledArrays", "LinearAlgebra", "Logging", "LoggingExtras", "MuladdMacro", "Parameters", "Printf", "ProgressLogging", "RecipesBase", "RecursiveArrayTools", "RecursiveFactorization", "Requires", "Roots", "SparseArrays", "StaticArrays", "Statistics", "SuiteSparse", "TableTraits", "TerminalLoggers", "TreeViews", "ZygoteRules"]
-git-tree-sha1 = "ee7c0e244457d3c3e83c1ebf303a50f6f6df607c"
+git-tree-sha1 = "b2029ac17d32dd2aca998e3073900976acb965cf"
 uuid = "2b5f629d-d688-5b77-993f-72d75c75574e"
-version = "6.27.0"
+version = "6.28.0"
 
 [[DiffResults]]
 deps = ["StaticArrays"]
@@ -417,12 +417,6 @@ git-tree-sha1 = "96fd99cf83b1952a7d8cb54f4c585a648275805a"
 uuid = "4d00f742-c7ba-57c2-abde-4428a4b178cb"
 version = "0.8.2"
 
-[[HTTP]]
-deps = ["Base64", "Dates", "IniFile", "MbedTLS", "Sockets"]
-git-tree-sha1 = "cd60d9a575d3b70c026d7e714212fd4ecf86b4bb"
-uuid = "cd3eb016-35fb-5094-929b-558a96fad6f3"
-version = "0.8.13"
-
 [[Highlights]]
 deps = ["DocStringExtensions", "InteractiveUtils", "REPL"]
 git-tree-sha1 = "f823a2d04fb233d52812c8024a6d46d9581904a4"
@@ -445,12 +439,6 @@ version = "0.3.1"
 git-tree-sha1 = "f5fc07d4e706b84f72d54eedcc1c13d92fb0871c"
 uuid = "d25df0c9-e2be-5dd7-82c8-3ad0b3e990b9"
 version = "0.1.2"
-
-[[IniFile]]
-deps = ["Test"]
-git-tree-sha1 = "098e4d2c533924c921f9f9847274f2ad89e018b8"
-uuid = "83e8ac13-25f8-5344-8a64-a9f2b223428f"
-version = "0.5.0"
 
 [[IntelOpenMP_jll]]
 deps = ["Libdl", "Pkg"]
@@ -597,18 +585,6 @@ version = "0.5.5"
 deps = ["Base64"]
 uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
 
-[[MbedTLS]]
-deps = ["Dates", "MbedTLS_jll", "Random", "Sockets"]
-git-tree-sha1 = "a9e2221f06b42f56052f43ad7edecb01d0ef5ab4"
-uuid = "739be429-bea8-5141-9913-cc70e7f3736d"
-version = "1.0.1"
-
-[[MbedTLS_jll]]
-deps = ["Libdl", "Pkg"]
-git-tree-sha1 = "066a4467008745eed36dad973ceb66405785a621"
-uuid = "c8ffd9c3-330d-5841-b78e-0817d7145fa1"
-version = "2.16.0+1"
-
 [[Measures]]
 git-tree-sha1 = "e498ddeee6f9fdb4551ce855a46f54dbd900245f"
 uuid = "442fdcdd-2543-5da2-b0f3-8c86c306513e"
@@ -682,12 +658,6 @@ repo-rev = "master"
 repo-url = "https://github.com/nmheim/NeuralArithmetic.jl.git"
 uuid = "ab1feca7-9272-4c7d-b713-789d3461e743"
 version = "0.2.0"
-
-[[ORCA]]
-deps = ["Conda", "HTTP", "JSON", "PlotlyBase"]
-git-tree-sha1 = "b4388659d0dfaa4579c3e6ff72b3f6e706019440"
-uuid = "47be7bcc-f1a6-5447-8b36-7eeeff7534fd"
-version = "0.3.1"
 
 [[Observables]]
 git-tree-sha1 = "11832878355305984235a2e90d0e3737383c634c"
@@ -780,12 +750,6 @@ deps = ["Colors", "Dates", "Printf", "Random", "Reexport"]
 git-tree-sha1 = "51e742162c97d35f714f9611619db6975e19384b"
 uuid = "995b91a9-d308-5afd-9ec6-746e21dbc043"
 version = "0.6.5"
-
-[[PlotlyBase]]
-deps = ["Dates", "DelimitedFiles", "DocStringExtensions", "JSON", "LaTeXStrings", "Logging", "Requires", "Statistics", "UUIDs"]
-git-tree-sha1 = "3bf75544fb56640f6f7ccd95e052b12589cc7474"
-uuid = "a03496cd-edff-5a9b-9e67-9cda94a718b5"
-version = "0.3.0"
 
 [[Plots]]
 deps = ["Base64", "Contour", "Dates", "FFMPEG", "FixedPointNumbers", "GR", "GeometryTypes", "JSON", "LinearAlgebra", "Measures", "NaNMath", "Pkg", "PlotThemes", "PlotUtils", "Printf", "REPL", "Random", "RecipesBase", "Reexport", "Requires", "Showoff", "SparseArrays", "Statistics", "StatsBase", "UUIDs"]
@@ -892,10 +856,10 @@ uuid = "ae029012-a4dd-5104-9daa-d747884805df"
 version = "1.0.1"
 
 [[ReverseDiff]]
-deps = ["DiffResults", "DiffRules", "ForwardDiff", "FunctionWrappers", "LinearAlgebra", "NaNMath", "Random", "SpecialFunctions", "StaticArrays", "Statistics"]
-git-tree-sha1 = "5f7dafd314ff2ada3076797b1edfb71e52151cb9"
+deps = ["DiffResults", "DiffRules", "ForwardDiff", "FunctionWrappers", "LinearAlgebra", "MacroTools", "NaNMath", "Random", "SpecialFunctions", "StaticArrays", "Statistics"]
+git-tree-sha1 = "1d4a01bc6fe181e4fef376affb3f90bad584b0f4"
 uuid = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
-version = "1.1.0"
+version = "1.2.0"
 
 [[Revise]]
 deps = ["CodeTracking", "Distributed", "FileWatching", "JuliaInterpreter", "LibGit2", "LoweredCodeUtils", "OrderedCollections", "Pkg", "REPL", "UUIDs", "Unicode"]

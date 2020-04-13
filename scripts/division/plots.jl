@@ -13,6 +13,7 @@ using LinearAlgebra
 using Parameters
 using Distributions: Uniform
 using GMExtensions
+pyplot()
 
 include(joinpath(@__DIR__, "utils.jl"))
 include(joinpath(@__DIR__, "ard_utils.jl"))

@@ -4,8 +4,8 @@ author: Niklas Heim
 date: 13th April 2020
 
 options:
-        doctype: md2pdf
-        latex_cmd: pdflatex
+        doctype: md2html
+        latex_cmd: lualatex
 ---
 
 ```julia echo=false
@@ -23,6 +23,7 @@ using LinearAlgebra
 using Parameters
 using Distributions: Uniform
 using GMExtensions
+pyplot()
 
 include(joinpath(@__DIR__, "utils.jl"))
 include(joinpath(@__DIR__, "ard_utils.jl"))
