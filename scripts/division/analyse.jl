@@ -33,6 +33,7 @@ function readrows(dir::String)
         @unpack model, history = load(fn)
         ls = hcat(get(history, :loss)[2]...)[:,end]
         ps[:loss] = ls[1]
+        ps[:run] = parse(Int, split(basename(dir), "run")[2])
         if occursin("ard", pattern)
             f(x) = Base.invokelatest(model.decoder.mapping.restructure,x)
             net = f(mean(model.encoder))
@@ -76,23 +77,26 @@ function aggregateruns(runs::DataFrame)
         μL1=mean(r.L1),
         σL1=std(r.L1),
         μL2=mean(r.L2),
-        σL2=std(r.L2))
+        σL2=std(r.L2),
+        loss_func=r.loss_func[1])
    end
 end
 
-force   = false
+force   = true
 
 frames = Dict{Symbol,DataFrame}()
 for pattern in ["ard_xovery", "msel1_xovery", "msel2_xovery"]
     res, fname = produce_or_load(
         datadir(), @dict(pattern), readruns, force=force)
     runs = res[:runs]
+    insertcols!(runs, 1, :loss_func=>split(pattern,"_")[1])
     mean_runs = aggregateruns(runs)
     sort!(mean_runs, :μmse)
     frames[Symbol(pattern)] = mean_runs
 end
 
-for (k,f) in frames
-    @show k f[1,:name]
-    display(first(f[:,2:end],5))
-end
+n = 10
+first3n = copy(first(frames[:ard_xovery], n))
+append!(first3n, first(frames[:msel1_xovery], n))
+append!(first3n, first(frames[:msel2_xovery], n))
+sort!(first3n[:,2:end], :μmse)
