@@ -1,4 +1,6 @@
 
+using DrWatson
+using Plots
 using DataFrames
 using Statistics
 using ValueHistories
@@ -10,6 +12,7 @@ using ProgressMeter
 using LinearAlgebra
 using Parameters
 using Distributions: Uniform
+using GMExtensions
 
 include(joinpath(@__DIR__, "utils.jl"))
 include(joinpath(@__DIR__, "ard_utils.jl"))
@@ -79,7 +82,7 @@ function aggregateruns(runs::DataFrame)
         σL2=std(r.L2),
         loss_func=r.loss_func[1])
    end
-end
+end;
 
 
 force  = false
