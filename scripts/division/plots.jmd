@@ -114,7 +114,8 @@ n = 10
 first3n = copy(first(mean_frames[1], n))
 append!(first3n, first(mean_frames[2], n))
 append!(first3n, first(mean_frames[3], n))
-sort!(first3n[:,2:end], :μmse)
+sort!(first3n, :μmse)
+display(first3n[:,2:end])
 ```
 
 ```julia echo=false
