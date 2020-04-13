@@ -2,7 +2,6 @@ using DrWatson
 @quickactivate "arithmetic"
 
 using Flux
-using Plots
 using GenerativeModels
 using GMExtensions
 using NeuralArithmetic
@@ -13,7 +12,6 @@ using LinearAlgebra
 
 include(joinpath(@__DIR__, "utils.jl"))
 include(joinpath(@__DIR__, "ard_utils.jl"))
-include(srcdir("utils.jl"))
 
 pattern = "mult_ard_x12_x14"
 
@@ -46,6 +44,8 @@ end
 
 #################### Single run with default params ############################
 
+# using Plots
+# include(srcdir("utils.jl"))
 # config = Config()
 # res, fname = produce_or_load(datadir(pattern), config, run, force=true)
 # 

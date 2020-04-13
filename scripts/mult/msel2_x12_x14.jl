@@ -2,7 +2,6 @@ using DrWatson
 @quickactivate "arithmetic"
 
 using Flux
-using Plots
 using NeuralArithmetic
 using Distributions: Uniform
 using Parameters
@@ -11,7 +10,6 @@ using LinearAlgebra
 using GMExtensions
 
 include(joinpath(@__DIR__, "utils.jl"))
-include(srcdir("utils.jl"))
 
 pattern = "mult_msel2_x12_x14"
 
@@ -43,6 +41,8 @@ end
 
 #################### Single run with default params ############################
 
+# using Plots
+# include(srcdir("utils.jl"))
 # config = Config()
 # res, fname = produce_or_load(datadir(pattern), config, run, force=true)
 # 
