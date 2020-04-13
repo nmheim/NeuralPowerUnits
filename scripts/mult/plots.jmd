@@ -146,9 +146,9 @@ for (pattern,mean_df,df) in zip(patterns,mean_frames,frames)
         annotatedheatmap(net[1].W[end:-1:1,:], c=:bluesreds, title="NAU", clim=(-1,1)),
         annotatedheatmap(net[2].W[end:-1:1,:], c=:bluesreds, title="ReNMUX", clim=(-1,1)),
         size=(600,300))
-    display(p1)
-    display(p2)
-    # wsave(plotsdir("mult_x12_x14_best", "$pattern-$(basename(name))-history.svg"), p1)
-    # wsave(plotsdir("mult_x12_x14_best", "$pattern-$(basename(name))-mapping.svg"), p2)
+    # display(p1)
+    # display(p2)
+    wsave(plotsdir("mult_x12_x14_best", "$pattern-$(basename(name))-history.svg"), p1)
+    wsave(plotsdir("mult_x12_x14_best", "$pattern-$(basename(name))-mapping.svg"), p2)
 end
 ```
