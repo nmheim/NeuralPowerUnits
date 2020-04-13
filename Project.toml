@@ -25,6 +25,7 @@ Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
 StatsPlots = "f3b207a7-027a-5e70-b257-86293d7955fd"
 UnicodePlots = "b8865327-cd53-5732-bb35-84acbb429228"
 ValueHistories = "98cad3c8-aec3-5f06-8e41-884608649ab7"
+Weave = "44d3d7a6-8a23-5bf8-98c5-b353f8df5ec9"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [compat]
