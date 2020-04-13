@@ -120,7 +120,6 @@ function find_best(mean_df::DataFrame, df::DataFrame)
     df = filter!(row->row[:name]==name, copy(df))
     sort!(df, :mse)
     run = df[1,:run]
-    name = df[1,:name]
     run, name
 end
 
@@ -132,6 +131,7 @@ patterns = ["ard_xovery", "msel1_xovery", "msel2_xovery"]
 ```julia
 for (pattern,mean_df,df) in zip(patterns,mean_frames,frames)
     run, name = find_best(mean_df, df)
+    @show run, name
     res = load(datadir("division_$(pattern)_run$run", name))
     @unpack model, history = res
     p1 = plothistory(history)

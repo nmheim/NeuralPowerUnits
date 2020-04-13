@@ -108,7 +108,6 @@ function find_best(mean_df::DataFrame, df::DataFrame)
     df = filter!(row->row[:name]==name, copy(df))
     sort!(df, :mse)
     run = df[1,:run]
-    name = df[1,:name]
     run, name
 end
 
@@ -119,6 +118,7 @@ patterns = ["ard_xovery", "msel1_xovery", "msel2_xovery"]
 
 for (pattern,mean_df,df) in zip(patterns,mean_frames,frames)
     run, name = find_best(mean_df, df)
+    @show run, name
     res = load(datadir("division_$(pattern)_run$run", name))
     @unpack model, history = res
     p1 = plothistory(history)
@@ -127,9 +127,9 @@ for (pattern,mean_df,df) in zip(patterns,mean_frames,frames)
         annotatedheatmap(net[1].W[end:-1:1,:], c=:bluesreds, title="NAU", clim=(-1,1)),
         annotatedheatmap(net[2].W[end:-1:1,:], c=:bluesreds, title="ReNMUX", clim=(-1,1)),
         size=(600,300))
-    # display(p1)
-    # display(p2)
-    wsave(plotsdir("division_xovery_best", "$pattern-$(basename(name))-history.svg"), p1)
-    wsave(plotsdir("division_xovery_best", "$pattern-$(basename(name))-mapping.svg"), p2)
+    display(p1)
+    display(p2)
+    # wsave(plotsdir("division_xovery_best", "$pattern-$(basename(name))-history.svg"), p1)
+    # wsave(plotsdir("division_xovery_best", "$pattern-$(basename(name))-mapping.svg"), p2)
 end
 
