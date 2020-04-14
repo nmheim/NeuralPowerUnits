@@ -8,7 +8,7 @@ options:
         latex_cmd: pdflatex
 ---
 
-```julia echo=false
+```julia
 using DrWatson
 using Plots
 using DataFrames
@@ -23,10 +23,13 @@ using LinearAlgebra
 using Parameters
 using Distributions: Uniform
 using GMExtensions
+pyplot()
 
 include(joinpath(@__DIR__, "utils.jl"))
 include(joinpath(@__DIR__, "ard_utils.jl"))
+```
 
+```julia echo=false
 x,y = generate(4,1000,Uniform(0.1,5))
 
 strdict2symdict(d) = Dict([Symbol(k)=>v for (k,v) in d]...)
