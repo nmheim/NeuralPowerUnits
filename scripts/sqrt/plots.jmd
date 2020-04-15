@@ -8,7 +8,7 @@ options:
         latex_cmd: pdflatex
 ---
 
-```julia echo=false
+```julia
 using DrWatson
 using Plots
 using DataFrames
@@ -23,10 +23,13 @@ using LinearAlgebra
 using Parameters
 using Distributions: Uniform
 using GMExtensions
+pyplot()
 
 include(joinpath(@__DIR__, "utils.jl"))
 include(joinpath(@__DIR__, "ard_utils.jl"))
+```
 
+```julia echo=false
 x,y = generate(4,1000,Uniform(0.1,5))
 
 strdict2symdict(d) = Dict([Symbol(k)=>v for (k,v) in d]...)
@@ -99,8 +102,7 @@ end;
 force  = false
 frames = []
 mean_frames = []
-#for pattern in ["ard_sqrt", "msel1_sqrt", "msel2_sqrt"]
-for pattern in ["ard_sqrt", "msel1_sqrt"]
+for pattern in ["ard_sqrt", "msel1_sqrt", "msel2_sqrt"]
     res, fname = produce_or_load(
         datadir(), @dict(pattern), readruns, force=force)
     runs = res[:runs]
@@ -114,7 +116,7 @@ end
 n = 10
 first3n = copy(first(mean_frames[1], n))
 append!(first3n, first(mean_frames[2], n))
-#append!(first3n, first(mean_frames[3], n))
+append!(first3n, first(mean_frames[3], n))
 sort!(first3n, :μmse)
 display(first3n[:,2:end])
 ```
