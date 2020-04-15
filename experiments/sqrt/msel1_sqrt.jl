@@ -20,20 +20,19 @@ outdir  = datadir("tests", pattern)
     batch::Int      = 50
     inlen::Int      = 4
     outlen::Int     = 1
-    niters::Int     = 30000
-    lr::Real        = 0.001
+    niters::Int     = 50000
+    lr::Real        = 0.002
     lowlim::Int     = 0
     uplim::Int      = 3
-    βL1             = 0.1f0
-    initnau::String = "rand"
-    initnmu::String = "rand"
+    βL1             = 10
+    initnau::String = "diag"
+    initnmu::String = "diag"
 end
 
 function task(x)
     x1 = x[1,:]
     x2 = x[2,:]
-    y = sqrt.(x1)
-    #y = x1 ./ x2
+    y = sqrt.(x1 .+ x2)
     reshape(y, 1, :)
 end
 
@@ -59,19 +58,19 @@ end
 #################### Single run with default params ############################
 
 config = MSEL1Config()
-res, fname = produce_or_load(outdir, config, run, force=true)
+res, fname = produce_or_load(outdir, config, run, force=false)
 
 m = res[:model]
 h = res[:history]
 
 pyplot()
 p1 = plothistory(h)
-p2 = plot(
-    annotatedheatmap(m[1].W[end:-1:1,:], c=:bluesreds, title="NAU", clim=(-1,1)),
-    annotatedheatmap(m[2].W[end:-1:1,:], c=:bluesreds, title="NPU", clim=(-1,1)),
-    size=(600,300))
-wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-history.svg"), p1)
-wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-mapping.svg"), p2)
+ps = [annotatedheatmap(l.W[end:-1:1,:], c=:bluesreds, title=summary(l), clim=(-1,1)) for l in m]
+p2 = plot(ps..., size=(600,300))
+display(p1)
+display(p2)
+# wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-history.svg"), p1)
+# wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-mapping.svg"), p2)
 error()
 
 ################################################################################

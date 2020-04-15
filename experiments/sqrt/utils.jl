@@ -23,9 +23,12 @@ function initf(s::String)
 end
 
 function mapping(in, out, init_nau, init_nmu)
-    nau = NAU(in, in, init=init_nau)
-    nmu = NPU(in, out, init=init_nmu)
-    Chain(nau, nmu)
+    Chain(
+        NAU(in, in, init=init_nau),
+        # NPU(in, in, init=init_nmu),
+        # NAU(in, out, init=init_nau),
+        NPU(in, out, init=init_nmu)
+       )
 end
 
 function train!(loss, model, data, opt, history=MVHistory())
