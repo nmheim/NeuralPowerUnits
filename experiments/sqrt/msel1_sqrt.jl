@@ -13,6 +13,7 @@ using GMExtensions
 include(joinpath(@__DIR__, "utils.jl"))
 include(srcdir("utils.jl"))
 
+pattern = "simple_sqrt"
 outdir  = datadir("tests", pattern)
 
 @with_kw struct MSEL1Config
@@ -23,7 +24,7 @@ outdir  = datadir("tests", pattern)
     lr::Real        = 0.001
     lowlim::Int     = 0
     uplim::Int      = 3
-    βL1             = 10
+    βL1             = 0.1f0
     initnau::String = "rand"
     initnmu::String = "rand"
 end
@@ -31,7 +32,8 @@ end
 function task(x)
     x1 = x[1,:]
     x2 = x[2,:]
-    y = sqrt.(x1 .+ x2)
+    y = sqrt.(x1)
+    #y = x1 ./ x2
     reshape(y, 1, :)
 end
 
