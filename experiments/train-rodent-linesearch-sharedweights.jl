@@ -11,6 +11,7 @@ using LaTeXStrings
 
 using LinearAlgebra
 using Flux
+using Zygote
 using OrdinaryDiffEq
 using Random: randn!
 
@@ -28,7 +29,7 @@ unicodeplots()
 
 force_run = true
 
-batchsize = 20
+batchsize = 1
 mintlen   = 5
 T         = Float32
 dt        = T(0.1)
@@ -160,11 +161,15 @@ function train!(loss, ode, model, data, opt, history=MVHistory())
     history
 end
 
+function Base.copy(ps::Zygote.Params)
+    ps_copy = map(copy, ps)
+    Zygote.Params(ps_copy)
+end
 
 function linesearch!(loss, ode, model, data, opt, history=MVHistory())
     train_loss = 0f0
     ps = params(ode)
-    prev_ps = params(f32(ode))
+    prev_ps = copy(ps)
     lr = copy(opt.eta)
 
     plotprogress = Flux.throttle(() -> (x = train_data[1][1][:,:,1];
@@ -182,48 +187,39 @@ function linesearch!(loss, ode, model, data, opt, history=MVHistory())
         for d in data
             success = false
             gs = nothing
+            searches = 1
             while !success
                 try
-                    #println("$i reconstruct: $opt")
                     gs = gradient(()->loss(d...), ps)
                     success = true
+                    prev_ps = copy(ps)
                     opt = reconstruct(opt, eta=lr)
-                    prev_ps = params(f32(ode))
-                    #println(ps)
-                    #println(prev_ps)
                 catch e
                     if i == 1
-                        throw(ValueError("First iteration has to work!"))
+                        throw(ErrorException("First iteration has to work!"))
+                    end
+                    if searches == 10
+                        throw(ErrorException("Too many line searches"))
                     end
                     println(ps)
                     println(prev_ps)
-                    ps = prev_ps
-                    opt = reconstruct(opt, eta=opt.eta/2)
-                    println("reduce: $opt")
+                    ps = copy(prev_ps)
+                    gs = gradient(()->loss(d...), ps)
                     error()
+                    opt = reconstruct(opt, eta=opt.eta/2)
+                    searches += 1
+                    println("reduce: $opt $searches")
                 end
                 
-                # warnings = @capture_err begin 
-                #    gs = gradient(()->loss(d...), ps)
-                # end
-                # println(warnings)
-                # warnings = ""
-                # if isempty(warnings)
-                #     success = true
-                #     opt = reconstruct(opt, eta=lr)
-                #     prev_ps = params(f32(ode))
-                #     println("reconstruct: $opt")
-                # else
-                #     if i == 1
-                #         throw(ValueError("First iteration has to work!"))
-                #     end
-                #     ps = prev_ps
-                #     opt = reconstruct(opt, eta=opt.eta/2)
-                #     println("reduce: $opt")
-                # end
             end
             plotprogress()
             Flux.Optimise.update!(opt, ps, gs)
+            @show d
+            @show prev_ps
+                    gs = gradient(()->loss(d...), prev_ps)
+            @show ps
+                    gs = gradient(()->loss(d...), ps)
+
             i += 1
         end
     catch e
