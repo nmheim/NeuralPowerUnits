@@ -33,12 +33,12 @@ end
 
 function train!(loss, model, data, opt, history=MVHistory())
     ps = params(model)
-    train_loss = 0f0
+    train_loss, mse_loss, L1_loss = 0f0, 0f0, 0f0
 
     logging = Flux.throttle((i)->(@info "Step $i: $train_loss"), 1)
     pushhist = Flux.throttle((i)->(
             push!(history, :μz, i, copy(Flux.destructure(model)[1]));
-            push!(history, :loss, i, [train_loss]);
+            push!(history, :loss, i, [train_loss,mse_loss,L1_loss]);
        ),
     0.1)
 
@@ -46,7 +46,7 @@ function train!(loss, model, data, opt, history=MVHistory())
     try 
         for d in data
             gs = gradient(ps) do
-                train_loss = loss(d...)
+                train_loss, mse_loss, L1_loss = loss(d...)
                 return train_loss
             end
             logging(i)

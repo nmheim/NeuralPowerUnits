@@ -12,8 +12,9 @@ using GMExtensions
 
 include(joinpath(@__DIR__, "utils.jl"))
 include(srcdir("utils.jl"))
+include(srcdir("colors.jl"))
 
-pattern = "simple_sqrt"
+pattern = "simple_sqrt_msel1"
 outdir  = datadir("tests", pattern)
 
 @with_kw struct MSEL1Config
@@ -21,12 +22,12 @@ outdir  = datadir("tests", pattern)
     inlen::Int      = 4
     outlen::Int     = 1
     niters::Int     = 50000
-    lr::Real        = 0.002
+    lr::Real        = 0.005
     lowlim::Int     = 0
     uplim::Int      = 3
-    βL1             = 10
-    initnau::String = "diag"
-    initnmu::String = "diag"
+    βL1             = 1
+    initnau::String = "rand"
+    initnmu::String = "rand"
 end
 
 function task(x)
@@ -47,7 +48,11 @@ function run(config)
     @unpack niters, batch, inlen, outlen, βL1, lr = config
     model   = mapping(inlen, outlen, initf(initnau), initf(initnmu))
     ps      = params(model)
-    loss    = (x,y) -> Flux.mse(model(x),y) + βL1*norm(ps, 1)
+    function loss(x,y)
+        mse = Flux.mse(model(x),y)
+        L1  = βL1 * norm(ps,1)
+        (mse+L1), mse, L1
+    end
     range   = Uniform(lowlim,uplim)
     data    = (generate(inlen,batch,range) for _ in 1:niters)
     opt     = RMSProp(lr)
@@ -63,42 +68,27 @@ res, fname = produce_or_load(outdir, config, run, force=false)
 m = res[:model]
 h = res[:history]
 
+function Plots.plot(h::MVHistory)
+    idx, ls = get(h, :loss)
+    ls = reduce(hcat, ls)
+    tot = ls[1,:]
+    mse = ls[2,:]
+    L1  = ls[3,:]
+
+    p1 = plot(idx, tot, label="Loss", yscale=:log10, xscale=:log10, lw=2)
+    plot!(p1, idx, mse, label="MSE", lw=2)
+    plot!(p1, idx, L1,  label="L1", lw=2)
+
+    ps = reduce(hcat, get(h, :μz)[2])'
+    p2 = plot(idx, ps, legend=false, xscale=:log10, lw=2)
+    plot(p1,p2,layout=(2,1))
+end
+
 pyplot()
-p1 = plothistory(h)
+p1 = plot(h)
 ps = [annotatedheatmap(l.W[end:-1:1,:], c=:bluesreds, title=summary(l), clim=(-1,1)) for l in m]
 p2 = plot(ps..., size=(600,300))
-display(p1)
-display(p2)
-# wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-history.svg"), p1)
-# wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-mapping.svg"), p2)
-error()
-
-################################################################################
-
-
-# set up dict which will be permuted to yield all config combinations
-config_dicts = Dict(
-    :βL1 => 10f0 .^ (-1f0:2f0),
-    :init => [("diag", "zero"), ("diag","one"), ("rand","rand"),
-              ("glorotuniform", "glorotuniform"),
-              ("randn","randn")])
-
-# permute and flatten :init -> :initnau, initnmu
-config_dicts = map(dict_list(config_dicts)) do config
-    i = pop!(config,:init)
-    d = Dict{Symbol,Any}(:initnau=>i[1], :initnmu=>i[2])
-    for k in keys(config)
-        d[k] = config[k]
-    end
-    d
-end
-
-Threads.@threads for d in config_dicts
-    config = MSEL1Config()
-    config = reconstruct(config, d)
-    for nr in 1:10
-        res, fname = produce_or_load(
-            datadir("$(pattern)_run$nr"),
-            config, run)
-    end
-end
+# display(p1)
+# display(p2)
+wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-history.svg"), p1)
+wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-mapping.svg"), p2)
