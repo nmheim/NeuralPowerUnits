@@ -185,42 +185,62 @@ function linesearch!(loss, ode, model, data, opt, history=MVHistory())
 
     try 
         for d in data
+            #success = false
+            #gs = nothing
+            #searches = 1
+            #while !success
+            #    try
+            #        gs = gradient(()->loss(d...), ps)
+            #        success = true
+            #        prev_ps = copy(ps)
+            #        opt = reconstruct(opt, eta=lr)
+            #    catch e
+            #        if i == 1
+            #            throw(ErrorException("First iteration has to work!"))
+            #        end
+            #        if searches == 10
+            #            throw(ErrorException("Too many line searches"))
+            #        end
+            #        println(ps)
+            #        println(prev_ps)
+            #        ps = copy(prev_ps)
+            #        gs = gradient(()->loss(d...), ps)
+            #        error()
+            #        opt = reconstruct(opt, eta=opt.eta/2)
+            #        searches += 1
+            #        println("reduce: $opt $searches")
+            #    end
+            #    
+            #end
+            # gs = gradient(()->loss(d...), ps)
+            # plotprogress()
+            # Flux.Optimise.update!(opt, ps, gs)
             success = false
-            gs = nothing
-            searches = 1
+            i = 1
             while !success
+                @show i
+                @show prev_ps
+                @show ps
                 try
                     gs = gradient(()->loss(d...), ps)
-                    success = true
+                    succes = true
                     prev_ps = copy(ps)
-                    opt = reconstruct(opt, eta=lr)
+                    opt = reconstruct(opt,eta=lr)
+                    Flux.Optimise.update!(opt, ps, gs)
                 catch e
-                    if i == 1
-                        throw(ErrorException("First iteration has to work!"))
-                    end
-                    if searches == 10
-                        throw(ErrorException("Too many line searches"))
-                    end
-                    println(ps)
-                    println(prev_ps)
+                    if i == 1 throw(ErrorException("First iteration has to work!")) end
                     ps = copy(prev_ps)
-                    gs = gradient(()->loss(d...), ps)
-                    error()
                     opt = reconstruct(opt, eta=opt.eta/2)
-                    searches += 1
-                    println("reduce: $opt $searches")
                 end
-                
+                i += 1
             end
-            plotprogress()
-            Flux.Optimise.update!(opt, ps, gs)
-            @show d
-            @show prev_ps
-                    gs = gradient(()->loss(d...), prev_ps)
-            @show ps
-                    gs = gradient(()->loss(d...), ps)
+            
+            #@show x
+            #@show prev_ps
+            #        gs = gradient(()->loss(d...), prev_ps)
+            #@show ps
+            #        gs = gradient(()->loss(d...), ps)
 
-            i += 1
         end
     catch e
         println("Error during training!")
