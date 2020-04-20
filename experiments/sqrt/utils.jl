@@ -64,4 +64,3 @@ function train!(loss, model, data, opt, history=MVHistory())
 
     history
 end
-
