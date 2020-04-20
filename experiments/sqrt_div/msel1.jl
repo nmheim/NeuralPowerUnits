@@ -60,7 +60,7 @@ end
 #################### Single run with default params ############################
 
 config = MSEL1Config()
-res, fname = produce_or_load(outdir, config, run, force=true)
+res, fname = produce_or_load(outdir, config, run, force=false)
 
 m = res[:model]
 h = res[:history]
@@ -69,10 +69,10 @@ pyplot()
 p1 = plothistory(h)
 ps = [annotatedheatmap(l.W[end:-1:1,:], c=:bluesreds, title=summary(l), clim=(-1,1)) for l in m]
 p2 = plot(ps..., size=(600,300))
-display(p1)
-display(p2)
-# wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-history.svg"), p1)
-# wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-mapping.svg"), p2)
+# display(p1)
+# display(p2)
+wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-history.svg"), p1)
+wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-mapping.svg"), p2)
 error()
 
 ################################################################################
