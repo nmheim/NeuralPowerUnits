@@ -61,7 +61,7 @@ end
 pattern = basename(splitext(@__FILE__)[1])
 config = AddARDConfig()
 outdir  = datadir("$(pattern)_run=1")
-res, fname = produce_or_load(outdir, config, run, force=true)
+res, fname = produce_or_load(outdir, config, run, force=false)
 
 m = res[:model]
 h = res[:history]
