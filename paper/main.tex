@@ -26,6 +26,8 @@
 \usepackage{nicefrac}       % compact symbols for 1/2, etc.
 \usepackage{microtype}      % microtypography
 
+\usepackage{todonotes}
+
 \usepackage{bm}
 \usepackage{amsmath}
 \usepackage{graphicx}
@@ -60,50 +62,69 @@
   compression on the model weights via Automatic Relevance Determination.
 \end{abstract}
 
+
 \section{Introduction}%
 \label{sec:introduction}
 
-It is known that Neural Networks can approximate functions arbitrarily well but
-do not necessarily generalize beyond the range inputs that were seen during
-training. Neural Arithmetic Units can help to overcome this problem
-\cite{trask_neural_2018,madsen_neural_2020}
 
-% TODO: put this in acknowledgements %
+It is known that Neural Networks can approximate functions arbitrarily
+well\todo{cite universal approx}.  However, this strength of approximation
+often comes at the cost of generalization beyond the training data manifold.
+\todo{mention ODEs as use case}
+
+\section{Related Work}%
+\label{sec:related_work}
+
+\citet{trask_neural_2018} have demonstrated how severe this problem is even for
+the simplest arithmetic operations, such as summing or multiplying two numbers.
+In order to increase the power of abstraction of Neural Networks they propose a
+\emph{Neural Arithmetic Logic Unit} (NALU) which can help to overcome this
+problem \cite{trask_neural_2018} and is capable of learning the arithmetic
+addition, subtraction, multiplication, and division
+$\{+,-,\times,\div\}$ with stunning extrapolation accuracy.  However,
+the NALU comes with the severe limitation not being able to handle negative
+inputs due to the logarithm in the multiplication part of the NALU:
+
+\begin{align}
+  \label{eq:nalu_add}
+  \text{Addition: }       & \bm a = \bm W \bm x
+                          & \bm W& = \tanh(\hat{\bm W}) \odot \sigma(\hat{\bm M}) \\
+  \label{eq:nalu_mult}
+  \text{Multiplication: } & \bm m = \exp \bm W(\log(|\bm x|+\epsilon)) & &\\
+  \text{Output: }         & \bm y = \bm a \odot \bm g + \bm m \odot (1-\bm g) 
+                          & \bm g& = \sigma(\bm G\bm x)
+\end{align}
+
+A multiplication layer that can handle negative inputs was introduced by \citet{madsen_neural_2020}.
+The \emph{Neural Multiplication Unit} (NMU) is defined by Eq.~\ref{eq:nmu} and is typically used in
+conjunction with the so-called \emph{Neural Addition Unit} (NAU) in Eq.~\ref{eq:nau}.
+\begin{align}
+  \label{eq:nmu}
+  \text{NMU: } &y_j = \prod_i M_{ij} z_{i} + 1 - M_{ij}  &M_{ij}=\min(\max(M_{ij}, 0), 1)\\
+  \label{eq:nau}
+  \text{NAU: } &\bm y = \bm A \bm x &A_{ij}=\min(\max(A_{ij}, 0), 1)
+\end{align}
+In both NMU and NAU the weights are clipped to $[0,1]$, and typically regularized
+with $\mathcal{R}$:
+\begin{align}
+  \label{eq:rsparse}
+  \mathcal{R} = \sum_{ij} \min(W_{ij}, 1-W_{ij})
+\end{align}
+
+The combination of NAU and NMU can thus learn $\{+,-,\times\}$, but no division.
+
+\todo{put this in acknowledgements
 all the results in this paper were create with the help of the following Julia
-packages: \cite{rackauckas_differentialequationsjl_2017} + (Flux.jl)
+packages: \cite{rackauckas_differentialequationsjl_2017} + (Flux.jl)}
 
 
-\section{Introduction}%
-\label{sec:introduction}
 
-We fuse the ideas of the \emph{Neural Multiplication Unit} (NMU) by
-\citet{madsen_neural_2020} and the \emph{Neural Arithmetic Logic Unit} (NALU)
-by \citet{trask_neural_2018}.
+\section{Neural Power Unit}%
+\label{sec:neural_power_unit}
 
-The NALU in its original form is capable of addition, subtraction, and
-multiplication of \textbf{positive}, high-dimensional vectors. However, for
-small inputs convergence is complicated by the use of the logarithm in the
-NALU. The logarithm further prevents the NALU of processing negative inputs
-correctly.
-
-The NMU fixes both the previous issues, but can only multiply two inputs, and
-not represent arbitrary power functions.  Addition is taken care of by the
-\emph{Neural Addition Unit} (NAU), which is essentially a dense layer without
-bias. A chain of NAU and NMU can thus learn the task defined in
-Eq.~\ref{eq:nmu_task}.
-
-\begin{equation}
-  \label{eq:nmu_task}
-  y = (x_1 + x_2) \cdot (x_1 + x_2 + x_3 + x_4)
-\end{equation}
-
-
-\section{Complex Neural Multiplication Unit}%
-\label{sec:complex_neural_multiplication_unit}
-
-Our \emph{complex NMU} (NMUX) can learn arbitrary power functions while still
-being able to correctly deal with negative inputs.
-The NMUX layer is defined by
+Our \emph{Neural Power Unit} (NPU) can learn arbitrary power functions (which
+includes division) while still being able to correctly deal with negative
+inputs.  The NPU layer is defined by
 \begin{align}
   k_i &= \begin{cases}
      0  & x_i \leq 0 \\
@@ -116,18 +137,11 @@ where $\bm k$ is a vector that is zero where $\bm x$ is positive and $\pi$
 where it is negative, $\bm r$ is the elementwise absolute value, and $\bm M$
 the multiplication matrix that we want to learn.
 
-The NMUX is inspired by the multiplication part of the NALU, extended to
-negative inputs by leveraging taking advantage of the complex logarithm.
-The multiplication part of the NALU reads:
-\begin{equation}
-  \bm m = \exp(\bm M \log(|\bm x| + \epsilon)),
-\end{equation}
-where $\epsilon$ is a small constant that ensures positive inputs to the real
-logarithm.  If use the complex logarithm, this constant becomes superfluous,
-but we end up with a complex output in case of negative $x_i$.  In general, for
-any complex number $z$\footnote{Note that complex numbers can be represented in
-the polar, complex plane where $z=re^{i\varphi}$ with $r>0$ and $\varphi \in
-(0,2\pi)$.}
+The NPU is inspired by the multiplication part of the NALU
+Eq.~\ref{eq:nalu_mult}, extended to negative inputs by taking advantage of the
+complex logarithm. In general, for any complex number $z$\footnote{Note that
+complex numbers can be represented in the polar, complex plane where
+$z=re^{i\varphi}$ with $r>0$ and $\varphi \in (0,2\pi)$.}
 \begin{align}
   \log(z) = \log\left(r\cdot e^{i\varphi}\right)
      = \log(r) + i\varphi.
@@ -136,7 +150,7 @@ However, as $z$ is assumed to be real, we can simplify as follows:
 \begin{align}
   \log(z) = \log(r) + ik\pi,
 \end{align}
-where $k \in [0,1]$.
+where $k \in [0,1]$ is zero for positive inputs and one for negative inputs $z$.
 
 \begin{align}
   \bm m &= \exp(\bm M \log(\bm x)) \\
