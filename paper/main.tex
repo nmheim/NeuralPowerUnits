@@ -26,6 +26,8 @@
 \usepackage{nicefrac}       % compact symbols for 1/2, etc.
 \usepackage{microtype}      % microtypography
 
+\usepackage{todonotes}
+
 \usepackage{bm}
 \usepackage{amsmath}
 \usepackage{graphicx}
@@ -63,14 +65,36 @@
 \section{Introduction}%
 \label{sec:introduction}
 
-It is known that Neural Networks can approximate functions arbitrarily well but
-do not necessarily generalize beyond the range inputs that were seen during
-training. Neural Arithmetic Units can help to overcome this problem
-\cite{trask_neural_2018,madsen_neural_2020}
+It is known that Neural Networks can approximate functions arbitrarily
+well\todo{cite universal approx}.  However, this strength of approximation
+often comes at the cost of generalization beyond the training data manifold.
+\citet{trask_neural_2018} have demonstrated how severe this problem is even for
+the simplest arithmetic operations, such as summing or multiplying two numbers.
+In order to increase the power of abstraction of Neural Networks they propose a
+\emph{Neural Arithmetic Logic Unit} (NALU) which can help to overcome this problem
+\cite{trask_neural_2018} and is capable of learning the arithmetic addition
+$+$, subtraction $-$, multiplication $\times$, and division
+$\{+,-,\times,\div\}$ with stunning extrapolation accuracy.
+However, the NALU comes with the severe limitation not being able to handle negative
+inputs due to the logarithm in the multiplication part of the NALU:
+\begin{align}
+  \label{eq:nalu}
+  \text{Addition: }       & \bm a = \bm W \bm x                  
+                          & \bm W& = \tanh(\hat{\bm W}) \odot \sigma(\hat{\bm M}) \\
+  \text{Multiplication: } & \bm m = \exp \bm W(\log(|\bm x|+\epsilon)) & &\\
+  \text{Output: }         & \bm y = \bm a \odot \bm g + \bm m \odot (1-\bm g) 
+                          & \bm g& = \sigma(\bm G\bm x)
+\end{align}
 
-% TODO: put this in acknowledgements %
+A multiplication layer that can handle negative inputs was introduced by \citet{madsen_neural_2020}.
+The \emph{Neural Multiplication Unit} (NMU) is defined by
+\begin{align}
+  \text{NMU: } y_j = \prod_i W_{ij} z_{i} + 1 - W_{ij} \hskip .2\textwidth W_{ij}=\min(\max(W_{ij}, 0), 1)
+\end{align}
+
+\todo{put this in acknowledgements
 all the results in this paper were create with the help of the following Julia
-packages: \cite{rackauckas_differentialequationsjl_2017} + (Flux.jl)
+packages: \cite{rackauckas_differentialequationsjl_2017} + (Flux.jl)}
 
 
 \section{Introduction}%
