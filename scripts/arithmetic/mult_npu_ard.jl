@@ -22,13 +22,13 @@ include(srcdir("arithmetic_ard_models.jl"))
     batch::Int      = 128
     inlen::Int      = 10
     niters::Int     = 300000
-    lr::Real        = 0.001
+    lr::Real        = 0.0005
     lowlim::Real    = -2
     uplim::Real     = 2
     α0              = Float32(1e0)
     β0              = Float32(1e0)
-    fstinit::String = "randn"
-    sndinit::String = "randn"
+    fstinit::String = "glorotuniform"
+    sndinit::String = "glorotuniform"
     model::String   = "npu"
     subset::Real    = 0.5f0
     overlap::Real   = 0.25f0
@@ -36,11 +36,11 @@ end
 
 
 function run(c::AddARDConfig)
-    generate = arithmetic_dataset(+, c.inlen,
+    generate = arithmetic_dataset(*, c.inlen,
         d=Uniform(c.lowlim,c.uplim),
         subset=c.subset,
         overlap=c.overlap)
-    test_generate = arithmetic_dataset(+, c.inlen,
+    test_generate = arithmetic_dataset(*, c.inlen,
         d=Uniform(c.lowlim-4,c.uplim+4),
         subset=c.subset,
         overlap=c.overlap)
@@ -61,7 +61,7 @@ end
 pattern = basename(splitext(@__FILE__)[1])
 config = AddARDConfig()
 outdir  = datadir("$(pattern)_run=1")
-res, fname = produce_or_load(outdir, config, run, force=false)
+res, fname = produce_or_load(outdir, config, run, force=true)
 
 m = res[:model]
 h = res[:history]
@@ -74,7 +74,7 @@ pyplot()
 p1 = plot(h,logscale=false)
 #p1 = plothistory(h)
 net = get_mapping(m)
-ps = [heatmap(l.W[end:-1:1,:], c=:bluesreds, title=summary(l), clim=(-2,2)) for l in net]
+ps = [heatmap(l.W[end:-1:1,:], c=:bluesreds, title=summary(l), clim=(-1,1)) for l in net]
 p2 = plot(ps..., size=(600,300))
 # display(p1)
 # display(p2)

@@ -12,7 +12,7 @@ function initf(s::String)
     elseif s == "rand"
         return (a,b) -> rand(Float32,a,b)/10
     elseif s == "randn"
-        return (a,b) -> randn(Float32,a,b)
+        return (a,b) -> randn(Float32,a,b)/10
     elseif s == "zero"
         return (a,b) -> zeros(Float32,a,b)
     elseif s== "one"
