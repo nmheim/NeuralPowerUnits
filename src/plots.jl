@@ -15,5 +15,6 @@ function Plots.plot(h::MVHistory; logscale=true)
 
     ps = reduce(hcat, get(h, :μz)[2])'
     p2 = plot(idx, ps, legend=false, lw=2)
+
     plot(p1,p2,layout=(2,1))
 end

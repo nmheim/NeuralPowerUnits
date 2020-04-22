@@ -12,6 +12,21 @@ function ardnet(mapping, α0, β0, out)
     ARDNet(h, p, e, d)
 end
 
+function ardnet_αβ(mapping, α0, β0, out)
+    μz = Flux.destructure(mapping)[1]
+    zlen = length(μz)
+    λz = ones(Float32,zlen)/10
+    σz = ones(Float32,zlen)/10
+    σx = ones(Float32,1)
+
+    e = Gaussian(μz, σz)
+    p = Gaussian(NoGradArray(zeros(Float32,zlen)), λz)
+    h = InverseGamma(α0,β0,zlen)
+    d = CMeanGaussian{ScalarVar}(FluxDecoder(mapping), σx, out)
+    a = ARDNet(h, p, e, d)
+end
+
+
 function train!(loss, model::ARDNet, data, val_data, opt, history=MVHistory())
     ps = params(model)
     tot, llh, kld, lpλ, tot_val = 0f0, 0f0, 0f0, 0f0, 0f0
@@ -22,6 +37,7 @@ function train!(loss, model::ARDNet, data, val_data, opt, history=MVHistory())
             push!(history, :σz, i, copy(var(model.encoder)));
             push!(history, :λz, i, copy(var(model.prior)));
             push!(history, :σx, i, copy(var(model.decoder,ones(1))));
+            push!(history, :αβ, i, copy([model.hyperprior.α[1], model.hyperprior.β[1]]));
             tot_val = loss(val_data...);
             push!(history, :loss, i, [tot, llh, kld, lpλ, tot_val]);
        ),

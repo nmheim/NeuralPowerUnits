@@ -55,9 +55,9 @@ uuid = "13072b0f-2c55-5437-9ae7-d433b7a33950"
 version = "1.0.0"
 
 [[BSON]]
-git-tree-sha1 = "e794bd8f3f319218e8c8b46657631bdbea2807ca"
+git-tree-sha1 = "dd36d7cf3d185eeaaf64db902c15174b22f5dafb"
 uuid = "fbb218c0-5317-5bc6-957e-2ee96dd4b1f0"
-version = "0.2.5"
+version = "0.2.6"
 
 [[Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
@@ -171,7 +171,7 @@ version = "1.4.1"
 
 [[ConditionalDists]]
 deps = ["Distributions", "Flux", "LinearAlgebra", "PDMats", "Random", "SpecialFunctions", "Statistics", "StatsFuns"]
-git-tree-sha1 = "28b16abb7fe6ed1a811c0cb5127379a4392b7131"
+git-tree-sha1 = "e71de8fef41354d77654168b8988dcd8351a658b"
 repo-rev = "wishart"
 repo-url = "https://github.com/aicenter/ConditionalDists.jl.git"
 uuid = "c648c4dd-c1e0-49a6-84b9-144ae7fd2468"
@@ -201,9 +201,9 @@ uuid = "3a865a2d-5b23-5a0f-bc46-62713ec82fae"
 version = "1.7.3"
 
 [[DataAPI]]
-git-tree-sha1 = "674b67f344687a88310213ddfa8a2b3c76cc4252"
+git-tree-sha1 = "00612b2fbe534a539dc7f70106c71e3a943d9b98"
 uuid = "9a962f9c-6df0-11e9-0e5d-c546b8b5ee8a"
-version = "1.1.0"
+version = "1.2.0"
 
 [[DataFrames]]
 deps = ["CategoricalArrays", "Compat", "DataAPI", "Future", "InvertedIndices", "IteratorInterfaceExtensions", "Missings", "PooledArrays", "Printf", "REPL", "Reexport", "SortingAlgorithms", "Statistics", "TableTraits", "Tables", "Unicode"]
@@ -431,9 +431,9 @@ version = "0.1.3"
 
 [[IRTools]]
 deps = ["InteractiveUtils", "MacroTools", "Test"]
-git-tree-sha1 = "1a4355e4b5b50be2311ebb644f34f3306dbd0410"
+git-tree-sha1 = "8845400bd2d9815d37720251f1b53d27a335e1f4"
 uuid = "7869d1d1-7146-5819-86e3-90919afe41df"
-version = "0.3.1"
+version = "0.3.2"
 
 [[Inflate]]
 git-tree-sha1 = "f5fc07d4e706b84f72d54eedcc1c13d92fb0871c"

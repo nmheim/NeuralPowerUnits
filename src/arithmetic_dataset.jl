@@ -14,7 +14,7 @@ function arithmetic_dataset(op::Function, xlen::Int; d::Uniform=Uniform(-2,2),
     len = round(Int, xlen*subset)
     ovl = round(Int, len*overlap)
     ii = 1:len
-    jj = (len-ovl):(2len-ovl)
+    jj = (len-ovl+1):(2len-ovl)
     @info "Arithmetic dataset sum indices: a=$ii b=$jj"
 
     function generate(batch::Int)
