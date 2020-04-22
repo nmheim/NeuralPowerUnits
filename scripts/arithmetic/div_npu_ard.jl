@@ -25,8 +25,8 @@ include(srcdir("arithmetic_ard_models.jl"))
     lr::Real        = 0.0002
     lowlim::Real    = 1
     uplim::Real     = 3
-    α0              = Float32(1e1)
-    β0              = Float32(1e1)
+    α0              = Float32(1e0)
+    β0              = Float32(1e0)
     fstinit::String = "glorotuniform"
     sndinit::String = "glorotuniform"
     model::String   = "npu"
@@ -61,7 +61,7 @@ end
 pattern = basename(splitext(@__FILE__)[1])
 config = AddARDConfig()
 outdir  = datadir("$(pattern)_run=1")
-res, fname = produce_or_load(outdir, config, run, force=false)
+res, fname = produce_or_load(outdir, config, run, force=true)
 
 m = res[:model]
 h = res[:history]

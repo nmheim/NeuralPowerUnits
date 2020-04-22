@@ -13,6 +13,7 @@ using Flux
 using LinearAlgebra
 using NeuralArithmetic
 using GenerativeModels
+using UnicodePlots
 
 include(srcdir("arithmetic_dataset.jl"))
 include(srcdir("arithmetic_models.jl"))
