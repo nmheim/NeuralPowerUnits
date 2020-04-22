@@ -33,13 +33,13 @@ slen      = 2
 tlen      = 30
 dt        = 0.2f0
 noise     = 0.02f0
-initf     = (s...) -> Flux.glorot_uniform(s...)
-#initf = (s...) -> rand(T,s...)/100
+#initf     = (s...) -> Flux.glorot_uniform(s...)
+initf = (s...) -> rand(T,s...)/100
 
 generate(ω,tlen) = generate_harmonic(ω, batchsize; ω0=0.5, noise=noise,
                                      dt=dt, steps=tlen)[1]
 
-save_name = datadir("train-rodent-vanderpol.bson")
+save_name = datadir("train-rodent-harmonic.bson")
 
 # training curriculum
 curriculum = [
@@ -51,7 +51,7 @@ curriculum = [
 ]
 
 ode = Chain(
-    ReNMUX(slen, slen),
+    NPU(slen, slen),
     NAU(slen, slen),
    )
 

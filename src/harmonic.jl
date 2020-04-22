@@ -24,4 +24,22 @@ function generate_harmonic(ω, batch; ω0=0.5, noise=0.01, dt=0.1, steps=20, T=F
     return U, Ω
 end
 
+function generate_harmonic_fullstate(ω, batch;
+                                     ω0=0.5, noise=0.01, dt=0.1, steps=20, T=Float32)
+    U = Array{T,3}(undef, 2, steps, batch)
+    Ω = Array{T,1}(undef, batch)
+    t = T.(range(0, length=steps, step=dt))
+    for ii in 1:batch
+        ω = T(ω0 + rand() * abs(ω - ω0))
+        ϕ = rand(T) * 2pi
+        u = sin.(ω * t .+ ϕ)
+        v = ω .* cos.(ω*t .+ ϕ)
+
+        U[1,:,ii] .= u
+        U[2,:,ii] .= v
+        Ω[ii]    = ω
+    end
+    U .+= randn(T, size(U)) * T(noise)
+    U, Ω
+end
 
