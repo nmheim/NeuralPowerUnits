@@ -18,32 +18,29 @@ include(srcdir("arithmetic_dataset.jl"))
 include(srcdir("arithmetic_models.jl"))
 include(srcdir("arithmetic_ard_models.jl"))
 
-@with_kw struct DivARDConfig
+@with_kw struct SqrtARDConfig
     batch::Int      = 128
-    inlen::Int      = 10
+    inlen::Int      = 100
     niters::Int     = 300000
-    lr::Real        = 0.0002
-    lowlim::Real    = 1
-    uplim::Real     = 3
-    α0              = Float32(1e0)
-    β0              = Float32(1e0)
-    fstinit::String = "glorotuniform"
-    sndinit::String = "glorotuniform"
+    lr::Real        = 0.001
+    lowlim::Real    = 0
+    uplim::Real     = 2
+    α0              = Float32(1e1)
+    β0              = Float32(1e1)
+    fstinit::String = "rand"
+    sndinit::String = "rand"
     model::String   = "npu"
     subset::Real    = 0.5f0
-    overlap::Real   = 0.25f0
 end
 
 
-function run(c::DivARDConfig)
-    generate = arithmetic_dataset(/, c.inlen,
+function run(c::SqrtARDConfig)
+    generate = arithmetic_sqrt_dataset(c.inlen,
         d=Uniform(c.lowlim,c.uplim),
-        subset=c.subset,
-        overlap=c.overlap)
-    test_generate = arithmetic_dataset(/, c.inlen,
+        subset=c.subset)
+    test_generate = arithmetic_sqrt_dataset(c.inlen,
         d=Uniform(c.lowlim-4,c.uplim+4),
-        subset=c.subset,
-        overlap=c.overlap)
+        subset=c.subset)
 
     net   = get_model(c.model, c.inlen, c.fstinit, c.sndinit)
     model = ardnet_αβ(net, c.α0, c.β0, 1)
@@ -59,7 +56,7 @@ function run(c::DivARDConfig)
 end
 
 pattern = basename(splitext(@__FILE__)[1])
-config = DivARDConfig()
+config = SqrtARDConfig()
 outdir  = datadir("$(pattern)_run=1")
 res, fname = produce_or_load(outdir, config, run, force=true)
 
@@ -68,15 +65,16 @@ h = res[:history]
 
 using Plots
 using GMExtensions
+using UnicodePlots
 include(srcdir("plots.jl"))
 
 pyplot()
 p1 = plot(h,logscale=false)
 #p1 = plothistory(h)
 net = get_mapping(m)
-ps = [heatmap(l.W[end:-1:1,:], c=:bluesreds, title=summary(l), clim=(-1,1)) for l in net]
+ps = [Plots.heatmap(l.W[end:-1:1,:], c=:bluesreds, title=summary(l), clim=(-1,1)) for l in net]
 p2 = plot(ps..., size=(600,300))
 # display(p1)
 # display(p2)
 wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-mapping.png"), p2)
-wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-history.png"), p1)
+#wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-history.png"), p1)

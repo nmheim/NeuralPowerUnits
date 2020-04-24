@@ -19,7 +19,7 @@ include(srcdir("arithmetic_dataset.jl"))
 include(srcdir("arithmetic_models.jl"))
 include(srcdir("arithmetic_ard_models.jl"))
 
-@with_kw struct AddARDConfig
+@with_kw struct MultARDConfig
     batch::Int      = 128
     inlen::Int      = 10
     niters::Int     = 300000
@@ -36,7 +36,7 @@ include(srcdir("arithmetic_ard_models.jl"))
 end
 
 
-function run(c::AddARDConfig)
+function run(c::MultARDConfig)
     generate = arithmetic_dataset(*, c.inlen,
         d=Uniform(c.lowlim,c.uplim),
         subset=c.subset,
@@ -60,7 +60,7 @@ function run(c::AddARDConfig)
 end
 
 pattern = basename(splitext(@__FILE__)[1])
-config = AddARDConfig()
+config = MultARDConfig()
 outdir  = datadir("$(pattern)_run=1")
 res, fname = produce_or_load(outdir, config, run, force=false)
 
