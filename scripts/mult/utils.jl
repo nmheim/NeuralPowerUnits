@@ -39,15 +39,15 @@ end
 
 function mapping(in, out, init_nau, init_nmu)
     nau = NAU(in, in, init=init_nau)
-    nmu = ReNMUX(in, out, init=init_nmu)
+    nmu = NPU(in, out, init=init_nmu)
     Chain(nau, nmu)
 end
 
-function train!(loss, model, data, opt, history=MVHistory())
+function train!(loss, model, data, opt, p0, history=MVHistory())
     ps = params(model)
     train_loss = 0f0
 
-    logging = Flux.throttle((i)->(@info "Step $i: $train_loss"), 1)
+    logging = Flux.throttle((i)->(@info "Step $i: $train_loss $p0"), 1)
     pushhist = Flux.throttle((i)->(
             push!(history, :μz, i, copy(Flux.destructure(model)[1]));
             push!(history, :loss, i, [train_loss]);
@@ -57,11 +57,14 @@ function train!(loss, model, data, opt, history=MVHistory())
     i = haskey(history,:loss) ? get(history,:loss)[1][end]+1 : 1
     try 
         for d in data
+            if i == 1000
+                ps = params(model,p0)
+            end
             gs = gradient(ps) do
                 train_loss = loss(d...)
                 return train_loss
             end
-            # logging(i)
+            logging(i)
             pushhist(i)
             Flux.Optimise.update!(opt, ps, gs)
             i += 1
