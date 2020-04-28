@@ -25,9 +25,9 @@ function initf(s::String)
     elseif s == "glorotuniform"
         return (a,b) -> Flux.glorot_uniform(a,b)
     elseif s == "rand"
-        return (a,b) -> rand(Float32,a,b)
+        return (a,b) -> rand(Float32,a,b)/10
     elseif s == "randn"
-        return (a,b) -> randn(Float32,a,b)
+        return (a,b) -> randn(Float32,a,b)/10
     elseif s == "zero"
         return (a,b) -> zeros(Float32,a,b)
     elseif s== "one"
@@ -43,11 +43,20 @@ function mapping(in, out, init_nau, init_nmu)
     Chain(nau, nmu)
 end
 
-function train!(loss, model, data, opt, p0, history=MVHistory())
+function train!(loss, model, data, opt, history=MVHistory())
     ps = params(model)
     train_loss = 0f0
+    mse_loss = 0f0
 
-    logging = Flux.throttle((i)->(@info "Step $i: $train_loss $p0"), 1)
+    logging = Flux.throttle((i)->(
+        @info "Step $i: $train_loss $mse_loss $([model.v[1],model.σ[1]])";
+        W = model.m[1].W;
+        p1 = UnicodePlots.heatmap(model.m[1].W[end:-1:1,:]);
+        p2 = UnicodePlots.heatmap(model.m[2].W[end:-1:1,:],
+                                  width=size(W,1), height=size(W,2));
+        display(p1);
+        display(p2)), 1)
+
     pushhist = Flux.throttle((i)->(
             push!(history, :μz, i, copy(Flux.destructure(model)[1]));
             push!(history, :loss, i, [train_loss]);
@@ -57,15 +66,18 @@ function train!(loss, model, data, opt, p0, history=MVHistory())
     i = haskey(history,:loss) ? get(history,:loss)[1][end]+1 : 1
     try 
         for d in data
-            if i == 1000
-                ps = params(model,p0)
-            end
+            # if i == 1000
+            #     ps = params(model,p0)
+            # end
             gs = gradient(ps) do
+                mse_loss = Flux.mse(model(d[1]),d[2])
                 train_loss = loss(d...)
                 return train_loss
             end
             logging(i)
             pushhist(i)
+            # @info p0 gs[p0]
+            # if any(isnan.(p0)) error("asdf") end
             Flux.Optimise.update!(opt, ps, gs)
             i += 1
         end
