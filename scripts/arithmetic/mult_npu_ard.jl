@@ -20,14 +20,14 @@ include(srcdir("arithmetic_models.jl"))
 include(srcdir("arithmetic_ard_models.jl"))
 
 @with_kw struct MultARDConfig
-    batch::Int      = 128
+    batch::Int      = 1000
     inlen::Int      = 10
     niters::Int     = 300000
-    lr::Real        = 0.0005
+    lr::Real        = 1e-2
     lowlim::Real    = -2
     uplim::Real     = 2
-    α0              = Float32(1e0)
-    β0              = Float32(1e0)
+    α0              = Float32(1e2)
+    β0              = Float32(1e2)
     fstinit::String = "glorotuniform"
     sndinit::String = "glorotuniform"
     model::String   = "npu"
@@ -62,7 +62,7 @@ end
 pattern = basename(splitext(@__FILE__)[1])
 config = MultARDConfig()
 outdir  = datadir("$(pattern)_run=1")
-res, fname = produce_or_load(outdir, config, run, force=false)
+res, fname = produce_or_load(outdir, config, run, force=true)
 
 m = res[:model]
 h = res[:history]
@@ -75,9 +75,9 @@ pyplot()
 p1 = plot(h,logscale=false)
 #p1 = plothistory(h)
 net = get_mapping(m)
-ps = [heatmap(l.W[end:-1:1,:], c=:bluesreds, title=summary(l), clim=(-1,1)) for l in net]
+ps = [Plots.heatmap(l.W[end:-1:1,:], c=:bluesreds, title=summary(l), clim=(-1,1)) for l in net]
 p2 = plot(ps..., size=(600,300))
 # display(p1)
 # display(p2)
 wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-mapping.png"), p2)
-wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-history.png"), p1)
+# wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-history.png"), p1)

@@ -31,7 +31,11 @@ function train!(loss, model::ARDNet, data, val_data, opt, history=MVHistory())
     ps = params(model)
     tot, llh, kld, lpλ, tot_val = 0f0, 0f0, 0f0, 0f0, 0f0
 
-    logging = Flux.throttle((i)->(@info "Step $i" [tot llh kld lpλ] tot_val), 1)
+    logging = Flux.throttle((i)->(
+        @info "Step $i" [tot llh kld lpλ] tot_val;
+        p1 = UnicodePlots.heatmap(get_mapping(model)[1].W[end:-1:1,:]);
+        display(p1)
+    ), 1)
     pushhist = Flux.throttle((i)->(
             push!(history, :μz, i, copy(mean(model.encoder)));
             push!(history, :σz, i, copy(var(model.encoder)));

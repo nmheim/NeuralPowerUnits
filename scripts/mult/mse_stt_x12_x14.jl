@@ -21,11 +21,11 @@ pattern = "mult_mse_stt_x12_x14"
     inlen::Int      = 20
     outlen::Int     = 1
     niters::Int     = 500000
-    lr::Real        = 1e-2
-    lowlim::Real    = 0.1
+    lr::Real        = 1e-3
+    lowlim::Real    = -2
     uplim::Real     = 2
     v               = Float32(0.5)
-    σ               = Float32(1e1)
+    σ               = Float32(1e2)
     initnau::String = "glorotuniform"
     initnmu::String = "glorotuniform"
 end
@@ -87,6 +87,11 @@ function run(config)
         s = logSt(params(model), v, σ)
         m+s
     end
+    # function loss(x,y)
+    #     m = Flux.mse(model(x),y)
+    #     s = logSt(params(model), v, σ)
+    #     m+s
+    # end
     #loss    = (x,y) -> Flux.mse(model(x),y) #+ norm(params(model), 1)
 
     generate = arithmetic_dataset(*, inlen,
