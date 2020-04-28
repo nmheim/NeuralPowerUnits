@@ -18,16 +18,16 @@ pattern = "mult_mse_stt_x12_x14"
 
 @with_kw struct Config
     batch::Int      = 128
-    inlen::Int      = 20
+    inlen::Int      = 100
     outlen::Int     = 1
     niters::Int     = 500000
-    lr::Real        = 1e-3
+    lr::Real        = 5e-4
     lowlim::Real    = -2
     uplim::Real     = 2
     v               = Float32(0.5)
-    σ               = Float32(1e2)
-    initnau::String = "glorotuniform"
-    initnmu::String = "glorotuniform"
+    σ               = Float32(1e0)
+    initnau::String = "rand"
+    initnmu::String = "rand"
 end
 
 normalize_logSt(v::Real) = loggamma((v+1)/2) -loggamma(v/2) -log(π*v)/2
@@ -92,7 +92,7 @@ function run(config)
     #     s = logSt(params(model), v, σ)
     #     m+s
     # end
-    #loss    = (x,y) -> Flux.mse(model(x),y) #+ norm(params(model), 1)
+    # loss    = (x,y) -> Flux.mse(model(x),y) #+ norm(params(model), 1)
 
     generate = arithmetic_dataset(*, inlen,
         d=Uniform(lowlim,uplim),
@@ -105,7 +105,7 @@ function run(config)
         overlap=overlap)
 
     data    = (generate(batch) for _ in 1:niters)
-    opt     = RMSProp(lr)
+    opt     = ADAM(lr)
     history = train!(loss, model, data, opt)
     return @dict(model, history)
 end
@@ -126,7 +126,7 @@ p2 = plot(
     Plots.heatmap(m.m[1].W[end:-1:1,:], c=:bluesreds, title="NAU", clim=(-1,1)),
     Plots.heatmap(m.m[2].W[end:-1:1,:], c=:bluesreds, title="NPU", clim=(-1,1)),
     size=(600,300))
-wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-history.svg"), p1)
+#wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-history.svg"), p1)
 wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-mapping.svg"), p2)
 error()
 

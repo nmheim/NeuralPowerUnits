@@ -52,10 +52,12 @@ function train!(loss, model, data, opt, history=MVHistory())
         @info "Step $i: $train_loss $mse_loss $([model.v[1],model.σ[1]])";
         W = model.m[1].W;
         p1 = UnicodePlots.heatmap(model.m[1].W[end:-1:1,:]);
-        p2 = UnicodePlots.heatmap(model.m[2].W[end:-1:1,:],
-                                  width=size(W,1), height=size(W,2));
+        #                          width=size(W,1), height=size(W,2));
+        # p2 = UnicodePlots.heatmap(model.m[2].W[end:-1:1,:],
+        #                           width=size(W,1), height=size(W,2));
         display(p1);
-        display(p2)), 1)
+        #display(p2);
+       ), 1)
 
     pushhist = Flux.throttle((i)->(
             push!(history, :μz, i, copy(Flux.destructure(model)[1]));
