@@ -38,28 +38,37 @@ function get_model(model::String, inlen::Int, fstinit::String, sndinit::String)
                           initNAC=initf(sndinit),
                           initG=initf(sndinit),
                           initb=initf(sndinit)))
+    elseif model == "npux"
+        return Chain(Flux.fmap(ComplexMatrix, NAU(inlen,inlen,init=initf(fstinit))),
+                     NPU(inlen, 1, init=initf(sndinit)))
     else
         error("Unknown model string: $model")
     end
 end
 
-function train!(loss, model, data, val_data, opt, history=MVHistory())
+function train!(loss, model, data, val_data, opt, sch::Schedule, history=MVHistory())
     ps = params(model)
     train_loss, val_loss, mse_loss, L1_loss = 0f0, 0f0, 0f0, 0f0
 
-    logging = Flux.throttle((i)->(@info "Step $i" train_loss val_loss), 5)
+    logging = Flux.throttle((i)->(
+            @info("Step $i | β=$(sch.eta)", train_loss, val_loss);
+            p1 = UnicodePlots.heatmap(get_mapping(model)[1].W[end:-1:1,:]);
+            display(p1);
+        ),
+    1)
     pushhist = Flux.throttle((i)->(
             push!(history, :μz, i, copy(Flux.destructure(model)[1]));
-            val_loss = loss(val_data...)[1];
+            val_loss = loss(val_data...,sch.eta)[1];
             push!(history, :loss, i, [train_loss,mse_loss,L1_loss,val_loss]);
        ),
-    5)
+    1)
 
     i = haskey(history,:loss) ? get(history,:loss)[1][end]+1 : 1
     try 
         @progress for d in data
+            factor = step!(sch)
             gs = gradient(ps) do
-                train_loss, mse_loss, L1_loss = loss(d...)
+                train_loss, mse_loss, L1_loss = loss(d..., factor)
                 return train_loss
             end
             logging(i)
@@ -77,3 +86,5 @@ function train!(loss, model, data, val_data, opt, history=MVHistory())
 
     history
 end
+
+get_mapping(m) = m
