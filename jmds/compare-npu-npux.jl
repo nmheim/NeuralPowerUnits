@@ -1,24 +1,16 @@
+
 using DrWatson
 @quickactivate "NIP_2020_NMUX"
 
 using Parameters
 using ValueHistories
+using LinearAlgebra
 using Flux
 using NeuralArithmetic
-using UnicodePlots
-
+using Plots
+pyplot()
 include(srcdir("arithmetic_dataset.jl"))
 
-@with_kw struct Config
-    batch::Int      = 1000
-    inlen::Int      = 10
-    niters::Int     = 10000
-    lr::Real        = 1e-3
-    lowlim::Real    = -2
-    uplim::Real     = 2
-    subset::Real    = 0.5f0
-    overlap::Real   = 0.25f0
-end
 
 const ComplexMatrix = AbstractArray{Complex{Float32},2}
 
@@ -31,7 +23,32 @@ NPUX(in::Int, out::Int, init=Flux.glorot_uniform) = NPUX(init(out,in) .+ 0im)
 (m::NPUX)(x::AbstractArray{<:Complex}) = exp.(m.W * log.(x))
 (m::NPUX)(x::AbstractArray) = m(x .+ 0im)
 
-function run(c::Config)
+
+function loss(x,y)
+    ŷ = model(x)
+    sum(abs.(ŷ .- y))
+end
+
+
+@with_kw struct Config
+    batch::Int      = 1000
+    inlen::Int      = 10
+    niters::Int     = 3000
+    lr::Real        = 5e-3
+    lowlim::Real    = -2
+    uplim::Real     = 2
+    subset::Real    = 0.5f0
+    overlap::Real   = 0.25f0
+end;
+
+
+function im_norm(t::Flux.Params)
+    ls = map(p -> norm(imag.(p), 1), t)
+    sum(ls)
+end
+
+
+function run(c::Config, model)
     generate = arithmetic_dataset(*, c.inlen,
         d=Uniform(c.lowlim,c.uplim),
         subset=c.subset,
@@ -41,59 +58,64 @@ function run(c::Config)
         subset=c.subset,
         overlap=c.overlap)
 
-    model = Chain(NAU(Flux.glorot_uniform(c.inlen,c.inlen) .+ 0im), NPUX(c.inlen,1))
-    model = Chain(NAU(c.inlen,c.inlen), NPU(c.inlen,1))
-
     function loss(x,y)
         ŷ = model(x)
-        sum(abs.(ŷ .- y))
+        #TODO: try with abs . real:
+        sum(abs2, real.(ŷ .- y)) + im_norm(params(model))/10
+        #sum(abs2, ŷ .- y) + im_norm(params(model))
     end
 
     data     = (generate(c.batch) for _ in 1:c.niters)
     opt      = RMSProp(c.lr)
     ps       = params(model)
 
-    # display(model)
-    # display(loss(x,y))
-    # gs = Flux.gradient(()->loss(x,y), ps)
-    # display(gs[model[1].W])
-    # error()
-    
     (x,y) = generate(100)
     (tx,ty) = test_generate(1000)
     callbacks = [
-        Flux.throttle(() -> (@info loss(x,y) loss(tx,ty)/1000),1)
+        Flux.throttle(() -> (
+        train_loss = loss(x,y)/100;
+        valid_loss = loss(tx,ty)/1000;
+        @info("Rerun `weave` to get rid of logs", train_loss, valid_loss)), 1)
     ]
 
     history  = Flux.train!(loss, ps, data, opt, cb=callbacks)
 
     return @dict(model, history)
-end
+end;
+
 
 config = Config()
-res = run(config)
+nau = Flux.fmap(ComplexMatrix, NAU(config.inlen,config.inlen))
+model = Chain(nau, NPUX(config.inlen,1))
+(res,_) = produce_or_load(
+    prefix="npux",
+    datadir("jmds"),
+    config,
+    c -> run(c, model),
+    force=true
+)
 
 m = res[:model]
 h = res[:history]
 
 h,w = config.inlen, config.inlen
-display(heatmap(real.(m[1].W[end:-1:1,:]), title=summary(m[1]), height=h, width=w))
-display(heatmap(real.(m[2].W[end:-1:1,:]), title=summary(m[2]), height=h, width=w))
+display(heatmap(real.(m[1].W[end:-1:1,:]), title=summary(m[1]), c=:bluesreds, clim=(-1,1)))
+display(heatmap(real.(m[2].W[end:-1:1,:]), title=summary(m[2]), c=:bluesreds, clim=(-1,1)))
 
-display(heatmap(abs.(m[1].W[end:-1:1,:]), title=summary(m[1]), height=h, width=w))
-display(heatmap(abs.(m[2].W[end:-1:1,:]), title=summary(m[2]), height=h, width=w))
 
-# using Plots
-# using GMExtensions
-# include(srcdir("plots.jl"))
-# 
-# pyplot()
-# p1 = plot(h,logscale=false)
-# #p1 = plothistory(h)
-# net = get_mapping(m)
-# ps = [Plots.heatmap(l.W[end:-1:1,:], c=:bluesreds, title=summary(l), clim=(-1,1)) for l in net]
-# p2 = plot(ps..., size=(600,300))
-# # display(p1)
-# # display(p2)
-# wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-mapping.png"), p2)
-# # wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-history.png"), p1)
+config = Config()
+model = Chain(NAU(config.inlen,config.inlen), NPU(config.inlen,1))
+(res,_) = produce_or_load(
+    prefix="npu",
+    datadir("jmds"),
+    config,
+    c -> run(c, model)
+)
+
+m = res[:model]
+h = res[:history]
+
+h,w = config.inlen, config.inlen
+display(heatmap(real.(m[1].W[end:-1:1,:]), title=summary(m[1]), c=:bluesreds, clim=(-1,1)))
+display(heatmap(real.(m[2].W[end:-1:1,:]), title=summary(m[2]), c=:bluesreds, clim=(-1,1)))
+

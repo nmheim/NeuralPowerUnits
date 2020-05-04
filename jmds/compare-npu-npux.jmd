@@ -13,6 +13,7 @@ using DrWatson
 
 using Parameters
 using ValueHistories
+using LinearAlgebra
 using Flux
 using NeuralArithmetic
 using Plots
@@ -57,8 +58,8 @@ The experiments are run with the following configuration:
 @with_kw struct Config
     batch::Int      = 1000
     inlen::Int      = 10
-    niters::Int     = 1000
-    lr::Real        = 1e-3
+    niters::Int     = 3000
+    lr::Real        = 5e-3
     lowlim::Real    = -2
     uplim::Real     = 2
     subset::Real    = 0.5f0
@@ -67,6 +68,12 @@ end;
 ```
 
 ```julia echo=false
+function im_norm(t::Flux.Params)
+    ls = map(p -> norm(imag.(p), 1), t)
+    sum(ls)
+end
+
+
 function run(c::Config, model)
     generate = arithmetic_dataset(*, c.inlen,
         d=Uniform(c.lowlim,c.uplim),
@@ -79,9 +86,9 @@ function run(c::Config, model)
 
     function loss(x,y)
         ŷ = model(x)
-        # TODO: try with abs . real:
-        #       sum(abs.(real.(ŷ .- y)))
-        sum(abs.(ŷ .- y))
+        #TODO: try with abs . real:
+        sum(abs2, real.(ŷ .- y)) + im_norm(params(model))/10
+        #sum(abs2, ŷ .- y) + im_norm(params(model))
     end
 
     data     = (generate(c.batch) for _ in 1:c.niters)
@@ -114,7 +121,8 @@ model = Chain(nau, NPUX(config.inlen,1))
     prefix="npux",
     datadir("jmds"),
     config,
-    c -> run(c, model)
+    c -> run(c, model),
+    force=true
 )
 
 m = res[:model]
