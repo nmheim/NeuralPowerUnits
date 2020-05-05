@@ -21,7 +21,7 @@ pattern = "div_mse_stt_x12_x14"
     inlen::Int      = 100
     outlen::Int     = 1
     niters::Int     = 500000
-    lr::Real        = 5e-4
+    lr::Real        = 1e-4
     lowlim::Real    = 1
     uplim::Real     = 3
     v               = Float32(0.5)
@@ -66,6 +66,8 @@ struct Model
     v::Array{Float32,1}
     σ::Array{Float32,1}
 end
+
+get_mapping(m::Model) = m.m
 
 (m::Model)(x) = m.m(x)
 
@@ -115,7 +117,7 @@ end
 using Plots
 include(srcdir("utils.jl"))
 config = Config()
-res, fname = produce_or_load(datadir("$(pattern)_run1"), config, run, force=true)
+res, fname = produce_or_load(datadir("$(pattern)_run1"), config, run, force=false)
 
 m = res[:model]
 h = res[:history]
@@ -126,8 +128,8 @@ p2 = plot(
     Plots.heatmap(m.m[1].W[end:-1:1,:], c=:bluesreds, title="NAU", clim=(-1,1)),
     Plots.heatmap(m.m[2].W[end:-1:1,:], c=:bluesreds, title="NPU", clim=(-1,1)),
     size=(600,300))
-#wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-history.svg"), p1)
-wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-mapping.svg"), p2)
+# wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-history.png"), p1)
+wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-mapping.png"), p2)
 error()
 
 ################################################################################

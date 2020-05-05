@@ -48,28 +48,35 @@ end
 
 function train!(loss, model, data, val_data, opt, sch::Schedule, history=MVHistory())
     ps = params(model)
-    train_loss, val_loss, mse_loss, L1_loss = 0f0, 0f0, 0f0, 0f0
+    trn_loss, val_loss, mse_loss, reg_loss = 0f0, 0f0, 0f0, 0f0
 
     logging = Flux.throttle((i)->(
-            @info("Step $i | β=$(sch.eta)", train_loss, val_loss);
-            p1 = UnicodePlots.heatmap(get_mapping(model)[1].W[end:-1:1,:]);
+            @info("Step $i | β=$(sch.eta)", trn_loss, mse_loss, reg_loss, val_loss);
+            m = get_mapping(model);
+            (h,w) = size(m[1].W);
+            p1 = UnicodePlots.heatmap(m[1].W[end:-1:1,:], height=h, width=w);
             display(p1);
         ),
-    1)
+    5)
     pushhist = Flux.throttle((i)->(
             push!(history, :μz, i, copy(Flux.destructure(model)[1]));
-            val_loss = loss(val_data...,sch.eta)[1];
-            push!(history, :loss, i, [train_loss,mse_loss,L1_loss,val_loss]);
+            val_loss = Flux.mse(model(val_data[1]), val_data[2]);
+            push!(history, :loss, i, [trn_loss,mse_loss,reg_loss,val_loss]);
        ),
-    1)
+    5)
 
     i = haskey(history,:loss) ? get(history,:loss)[1][end]+1 : 1
     try 
         @progress for d in data
+            # if i == 20000
+            #     lr = 1e-2
+            #     @info "lr=$lr"
+            #     opt == ADAM(lr)
+            # end
             factor = step!(sch)
             gs = gradient(ps) do
-                train_loss, mse_loss, L1_loss = loss(d..., factor)
-                return train_loss
+                trn_loss, mse_loss, reg_loss = loss(d..., factor)
+                return trn_loss
             end
             logging(i)
             pushhist(i)

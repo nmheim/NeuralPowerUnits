@@ -1,6 +1,6 @@
 using Distributions: Uniform
 
-function arithmetic_sqrt_dataset(xlen::Int; d::Uniform=Uniform(0,2), subset::Real=0.25)
+function arithmetic_sqrt_dataset(xlen::Int, d::Uniform=Uniform(0,2), subset::Real=0.25)
     len = round(Int, xlen*subset)
     ii = 1:len
 
