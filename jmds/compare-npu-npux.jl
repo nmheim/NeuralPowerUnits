@@ -61,7 +61,7 @@ function run(c::Config, model)
     function loss(x,y)
         ŷ = model(x)
         #TODO: try with abs . real:
-        sum(abs2, real.(ŷ .- y)) + im_norm(params(model))/10
+        sum(abs2, real.(ŷ .- y)) + im_norm(params(model))/100
         #sum(abs2, ŷ .- y) + im_norm(params(model))
     end
 
@@ -92,15 +92,19 @@ model = Chain(nau, NPUX(config.inlen,1))
     datadir("jmds"),
     config,
     c -> run(c, model),
-    force=true
+    force=false
 )
 
 m = res[:model]
 h = res[:history]
 
 h,w = config.inlen, config.inlen
-display(heatmap(real.(m[1].W[end:-1:1,:]), title=summary(m[1]), c=:bluesreds, clim=(-1,1)))
-display(heatmap(real.(m[2].W[end:-1:1,:]), title=summary(m[2]), c=:bluesreds, clim=(-1,1)))
+p1 = heatmap(real.(m[1].W[end:-1:1,:]), title=summary(m[1]), c=:bluesreds, clim=(-1,1))
+p2 = heatmap(real.(m[2].W[end:-1:1,:]), title=summary(m[2]), c=:bluesreds, clim=(-1,1))
+display(plot(p1,p2,title="real values", size=(600,300)))
+p1 = heatmap(imag.(m[1].W[end:-1:1,:]), title=summary(m[1]), c=:bluesreds, clim=(-1,1))
+p2 = heatmap(imag.(m[2].W[end:-1:1,:]), title=summary(m[2]), c=:bluesreds, clim=(-1,1))
+display(plot(p1,p2,title="imag values", size=(600,300)))
 
 
 config = Config()

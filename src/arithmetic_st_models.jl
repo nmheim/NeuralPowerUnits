@@ -1,3 +1,5 @@
+using SpecialFunctions
+
 normalize_logSt(v::Real) = loggamma((v+1)/2) -loggamma(v/2) -log(π*v)/2
 normalize_logSt(v::Real, σ::Real) = normalize_logSt(v) - log(σ)
 
@@ -8,9 +10,7 @@ end
 _logSt(t::Real, v::Real, σ::Real) = -(v+1)/2 * log(1 + t^2 /(v*σ^2))
 _logSt(t::AbstractArray, v::Real, σ::Real) = -(v+1)/2 .* log.(1 .+ t.^2 ./(v*σ^2))
 
-function logSt(t::Real, v::Real, σ::Real)
-    normalize_logSt(v,σ) -(v+1)/2*log(1+t^2/(v*σ^2))
-end
+logSt(t, v::Real, σ::Real) = normalize_logSt(v,σ) .+ _logSt(t,v,σ)
 
 using Zygote: @adjoint, pull_block_vert
 @adjoint function reduce(::typeof(vcat), As::AbstractVector{<:AbstractVecOrMat})
