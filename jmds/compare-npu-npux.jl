@@ -8,7 +8,7 @@ using LinearAlgebra
 using Flux
 using NeuralArithmetic
 using Plots
-pyplot()
+plotly()
 include(srcdir("arithmetic_dataset.jl"))
 
 
@@ -33,7 +33,7 @@ end
 @with_kw struct Config
     batch::Int      = 1000
     inlen::Int      = 10
-    niters::Int     = 3000
+    niters::Int     = 10000
     lr::Real        = 5e-3
     lowlim::Real    = -2
     uplim::Real     = 2
@@ -61,7 +61,8 @@ function run(c::Config, model)
     function loss(x,y)
         ŷ = model(x)
         #TODO: try with abs . real:
-        sum(abs2, real.(ŷ .- y)) + im_norm(params(model))/100
+        d = ŷ .- y
+        sum(abs2, real.(d)) + norm(imag.(d), 1)# + im_norm(params(model))
         #sum(abs2, ŷ .- y) + im_norm(params(model))
     end
 
@@ -92,7 +93,7 @@ model = Chain(nau, NPUX(config.inlen,1))
     datadir("jmds"),
     config,
     c -> run(c, model),
-    force=false
+    force=true
 )
 
 m = res[:model]
