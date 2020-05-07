@@ -15,7 +15,6 @@ using Plots
 plotly()
 ```
 
-The surfaces of the NALU and NPU themselves look like this:
 ```julia
 nacmult(x,w;ϵ=1f-7) = exp(w * log(abs(x + ϵ)))
 
@@ -23,28 +22,39 @@ function npu(x,w) where T
     r = abs.(x)
     k = x < 0 ? pi : 0.0
     z = exp(w * log(r)) * cos(w*k)
-end
-
-
-x = -1.:0.01:1
-w = -1.:0.01:1
-p1 = surface(x, w, (x,w)->min(nacmult(x,w), 3), xlabel="x", ylabel="w")
-display(p1)
-p2 = surface(x, w, (x,w)->max(min(npu(x,w), 10), -10), xlabel="x", ylabel="w")
+end;
 ```
 
-We can look at their ability to represent identity
+Error surface of NPU to the identity when w ≈ 1
 ```julia
-x = -1:0.01:1
-p2 = plot(x, x -> nacmult(x,1) - x, label="nac")
-plot!(p2, x, x -> npu(x,1) - x, label="npu")
-```
+id_mse(x,w) = sqrt((x - npu(x,w))^2)
+f(x,w) = min(id_mse(x,w), 2)
 
-And plot the error surface of NPU to the identity
-```julia
 x = -1:0.01:1
 w = 0.9:0.001:1.1
-id_mse(x,w) = sqrt((x - npu(x,w))^2)
-f(x,w) = min(id_mse(x,w), 10)
-p3 = surface(x, w, (x,w)->f(x,w), xlabel="x", ylabel="w")
+
+surface(x, w, (x,w)->f(x,w), xlabel="x", ylabel="w")
 ```
+
+Error surface of NPU to the identity when w ≈ 0
+```julia
+x = -0.1:0.001:0.1
+w = -0.1:0.001:0.1
+surface(x, w, (x,w)->f(x,w), xlabel="x", ylabel="w")
+```
+
+```julia
+# x = -1.:0.01:1
+# w = -1.:0.01:1
+# p1 = surface(x, w, (x,w)->min(nacmult(x,w), 3), xlabel="x", ylabel="w")
+# display(p1)
+# p2 = surface(x, w, (x,w)->max(min(npu(x,w), 10), -10), xlabel="x", ylabel="w")
+```
+
+```julia
+# x = -1:0.01:1
+# p2 = plot(x, x -> nacmult(x,1) - x, label="nac")
+# plot!(p2, x, x -> npu(x,1) - x, label="npu")
+```
+
+
