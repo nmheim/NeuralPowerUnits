@@ -1,0 +1,49 @@
+---
+title: NPU Errors
+author: Niklas Heim
+date: 7th May 2020
+
+options:
+        doctype: md2html
+---
+
+```julia echo=false
+using DrWatson
+@quickactivate "NIPS_2020_NMUX"
+
+using Plots
+plotly()
+```
+
+The surfaces of the NALU and NPU themselves look like this:
+```julia
+nacmult(x,w;ϵ=1f-7) = exp(w * log(abs(x + ϵ)))
+
+function npu(x,w) where T
+    r = abs.(x)
+    k = x < 0 ? pi : 0.0
+    z = exp(w * log(r)) * cos(w*k)
+end
+
+
+x = -1.:0.01:1
+w = -1.:0.01:1
+p1 = surface(x, w, (x,w)->min(nacmult(x,w), 3), xlabel="x", ylabel="w")
+display(p1)
+p2 = surface(x, w, (x,w)->max(min(npu(x,w), 10), -10), xlabel="x", ylabel="w")
+```
+
+We can look at their ability to represent identity
+```julia
+x = -1:0.01:1
+p2 = plot(x, x -> nacmult(x,1) - x, label="nac")
+plot!(p2, x, x -> npu(x,1) - x, label="npu")
+```
+
+And plot the error surface of NPU to the identity
+```julia
+x = -1:0.01:1
+w = 0.9:0.001:1.1
+f(x,w) = min(npu(x,w)-x, 10)
+p3 = surface(x, w, (x,w)->f(x,w), xlabel="x", ylabel="w")
+```
