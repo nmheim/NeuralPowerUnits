@@ -44,6 +44,7 @@ And plot the error surface of NPU to the identity
 ```julia
 x = -1:0.01:1
 w = 0.9:0.001:1.1
-f(x,w) = min(npu(x,w)-x, 10)
+id_mse(x,w) = sqrt((x - npu(x,w))^2)
+f(x,w) = min(id_mse(x,w), 10)
 p3 = surface(x, w, (x,w)->f(x,w), xlabel="x", ylabel="w")
 ```
