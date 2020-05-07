@@ -18,19 +18,23 @@ plotly()
 ```julia
 nacmult(x,w;ϵ=1f-7) = exp(w * log(abs(x + ϵ)))
 
-function npu(x,w) where T
+function npu(x::T, w::T; e::T=T(1e-7)) where T
     r = abs.(x)
-    k = x < 0 ? pi : 0.0
-    z = exp(w * log(r)) * cos(w*k)
+    k = T(x < 0 ? pi : 0.0)
+    if r < e && w < e
+        r
+    else
+        return exp(w * log(r)) * cos(w*k)
+    end
 end;
 ```
 
 Error surface of NPU to the identity when w ≈ 1
 ```julia
-id_mse(x,w) = sqrt((x - npu(x,w))^2)
+id_mse(x,w) = abs(x^w - npu(x,w))
 f(x,w) = min(id_mse(x,w), 2)
 
-x = -1:0.01:1
+x = 0:0.01:1
 w = 0.9:0.001:1.1
 
 surface(x, w, (x,w)->f(x,w), xlabel="x", ylabel="w")
@@ -38,9 +42,32 @@ surface(x, w, (x,w)->f(x,w), xlabel="x", ylabel="w")
 
 Error surface of NPU to the identity when w ≈ 0
 ```julia
-x = -0.1:0.001:0.1
-w = -0.1:0.001:0.1
+id_mse(x,w) = abs(x^w - npu(x,w))
+f(x,w) = min(id_mse(x,w), 2)
+
+x = 0:0.001:0.1
+w = 0:0.001:0.1
 surface(x, w, (x,w)->f(x,w), xlabel="x", ylabel="w")
+```
+
+```julia
+function npu(x::T, w::T, g::T) where T
+    r = abs.(x)
+    k = T(x < 0 ? pi : 0.0)
+    z = exp(w * log(r)) * cos(w*k)
+    return g*z + (1-g)*x
+end
+
+#f(x,w,g) = abs(x^w-npu(x,w,g))
+f(x,w,g) = abs(x-npu(x,w,g))
+
+x = 0:0.001:0.1
+w = 0:0.001:0.1
+p1 = heatmap(x, w, (x,w)->f(x,w,1.0), title="g=1",   clim=(0,2))
+p2 = heatmap(x, w, (x,w)->f(x,w,0.5), title="g=0.5", clim=(0,2))
+p3 = heatmap(x, w, (x,w)->f(x,w,0.1), title="g=0.1", clim=(0,2))
+p4 = heatmap(x, w, (x,w)->f(x,w,0.0), title="g=0.0", clim=(0,2))
+plot(p1,p2,p3,p4)
 ```
 
 ```julia
