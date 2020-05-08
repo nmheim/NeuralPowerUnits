@@ -23,10 +23,10 @@ include(srcdir("arithmetic_st_models.jl"))
 @with_kw struct DivStConfig
     batch::Int      = 128
     niters::Int     = 200000
-    lr::Real        = 1e-3
+    lr::Real        = 5e-3
 
-    v::Real         = 0.5f0
-    σstart::Real    = 1f1
+    v::Real         = 1f0
+    σstart::Real    = 1f0
     σend::Real      = 1f-1
     σdecay::Real    = 1f-1
     σstep::Int      = 10000
@@ -39,7 +39,7 @@ include(srcdir("arithmetic_st_models.jl"))
     inlen::Int      = 10
     fstinit::String = "rand"
     sndinit::String = "rand"
-    model::String   = "npu"
+    model::String   = "gatednpu"
 end
 
 
@@ -60,12 +60,11 @@ function run(c::DivStConfig)
     function loss(x,y,σ)
         m = Flux.mse(model(x),y)
         s = -logSt(params(model), c.v, σ)
-        #s = 0
         m+s, m, s
     end
     
     data     = (generate(c.batch) for _ in 1:c.niters)
-    val_data = generate(1000)
+    val_data = test_generate(1000)
 
     opt      = RMSProp(c.lr)
     history  = train!(loss, model, data, val_data, opt, σdecay)
@@ -85,8 +84,8 @@ using Plots
 include(srcdir("plots.jl"))
 
 pyplot()
-if config.inlen < 20
-    p1 = plot(h,logscale=false)
+if config.inlen < 30
+    p1 = plot(h,logscale=true)
     wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-history.svg"), p1)
 end
 
