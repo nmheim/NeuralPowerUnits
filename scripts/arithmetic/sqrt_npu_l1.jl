@@ -21,12 +21,12 @@ include(srcdir("arithmetic_models.jl"))
 @with_kw struct SqrtL1Config
     batch::Int      = 128
     niters::Int     = 50000
-    lr::Real        = 1e-3
+    lr::Real        = 1e-2
 
-    βstart::Real    = 1f-8
+    βstart::Real    = 1f-4
     βend::Real      = 1f-2
     βgrowth::Real   = 10f0
-    βstep::Int      = 1000
+    βstep::Int      = 10000
 
     lowlim::Real    = 0
     uplim::Real     = 2
@@ -36,7 +36,7 @@ include(srcdir("arithmetic_models.jl"))
     inlen::Int      = 20
     fstinit::String = "rand"
     sndinit::String = "rand"
-    model::String   = "npu"
+    model::String   = "gatednpu"
 
 end
 
@@ -47,7 +47,7 @@ function run(c::SqrtL1Config)
         subset=c.subset,
         overlap=c.overlap)
     test_generate = arithmetic_dataset(sqrt, c.inlen,
-        d=Uniform(c.lowlim-4,c.uplim+4),
+        d=Uniform(c.lowlim,c.uplim+4),
         subset=c.subset,
         overlap=c.overlap)
 
@@ -62,7 +62,7 @@ function run(c::SqrtL1Config)
     end
     
     data     = (generate(c.batch) for _ in 1:c.niters)
-    val_data = generate(1000)
+    val_data = test_generate(1000)
 
     opt      = RMSProp(c.lr)
     history  = train!(loss, model, data, val_data, opt, βgrowth)
@@ -73,7 +73,7 @@ end
 pattern = basename(splitext(@__FILE__)[1])
 config = SqrtL1Config()
 outdir  = datadir("tests", pattern)
-res, fname = produce_or_load(outdir, config, run, force=true)
+res, fname = produce_or_load(outdir, config, run, force=false)
 
 m = get_mapping(res[:model])
 h = res[:history]
@@ -82,9 +82,9 @@ using Plots
 include(srcdir("plots.jl"))
 
 pyplot()
-if config.inlen < 20
+if config.inlen < 30
     p1 = plot(h,logscale=false)
-    wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-history.svg"), p1)
+    wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-history.png"), p1)
 end
 
 
@@ -93,4 +93,4 @@ ps = map(l->Plots.heatmap(l.W[end:-1:1,:], c=:bluesreds,
          m)
 p2 = plot(ps..., size=(600,300))
 
-wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-mapping.svg"), p2)
+wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-mapping.png"), p2)

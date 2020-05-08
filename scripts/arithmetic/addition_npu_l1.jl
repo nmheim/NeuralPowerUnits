@@ -20,11 +20,11 @@ include(srcdir("arithmetic_models.jl"))
 
 @with_kw struct AddL1Config
     batch::Int      = 128
-    niters::Int     = 50000
-    lr::Real        = 1e-2
+    niters::Int     = 100000
+    lr::Real        = 5e-3
 
     βstart::Real    = 1f-4
-    βend::Real      = 1f-1
+    βend::Real      = 1f0
     βgrowth::Real   = 10f0
     βstep::Int      = 10000
 
@@ -33,9 +33,9 @@ include(srcdir("arithmetic_models.jl"))
     subset::Real    = 0.5f0
     overlap::Real   = 0.25f0
 
-    inlen::Int      = 100
-    fstinit::String = "glorotuniform"
-    sndinit::String = "glorotuniform"
+    inlen::Int      = 20
+    fstinit::String = "rand"
+    sndinit::String = "rand"
     model::String   = "gatednpu"
 end
 
@@ -72,7 +72,7 @@ end
 pattern = basename(splitext(@__FILE__)[1])
 config = AddL1Config()
 outdir  = datadir("tests", pattern)
-res, fname = produce_or_load(outdir, config, run, force=false)
+res, fname = produce_or_load(outdir, config, run, force=true)
 
 m = res[:model]
 h = res[:history]
@@ -81,12 +81,13 @@ using Plots
 include(srcdir("plots.jl"))
 
 pyplot()
-# p1 = plot(h)
-# wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-history.svg"), p1)
+if config.inlen < 30
+    p1 = plot(h)
+    wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-history.png"), p1)
+end
 
-ps = map(l->heatmap(l.W[end:-1:1,:], c=:bluesreds,
-                    title=summary(l), clim=(-2,2)),
-         m)
+ps = map(l->Plots.heatmap(l.W[end:-1:1,:], c=:bluesreds, 
+                          title=summary(l), clim=(-2,2)), m)
 p2 = plot(ps..., size=(600,300))
 
-wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-mapping.svg"), p2)
+wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-mapping.png"), p2)

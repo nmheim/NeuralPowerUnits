@@ -20,23 +20,23 @@ include(srcdir("arithmetic_models.jl"))
 
 @with_kw struct MultL1Config
     batch::Int      = 128
-    niters::Int     = 50000
-    lr::Real        = 1e-3
+    niters::Int     = 100000
+    lr::Real        = 5e-3
 
-    βstart::Real    = 1f-8
-    βend::Real      = 1f0
+    βstart::Real    = 1f-3
+    βend::Real      = 1f-1
     βgrowth::Real   = 10f0
-    βstep::Int      = 1000
+    βstep::Int      = 10000
 
     lowlim::Real    = -2
     uplim::Real     = 2
     subset::Real    = 0.5f0
     overlap::Real   = 0.25f0
 
-    inlen::Int      = 20
+    inlen::Int      = 100
     fstinit::String = "rand"
     sndinit::String = "rand"
-    model::String   = "npu"
+    model::String   = "gatednpu"
 
 end
 
@@ -62,7 +62,7 @@ function run(c::MultL1Config)
     end
     
     data     = (generate(c.batch) for _ in 1:c.niters)
-    val_data = generate(1000)
+    val_data = test_generate(1000)
 
     opt      = RMSProp(c.lr)
     history  = train!(loss, model, data, val_data, opt, βgrowth)
@@ -82,8 +82,10 @@ using Plots
 include(srcdir("plots.jl"))
 
 pyplot()
-p1 = plot(h)
-wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-history.svg"), p1)
+if config.inlen < 30
+    p1 = plot(h)
+    wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-history.svg"), p1)
+end
 
 ps = map(l->Plots.heatmap(l.W[end:-1:1,:], c=:bluesreds,
                     title=summary(l), clim=(-1,1)),

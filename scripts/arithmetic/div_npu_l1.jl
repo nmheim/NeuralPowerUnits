@@ -20,23 +20,23 @@ include(srcdir("arithmetic_models.jl"))
 
 @with_kw struct DivL1Config
     batch::Int      = 128
-    niters::Int     = 50000
-    lr::Real        = 1e-3
+    niters::Int     = 100000
+    lr::Real        = 2e-3
 
-    βstart::Real    = 1f-10
+    βstart::Real    = 1f-6
     βend::Real      = 1f-4
     βgrowth::Real   = 10f0
-    βstep::Int      = 2000
+    βstep::Int      = 10000
 
-    lowlim::Real    = 1
-    uplim::Real     = 3
+    lowlim::Real    = 0
+    uplim::Real     = 2
     subset::Real    = 0.5f0
     overlap::Real   = 0.25f0
 
     inlen::Int      = 20
     fstinit::String = "rand"
     sndinit::String = "rand"
-    model::String   = "npu"
+    model::String   = "gatednpu"
 
 end
 
@@ -62,7 +62,7 @@ function run(c::DivL1Config)
     end
     
     data     = (generate(c.batch) for _ in 1:c.niters)
-    val_data = generate(1000)
+    val_data = test_generate(1000)
 
     opt      = RMSProp(c.lr)
     history  = train!(loss, model, data, val_data, opt, βgrowth)

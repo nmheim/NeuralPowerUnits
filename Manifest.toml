@@ -808,7 +808,7 @@ version = "0.4.4"
 
 [[NeuralArithmetic]]
 deps = ["Flux", "Zygote"]
-git-tree-sha1 = "3d618ca71d23789092da71cabd975cedac5e869a"
+git-tree-sha1 = "ad676b404ebdba87a27dcb2c8e17e252745d6f1f"
 repo-rev = "master"
 repo-url = "https://github.com/nmheim/NeuralArithmetic.jl.git"
 uuid = "ab1feca7-9272-4c7d-b713-789d3461e743"
