@@ -36,8 +36,7 @@ include(srcdir("arithmetic_models.jl"))
     inlen::Int      = 100
     fstinit::String = "glorotuniform"
     sndinit::String = "glorotuniform"
-    model::String   = "npu"
-
+    model::String   = "gatednpu"
 end
 
 
@@ -62,7 +61,7 @@ function run(c::AddL1Config)
     end
     
     data     = (generate(c.batch) for _ in 1:c.niters)
-    val_data = generate(1000)
+    val_data = test_generate(1000)
 
     opt      = RMSProp(c.lr)
     history  = train!(loss, model, data, val_data, opt, βgrowth)
