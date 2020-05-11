@@ -21,15 +21,15 @@ include(srcdir("arithmetic_models.jl"))
 @with_kw struct MultL1Config
     batch::Int      = 128
     niters::Int     = 100000
-    lr::Real        = 5e-3
+    lr::Real        = 1e-3
 
-    βstart::Real    = 1f-3
-    βend::Real      = 1f-1
+    βstart::Real    = 1f-4
+    βend::Real      = 1f-2
     βgrowth::Real   = 10f0
     βstep::Int      = 10000
 
-    lowlim::Real    = -2
-    uplim::Real     = 2
+    lowlim::Real    = -1
+    uplim::Real     = 1
     subset::Real    = 0.5f0
     overlap::Real   = 0.25f0
 
@@ -67,7 +67,7 @@ function run(c::MultL1Config)
     opt      = RMSProp(c.lr)
     history  = train!(loss, model, data, val_data, opt, βgrowth)
 
-    return @dict(model, history)
+    return @dict(model, history, c)
 end
 
 pattern = basename(splitext(@__FILE__)[1])

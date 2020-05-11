@@ -29,12 +29,14 @@ end
 
 function train!(loss, model::ARDNet, data, val_data, opt, history=MVHistory())
     ps = params(model)
-    tot, llh, kld, lpλ, tot_val = 0f0, 0f0, 0f0, 0f0, 0f0
+    trn_loss, llh_loss, kld_loss, lpλ_loss, val_loss = 0f0, 0f0, 0f0, 0f0, 0f0
 
     logging = Flux.throttle((i)->(
-        @info "Step $i" [tot llh kld lpλ] tot_val;
+        @info("Step $i", trn_loss, llh_loss, kld_loss, lpλ_loss, val_loss);
         p1 = UnicodePlots.heatmap(get_mapping(model)[1].W[end:-1:1,:]);
-        display(p1)
+        p2 = UnicodePlots.heatmap(get_mapping(model)[2].W[end:-1:1,:], height=10, width=10);
+        display(p1);
+        display(p2);
     ), 1)
     pushhist = Flux.throttle((i)->(
             push!(history, :μz, i, copy(mean(model.encoder)));
@@ -42,17 +44,18 @@ function train!(loss, model::ARDNet, data, val_data, opt, history=MVHistory())
             push!(history, :λz, i, copy(var(model.prior)));
             push!(history, :σx, i, copy(var(model.decoder,ones(1))));
             push!(history, :αβ, i, copy([model.hyperprior.α[1], model.hyperprior.β[1]]));
-            tot_val = loss(val_data...);
-            push!(history, :loss, i, [tot, llh, kld, lpλ, tot_val]);
+            val_loss = loss(val_data...);
+            push!(history, :loss, i,
+                  [trn_loss, llh_loss, kld_loss, lpλ_loss, val_loss]);
        ),
-    5)
+    1)
 
     i = haskey(history,:loss) ? get(history,:loss)[1][end]+1 : 1
     try 
         @progress for d in data
             gs = gradient(ps) do
-                (tot, llh, kld, lpλ) = loss(d...)
-                return tot
+                (trn_loss, llh_loss, kld_loss, lpλ_loss) = loss(d...)
+                return trn_loss
             end
             logging(i)
             pushhist(i)
@@ -76,8 +79,8 @@ function notelbo(m::ARDNet, x, y)
     kld = sum(kl_divergence(m.encoder, m.prior))
     lpλ = sum(logpdf(m.hyperprior, var(m.prior)))
 
-    _elbo = -llh + kld - lpλ
-    _elbo, -llh, kld, -lpλ
+    _elbo = -llh +kld -lpλ
+    _elbo,  -llh, kld,-lpλ
 end
 
 get_mapping(m::ARDNet) = m.decoder.mapping.restructure(mean(m.encoder))

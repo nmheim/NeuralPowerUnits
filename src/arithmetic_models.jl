@@ -42,6 +42,10 @@ function get_model(model::String, inlen::Int, fstinit::String, sndinit::String)
         return Chain(Flux.fmap(ComplexMatrix, NAU(inlen,inlen,init=initf(fstinit))),
                      NPU(inlen, 1, init=initf(sndinit)))
     elseif model == "gatednpu"
+        # nau = NAU(inlen, inlen, init=initf(fstinit))
+        # W   = initf(sndinit)(1,inlen)
+        # g   = zeros(Float32, inlen)
+        # npu = GatedNPU(W, g)
         return Chain(NAU(inlen, inlen, init=initf(fstinit)),
                      GatedNPU(inlen, 1, init=initf(sndinit)))
     else
@@ -49,7 +53,7 @@ function get_model(model::String, inlen::Int, fstinit::String, sndinit::String)
     end
 end
 
-function train!(loss, model, data, val_data, opt, sch::Schedule, history=MVHistory())
+function train!(loss, model, data, val_data, opt, sch::Schedule, history=MVHistory(); log=true)
     ps = params(model)
     trn_loss, val_loss, mse_loss, reg_loss = 0f0, 0f0, 0f0, 0f0
 
@@ -71,17 +75,12 @@ function train!(loss, model, data, val_data, opt, sch::Schedule, history=MVHisto
     i = haskey(history,:loss) ? get(history,:loss)[1][end]+1 : 1
     try 
         @progress for d in data
-            # if i == 20000
-            #     lr = 1e-2
-            #     @info "lr=$lr"
-            #     opt == ADAM(lr)
-            # end
             factor = step!(sch)
             gs = gradient(ps) do
                 trn_loss, mse_loss, reg_loss = loss(d..., factor)
                 return trn_loss
             end
-            logging(i)
+            if log logging(i) end
             pushhist(i)
             Flux.Optimise.update!(opt, ps, gs)
             i += 1

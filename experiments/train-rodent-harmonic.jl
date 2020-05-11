@@ -51,7 +51,7 @@ curriculum = [
 ]
 
 ode = Chain(
-    NPU(slen, slen),
+    GatedNPU(slen, slen),
     NAU(slen, slen),
    )
 
@@ -91,7 +91,7 @@ else
         @unpack niter, lr, ω = c
     
         train_data = [(generate(ω,tlen),) for _ in 1:niter]
-        opt = Descent(lr)
+        opt = RMSProp(lr)
     
         cb = [
             () -> (curr_iter[1] += 1),
