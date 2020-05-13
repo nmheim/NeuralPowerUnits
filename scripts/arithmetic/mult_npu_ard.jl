@@ -16,6 +16,7 @@ using GenerativeModels
 using UnicodePlots
 
 include(srcdir("arithmetic_dataset.jl"))
+include(srcdir("schedules.jl"))
 include(srcdir("arithmetic_models.jl"))
 include(srcdir("arithmetic_ard_models.jl"))
 
@@ -24,18 +25,18 @@ include(srcdir("arithmetic_ard_models.jl"))
     niters::Int     = 300000
     lr::Real        = 1e-2
 
-    α0              = Float32(1e2)
-    β0              = Float32(1e2)
+    α0              = Float32(1e-1)
+    β0              = Float32(1e1)
 
     lowlim::Real    = -2
     uplim::Real     = 2
     subset::Real    = 0.5f0
     overlap::Real   = 0.25f0
 
-    inlen::Int      = 10
+    inlen::Int      = 20
     fstinit::String = "glorotuniform"
     sndinit::String = "glorotuniform"
-    model::String   = "npu"
+    model::String   = "gatednpu"
 end
 
 
@@ -71,16 +72,15 @@ m = res[:model]
 h = res[:history]
 
 using Plots
-using GMExtensions
 include(srcdir("plots.jl"))
 
 pyplot()
-p1 = plot(h,logscale=false)
-#p1 = plothistory(h)
+if config.inlen < 30
+    p1 = plot(h,logscale=false)
+    wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-mapping.png"), p2)
+end
+
 net = get_mapping(m)
 ps = [Plots.heatmap(l.W[end:-1:1,:], c=:bluesreds, title=summary(l), clim=(-1,1)) for l in net]
 p2 = plot(ps..., size=(600,300))
-# display(p1)
-# display(p2)
-wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-mapping.png"), p2)
-# wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-history.png"), p1)
+wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-history.png"), p1)

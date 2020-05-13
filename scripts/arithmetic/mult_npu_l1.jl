@@ -20,7 +20,7 @@ include(srcdir("arithmetic_models.jl"))
 
 @with_kw struct MultL1Config
     batch::Int      = 128
-    niters::Int     = 100000
+    niters::Int     = 300000
     lr::Real        = 1e-3
 
     βstart::Real    = 1f-4
@@ -28,14 +28,14 @@ include(srcdir("arithmetic_models.jl"))
     βgrowth::Real   = 10f0
     βstep::Int      = 10000
 
-    lowlim::Real    = -1
-    uplim::Real     = 1
+    lowlim::Real    = -2
+    uplim::Real     = 2
     subset::Real    = 0.5f0
     overlap::Real   = 0.25f0
 
-    inlen::Int      = 100
-    fstinit::String = "rand"
-    sndinit::String = "rand"
+    inlen::Int      = 20
+    fstinit::String = "glorotuniform"
+    sndinit::String = "glorotuniform"
     model::String   = "gatednpu"
 
 end
@@ -59,6 +59,7 @@ function run(c::MultL1Config)
         mse = Flux.mse(model(x),y)
         L1  = β * norm(ps,1)
         (mse+L1), mse, L1
+        #(mse), mse, L1
     end
     
     data     = (generate(c.batch) for _ in 1:c.niters)

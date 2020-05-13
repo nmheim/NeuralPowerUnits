@@ -42,12 +42,13 @@ function get_model(model::String, inlen::Int, fstinit::String, sndinit::String)
         return Chain(Flux.fmap(ComplexMatrix, NAU(inlen,inlen,init=initf(fstinit))),
                      NPU(inlen, 1, init=initf(sndinit)))
     elseif model == "gatednpu"
-        # nau = NAU(inlen, inlen, init=initf(fstinit))
-        # W   = initf(sndinit)(1,inlen)
-        # g   = zeros(Float32, inlen)
-        # npu = GatedNPU(W, g)
-        return Chain(NAU(inlen, inlen, init=initf(fstinit)),
-                     GatedNPU(inlen, 1, init=initf(sndinit)))
+        nau = NAU(inlen, inlen, init=initf(fstinit))
+        W   = initf(sndinit)(1,inlen)
+        g   = ones(Float32, inlen) .* Float32(0.99)
+        npu = GatedNPU(W, g)
+        return Chain(nau,npu)
+        # return Chain(NAU(inlen, inlen, init=initf(fstinit)),
+        #              GatedNPU(inlen, 1, init=initf(sndinit)))
     else
         error("Unknown model string: $model")
     end

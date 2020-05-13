@@ -23,16 +23,16 @@ include(srcdir("arithmetic_st_models.jl"))
 @with_kw struct MultStConfig
     batch::Int      = 128
     niters::Int     = 200000
-    lr::Real        = 5e-4
+    lr::Real        = 1e-4
 
     v::Real         = 1f0
-    σstart::Real    = 1f2
-    σend::Real      = 1f0
+    σstart::Real    = 1f1
+    σend::Real      = 1f-1
     σdecay::Real    = 1f-1
     σstep::Int      = 10000
 
-    lowlim::Real    = -2
-    uplim::Real     = 2
+    lowlim::Real    = -1
+    uplim::Real     = 1
     subset::Real    = 0.5f0
     overlap::Real   = 0.25f0
 
@@ -53,24 +53,37 @@ function run(c::MultStConfig)
         subset=c.subset,
         overlap=c.overlap)
 
-    model = get_model(c.model, c.inlen, c.fstinit, c.sndinit)
-    σdecay = ExpSchedule(c.σstart, c.σend, c.σdecay, c.σstep)
-    ps = params(model)
-
-    function loss(x,y,σ)
-        m = Flux.mse(model(x),y)
-        s = -logSt(params(model), c.v, σ)
-        #s = 0
-        m+s, m, s
-    end
-    
     data     = (generate(c.batch) for _ in 1:c.niters)
     val_data = test_generate(1000)
-
     opt      = RMSProp(c.lr)
-    history  = train!(loss, model, data, val_data, opt, σdecay)
 
-    return @dict(model, history)
+    model = get_model(c.model, c.inlen, c.fstinit, c.sndinit)
+
+    schedule = false
+
+    if !schedule
+        σ = [c.σstart]
+        model = StModel(model, [c.v], σ)
+        ps = params(model.m)
+
+        loss = function (x,y)
+            m = Flux.mse(model(x),y)
+            s = -logSt(ps, c.v, σ[1])
+            m+s, m, s
+        end
+        history  = train!(loss, model, data, val_data, opt)
+    else
+        loss = function (x,y,σ)
+            m = Flux.mse(model(x), y)
+            s = logSt(params(model), c.v, σ)
+            m+s, m, s
+        end
+        ps = params(model)
+        σdecay = ExpSchedule(c.σstart, c.σend, c.σdecay, c.σstep)
+        history  = train!(loss, model, data, val_data, opt, σdecay)
+    end
+    
+    return @dict(model, history, c)
 end
 
 pattern = basename(splitext(@__FILE__)[1])
@@ -86,7 +99,7 @@ include(srcdir("plots.jl"))
 
 pyplot()
 if config.inlen < 30
-    p1 = plot(h,logscale=true)
+    p1 = plot(h,logscale=false)
     wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-history.svg"), p1)
 end
 

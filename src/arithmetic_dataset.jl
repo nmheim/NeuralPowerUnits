@@ -1,5 +1,19 @@
 using Distributions: Uniform
 
+invx(x::Real) = 1/x
+
+function arithmetic_invx_dataset(xlen::Int, d::Uniform=Uniform(-0.5,0.5), subset::Real=0.25)
+    len = round(Int, xlen*subset)
+    ii = 1:len
+
+    function generate(batch::Int)
+        X = Float32.(rand(d, xlen, batch))
+        a = vec(sum(X[ii,:], dims=1))
+        t = reshape(invx.(a), 1, :)
+        (X,t)
+    end
+end
+
 function arithmetic_sqrt_dataset(xlen::Int, d::Uniform=Uniform(0,2), subset::Real=0.25)
     len = round(Int, xlen*subset)
     ii = 1:len
@@ -31,6 +45,8 @@ function arithmetic_dataset(op::Function, xlen::Int; d::Uniform=Uniform(-2,2),
 
     if op == sqrt
         return arithmetic_sqrt_dataset(xlen, d, subset)
+    elseif op == invx
+        return arithmetic_invx_dataset(xlen, d, subset)
     end
 
     function generate(batch::Int)
