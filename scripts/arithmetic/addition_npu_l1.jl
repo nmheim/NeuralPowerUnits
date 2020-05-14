@@ -50,8 +50,8 @@ function run(c::AddL1Config)
         subset=c.subset,
         overlap=c.overlap)
 
-    togpu = Flux.gpu
-    #togpu = identity
+    #togpu = Flux.gpu
+    togpu = identity
 
     model = get_model(c.model, c.inlen, c.fstinit, c.sndinit) |> togpu
     βgrowth = ExpSchedule(c.βstart, c.βend, c.βgrowth, c.βstep)
@@ -69,13 +69,14 @@ function run(c::AddL1Config)
     opt      = RMSProp(c.lr)
     history  = train!(loss, model, data, val_data, opt, βgrowth)
 
-    return @dict(model, history)
+    model = model |> cpu
+    return @dict(model, history, c)
 end
 
 pattern = basename(splitext(@__FILE__)[1])
 config = AddL1Config()
 outdir  = datadir("tests", pattern)
-res, fname = produce_or_load(outdir, config, run, force=false)
+res, fname = produce_or_load(outdir, config, run, force=true)
 
 m = res[:model]
 h = res[:history]

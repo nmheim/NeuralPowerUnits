@@ -23,7 +23,7 @@ include(srcdir("arithmetic_models.jl"))
     niters::Int     = 1e5
     lr::Real        = 5e-3
 
-    βstart::Real    = 1f-4
+    βstart::Real    = 1f-5
     βend::Real      = 1f-2
     βgrowth::Real   = 10f0
     βstep::Int      = 10000
@@ -76,7 +76,7 @@ function run(c::AddL1SearchConfig)
 end
 
 # set up dict which will be permuted to yield all config combinations
-config_dicts = Dict(:βend => 10f0 .^ (-3f0:-1f0),
+config_dicts = Dict(:βend => 10f0 .^ (-4f0:-2f0),
                     :init => [("rand","rand"),
                               ("glorotuniform", "glorotuniform")],
                     :model => ["gatednpu", "gatednpux"])

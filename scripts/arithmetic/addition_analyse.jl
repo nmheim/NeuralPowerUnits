@@ -1,5 +1,4 @@
 using DrWatson
-using Plots
 using ProgressMeter
 
 using Statistics
@@ -15,7 +14,6 @@ using ValueHistories
 using Parameters
 # using Distributions: Uniform
 # using GMExtensions
-pyplot()
 
 @with_kw struct AddL1SearchConfig
     batch::Int      = 128
@@ -104,6 +102,9 @@ res = load(datadir(dir, "$bestname.bson"))
 
 using UnicodePlots
 UnicodePlots.heatmap(model[1].W[end:-1:1,:])
+
+#using Plots
+#pyplot()
 # p1 = plothistory(history)
 # net = get_mapping(model)
 # p2 = plot(
