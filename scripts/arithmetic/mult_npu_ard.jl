@@ -23,10 +23,10 @@ include(srcdir("arithmetic_ard_models.jl"))
 @with_kw struct MultARDConfig
     batch::Int      = 1000
     niters::Int     = 300000
-    lr::Real        = 1e-2
+    lr::Real        = 1e-3
 
-    α0              = Float32(1e-1)
-    β0              = Float32(1e1)
+    α0              = Float32(1e-5)
+    β0              = Float32(1e-5)
 
     lowlim::Real    = -2
     uplim::Real     = 2
@@ -77,10 +77,10 @@ include(srcdir("plots.jl"))
 pyplot()
 if config.inlen < 30
     p1 = plot(h,logscale=false)
-    wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-mapping.png"), p2)
+    wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-history.png"), p1)
 end
 
 net = get_mapping(m)
 ps = [Plots.heatmap(l.W[end:-1:1,:], c=:bluesreds, title=summary(l), clim=(-1,1)) for l in net]
 p2 = plot(ps..., size=(600,300))
-wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-history.png"), p1)
+wsave(plotsdir(pattern, "$(basename(splitext(fname)[1]))-mapping.png"), p2)

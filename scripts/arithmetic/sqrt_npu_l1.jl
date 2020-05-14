@@ -34,8 +34,8 @@ include(srcdir("arithmetic_models.jl"))
     overlap::Real   = 0.25f0
 
     inlen::Int      = 20
-    fstinit::String = "rand"
-    sndinit::String = "rand"
+    fstinit::String = "glorotuniform"
+    sndinit::String = "glorotuniform"
     model::String   = "gatednpu"
 
 end
@@ -73,7 +73,7 @@ end
 pattern = basename(splitext(@__FILE__)[1])
 config = SqrtL1Config()
 outdir  = datadir("tests", pattern)
-res, fname = produce_or_load(outdir, config, run, force=false)
+res, fname = produce_or_load(outdir, config, run, force=true)
 
 m = get_mapping(res[:model])
 h = res[:history]

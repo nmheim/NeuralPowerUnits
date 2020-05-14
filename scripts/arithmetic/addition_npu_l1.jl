@@ -50,7 +50,10 @@ function run(c::AddL1Config)
         subset=c.subset,
         overlap=c.overlap)
 
-    model = get_model(c.model, c.inlen, c.fstinit, c.sndinit)
+    togpu = Flux.gpu
+    #togpu = identity
+
+    model = get_model(c.model, c.inlen, c.fstinit, c.sndinit) |> togpu
     βgrowth = ExpSchedule(c.βstart, c.βend, c.βgrowth, c.βstep)
     ps = params(model)
 
@@ -60,8 +63,8 @@ function run(c::AddL1Config)
         (mse+L1), mse, L1
     end
     
-    data     = (generate(c.batch) for _ in 1:c.niters)
-    val_data = test_generate(1000)
+    data     = (togpu(generate(c.batch)) for _ in 1:c.niters)
+    val_data = test_generate(1000) |> togpu
 
     opt      = RMSProp(c.lr)
     history  = train!(loss, model, data, val_data, opt, βgrowth)

@@ -28,14 +28,14 @@ include(srcdir("arithmetic_models.jl"))
     βgrowth::Real   = 10f0
     βstep::Int      = 10000
 
-    lowlim::Real    = -2
-    uplim::Real     = 2
+    lowlim::Real    = -1
+    uplim::Real     = 1
     subset::Real    = 0.5f0
     overlap::Real   = 0.25f0
 
     inlen::Int      = 20
-    fstinit::String = "glorotuniform"
-    sndinit::String = "glorotuniform"
+    fstinit::String = "rand"
+    sndinit::String = "rand"
     model::String   = "gatednpu"
 
 end
