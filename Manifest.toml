@@ -352,7 +352,7 @@ version = "0.8.1"
 
 [[DrWatson]]
 deps = ["FileIO", "LibGit2", "Pkg", "Random", "Requires"]
-git-tree-sha1 = "11dbc5272234476e463468d301dd096fb9aa527e"
+path = "/home/niklas/.julia/dev/DrWatson"
 uuid = "634d3b9d-ee7a-5ddf-bec9-22491ea816e1"
 version = "1.10.3"
 

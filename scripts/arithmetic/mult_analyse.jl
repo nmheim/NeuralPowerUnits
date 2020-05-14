@@ -15,7 +15,7 @@ using Parameters
 # using Distributions: Uniform
 # using GMExtensions
 
-@with_kw struct AddL1SearchConfig
+@with_kw struct MultL1SearchConfig
     batch::Int      = 128
     niters::Int     = 1e3
     lr::Real        = 5e-3
@@ -70,54 +70,34 @@ end
 
 
 function aggregateruns(df::DataFrame)
-    gdf = groupby(df, :hash)
-    combine(gdf) do df
-        (μmse = mean(df.mse),
-         σmse = std(df.mse),
-         μreg = mean(df.reg),
-         σreg = std(df.reg),
-         μtrn = mean(df.trn),
-         σtrn = std(df.trn),
-         μval = mean(df.val),
-         σval = std(df.val),
-         fstinit = first(df.fstinit),
-         sndinit = first(df.sndinit))
-    end
+    gdf = groupby(df, :id)
+    cdf = combine(gdf,
+                  :mse => mean,
+                  :mse => std,
+                  :reg => mean,
+                  :reg => std,
+                  :val => mean,
+                  :val => std,
+                  :fstinit => first,
+                  :sndinit => first)
 end
 
-function expand_config!(df::DataFrame)
-    if !("config" in names(df)) && error("`config` not in dataframe") end
-    for k in fieldnames(typeof(df.config[1]))
-        df[!,k] = getfield.(df.config, k)
-    end
-end
-
-function find_best(hash::UInt, df::DataFrame)
-    fdf = filter(row->row[:hash]==hash, df)
+function find_best(id::UInt, df::DataFrame)
+    fdf = filter(row->row[:id]==id, df)
     sort!(fdf, :mse)
-    fdf[1,:path]
+    fdf[1,:name]
 end
 
 
-Base.last(h::MVHistory, k::Symbol) = get(h,k)[2][end]
-
-folder = "addition_npu_l1_search"
-df = collect_results!(datadir("$(folder)_results.bson"), datadir(folder), white_list=[],
-                      special_list=[:trn => data -> last(data[:history], :loss)[1],
-                                    :mse => data -> last(data[:history], :loss)[2],
-                                    :reg => data -> last(data[:history], :loss)[3],
-                                    :val => data -> last(data[:history], :loss)[4],
-                                    :config => data -> data[:c],
-                                    :hash => data -> hash(delete!(struct2dict(data[:c]),:run))])
-expand_config!(df)
+dir = "mult_npu_l1_search"
+df = readfiles(datadir(dir))
 display(df)
-
 adf = aggregateruns(df)
-sort!(adf,:μmse)
+sort!(adf,:mse_mean)
 display(adf)
+bestname = find_best(adf[1,:id], df)
 
-bestrun = find_best(adf[1,:hash], df)
-res = load(bestrun)
+res = load(datadir(dir, "$bestname.bson"))
 @unpack model, history = res
 
 using UnicodePlots

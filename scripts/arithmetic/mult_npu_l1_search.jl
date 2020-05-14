@@ -18,13 +18,13 @@ include(srcdir("schedules.jl"))
 include(srcdir("arithmetic_dataset.jl"))
 include(srcdir("arithmetic_models.jl"))
 
-@with_kw struct AddL1SearchConfig
+@with_kw struct MultL1SearchConfig
     batch::Int      = 128
     niters::Int     = 1e5
     lr::Real        = 5e-3
 
     βstart::Real    = 1f-5
-    βend::Real      = 1f-2
+    βend::Real      = 1f-3
     βgrowth::Real   = 10f0
     βstep::Int      = 10000
 
@@ -42,12 +42,12 @@ include(srcdir("arithmetic_models.jl"))
 end
 
 
-function run(c::AddL1SearchConfig)
-    generate = arithmetic_dataset(+, c.inlen,
+function run(c::MultL1SearchConfig)
+    generate = arithmetic_dataset(*, c.inlen,
         d=Uniform(c.lowlim,c.uplim),
         subset=c.subset,
         overlap=c.overlap)
-    test_generate = arithmetic_dataset(+, c.inlen,
+    test_generate = arithmetic_dataset(*, c.inlen,
         d=Uniform(c.lowlim-4,c.uplim+4),
         subset=c.subset,
         overlap=c.overlap)
@@ -75,6 +75,7 @@ function run(c::AddL1SearchConfig)
     return @dict(model, history, c)
 end
 
+
 # set up dict which will be permuted to yield all config combinations
 config_dicts = Dict(:βend => 10f0 .^ (-4f0:-2f0),
                     :init => [("rand","rand"),
@@ -91,8 +92,9 @@ config_dicts = map(dict_list(config_dicts)) do config
     d
 end
 
-for d in config_dicts
-    config = AddL1SearchConfig()
+using Distributed
+pmap(config_dicts) do d
+    config = MultL1SearchConfig()
     for nr in 1:5
         d[:run] = nr
         config = reconstruct(config, d)

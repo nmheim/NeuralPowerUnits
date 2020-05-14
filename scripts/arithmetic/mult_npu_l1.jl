@@ -24,7 +24,7 @@ include(srcdir("arithmetic_models.jl"))
     lr::Real        = 1e-3
 
     βstart::Real    = 1f-4
-    βend::Real      = 1f-2
+    βend::Real      = 1f-3
     βgrowth::Real   = 10f0
     βstep::Int      = 10000
 
@@ -59,7 +59,6 @@ function run(c::MultL1Config)
         mse = Flux.mse(model(x),y)
         L1  = β * norm(ps,1)
         (mse+L1), mse, L1
-        #(mse), mse, L1
     end
     
     data     = (generate(c.batch) for _ in 1:c.niters)
@@ -74,7 +73,7 @@ end
 pattern = basename(splitext(@__FILE__)[1])
 config = MultL1Config()
 outdir  = datadir("tests", pattern)
-res, fname = produce_or_load(outdir, config, run, force=true)
+res, fname = produce_or_load(outdir, config, run, force=true, digits=6)
 
 m = get_mapping(res[:model])
 h = res[:history]
