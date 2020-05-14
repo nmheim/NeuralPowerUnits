@@ -20,7 +20,7 @@ include(srcdir("arithmetic_models.jl"))
 
 @with_kw struct AddL1SearchConfig
     batch::Int      = 128
-    niters::Int     = 5e5
+    niters::Int     = 1e5
     lr::Real        = 5e-3
 
     βstart::Real    = 1f-4
@@ -71,6 +71,7 @@ function run(c::AddL1SearchConfig)
     opt      = RMSProp(c.lr)
     history  = train!(loss, model, data, val_data, opt, βgrowth, log=false)
 
+    model = model |> cpu
     return @dict(model, history, c)
 end
 
