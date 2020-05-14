@@ -38,37 +38,6 @@ using Parameters
     run::Int        = 1
 end
 
-
-
-strdict2symdict(d) = Dict([Symbol(k)=>v for (k,v) in d]...)
-strdict2symtuple(d) = (;strdict2symdict(d)...)
-
-function readfiles(dir::String)
-    if !isdir(dir) && error("not a directory") end
-
-    files = readdir(dir, join=true)
-    configs = map(f->strdict2symdict(parse_savename(f)[2]), files)
-
-    p = Progress(length(files), desc="$(basename(dir)): ")
-    rows = map(files) do fn
-        @unpack history, model, c = load(fn)
-        row = struct2dict(c)
-        row[:name] = savename(row)
-        row[:id] = hash(delete!(copy(row),:run))
-
-        ls = reduce(hcat, get(history, :loss)[2])[:,end]
-        row[:trn] = ls[1]
-        row[:mse] = ls[2]
-        row[:reg] = ls[3]
-        row[:val] = ls[4]
-
-        next!(p)
-        return row
-    end
-    DataFrame(rows)
-end
-
-
 function aggregateruns(df::DataFrame)
     gdf = groupby(df, :hash)
     combine(gdf) do df
