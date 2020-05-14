@@ -75,7 +75,7 @@ end
 pattern = basename(splitext(@__FILE__)[1])
 config = AddL1Config()
 outdir  = datadir("tests", pattern)
-res, fname = produce_or_load(outdir, config, run, force=true)
+res, fname = produce_or_load(outdir, config, run, force=false)
 
 m = res[:model]
 h = res[:history]

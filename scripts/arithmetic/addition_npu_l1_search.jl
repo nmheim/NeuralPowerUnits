@@ -52,19 +52,23 @@ function run(c::AddL1SearchConfig)
         subset=c.subset,
         overlap=c.overlap)
 
-    data     = (generate(c.batch) for _ in 1:c.niters)
-    val_data = test_generate(1000)
-    model    = get_model(c.model, c.inlen, c.fstinit, c.sndinit)
+    togpu = Flux.gpu
+    #togpu = identity
 
+    model = get_model(c.model, c.inlen, c.fstinit, c.sndinit) |> togpu
+    βgrowth = ExpSchedule(c.βstart, c.βend, c.βgrowth, c.βstep)
     ps = params(model)
+
     function loss(x,y,β)
         mse = Flux.mse(model(x),y)
         L1  = β * norm(ps,1)
         (mse+L1), mse, L1
     end
     
+    data     = (togpu(generate(c.batch)) for _ in 1:c.niters)
+    val_data = test_generate(1000) |> togpu
+
     opt      = RMSProp(c.lr)
-    βgrowth  = ExpSchedule(c.βstart, c.βend, c.βgrowth, c.βstep)
     history  = train!(loss, model, data, val_data, opt, βgrowth, log=false)
 
     return @dict(model, history, c)
@@ -73,7 +77,8 @@ end
 # set up dict which will be permuted to yield all config combinations
 config_dicts = Dict(:βend => 10f0 .^ (-3f0:-1f0),
                     :init => [("rand","rand"),
-                              ("glorotuniform", "glorotuniform")])
+                              ("glorotuniform", "glorotuniform")],
+                    :model => ["gatednpu", "gatednpux"])
 
 # permute and flatten :init -> :initnau, initnmu
 config_dicts = map(dict_list(config_dicts)) do config
