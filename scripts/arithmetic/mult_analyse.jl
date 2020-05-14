@@ -17,11 +17,11 @@ using Parameters
 
 @with_kw struct MultL1SearchConfig
     batch::Int      = 128
-    niters::Int     = 1e3
+    niters::Int     = 1e5
     lr::Real        = 5e-3
 
-    βstart::Real    = 1f-4
-    βend::Real      = 1f-2
+    βstart::Real    = 1f-5
+    βend::Real      = 1f-3
     βgrowth::Real   = 10f0
     βstep::Int      = 10000
 
@@ -38,70 +38,60 @@ using Parameters
     run::Int        = 1
 end
 
-
-
-strdict2symdict(d) = Dict([Symbol(k)=>v for (k,v) in d]...)
-strdict2symtuple(d) = (;strdict2symdict(d)...)
-
-function readfiles(dir::String)
-    if !isdir(dir) && error("not a directory") end
-
-    files = readdir(dir, join=true)
-    configs = map(f->strdict2symdict(parse_savename(f)[2]), files)
-
-    p = Progress(length(files), desc="$(basename(dir)): ")
-    rows = map(files) do fn
-        @unpack history, model, c = load(fn)
-        row = struct2dict(c)
-        row[:name] = savename(row)
-        row[:id] = hash(delete!(copy(row),:run))
-
-        ls = reduce(hcat, get(history, :loss)[2])[:,end]
-        row[:trn] = ls[1]
-        row[:mse] = ls[2]
-        row[:reg] = ls[3]
-        row[:val] = ls[4]
-
-        next!(p)
-        return row
-    end
-    DataFrame(rows)
-end
-
-
 function aggregateruns(df::DataFrame)
-    gdf = groupby(df, :id)
-    cdf = combine(gdf,
-                  :mse => mean,
-                  :mse => std,
-                  :reg => mean,
-                  :reg => std,
-                  :val => mean,
-                  :val => std,
-                  :fstinit => first,
-                  :sndinit => first)
+    gdf = groupby(df, :hash)
+    combine(gdf) do df
+        (μmse = mean(df.mse),
+         σmse = std(df.mse),
+         μreg = mean(df.reg),
+         σreg = std(df.reg),
+         μtrn = mean(df.trn),
+         σtrn = std(df.trn),
+         μval = mean(df.val),
+         σval = std(df.val),
+         fstinit = first(df.fstinit),
+         sndinit = first(df.sndinit))
+    end
 end
 
-function find_best(id::UInt, df::DataFrame)
-    fdf = filter(row->row[:id]==id, df)
+function expand_config!(df::DataFrame)
+    if !("config" in names(df)) && error("`config` not in dataframe") end
+    for k in fieldnames(typeof(df.config[1]))
+        df[!,k] = getfield.(df.config, k)
+    end
+end
+
+function find_best(hash::UInt, df::DataFrame)
+    fdf = filter(row->row[:hash]==hash, df)
     sort!(fdf, :mse)
-    fdf[1,:name]
+    fdf[1,:path]
 end
 
 
-dir = "mult_npu_l1_search"
-df = readfiles(datadir(dir))
-display(df)
-adf = aggregateruns(df)
-sort!(adf,:mse_mean)
-display(adf)
-bestname = find_best(adf[1,:id], df)
+Base.last(h::MVHistory, k::Symbol) = get(h,k)[2][end]
 
-res = load(datadir(dir, "$bestname.bson"))
+folder = "mult_npu_l1_search"
+df = collect_results!(datadir("$(folder)_results.bson"), datadir(folder), white_list=[],
+                      special_list=[:trn => data -> last(data[:history], :loss)[1],
+                                    :mse => data -> last(data[:history], :loss)[2],
+                                    :reg => data -> last(data[:history], :loss)[3],
+                                    :val => data -> last(data[:history], :loss)[4],
+                                    :config => data -> data[:c],
+                                    :hash => data -> hash(delete!(struct2dict(data[:c]),:run))])
+expand_config!(df)
+display(df)
+
+adf = aggregateruns(df)
+sort!(adf,:μmse)
+display(adf)
+
+bestrun = find_best(adf[1,:hash], df)
+#bestrun = df[1,:path]
+res = load(bestrun)
 @unpack model, history = res
 
 using UnicodePlots
-UnicodePlots.heatmap(model[1].W[end:-1:1,:])
+UnicodePlots.heatmap(model[1].W[end:-1:1,:], height=100, width=100)
 
 #using Plots
 #pyplot()

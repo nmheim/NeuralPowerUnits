@@ -121,7 +121,7 @@ res = load(bestrun)
 @unpack model, history = res
 
 using UnicodePlots
-UnicodePlots.heatmap(model[1].W[end:-1:1,:])
+UnicodePlots.heatmap(model[1].W[end:-1:1,:], height=100, width=100)
 
 #using Plots
 #pyplot()
