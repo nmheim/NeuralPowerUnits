@@ -18,6 +18,11 @@ git-tree-sha1 = "c88cfc7f9c1f9f8633cddf0b56e86302b70f64c5"
 uuid = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
 version = "1.0.1"
 
+[[ArgCheck]]
+git-tree-sha1 = "59c256cf71c3982484ae4486ee86a3d7da891dea"
+uuid = "dce04be8-c92d-5529-be00-80e4d2c0e197"
+version = "2.0.0"
+
 [[ArnoldiMethod]]
 deps = ["DelimitedFiles", "LinearAlgebra", "Random", "SparseArrays", "StaticArrays", "Test"]
 git-tree-sha1 = "2b6845cea546604fb4dca4e31414a6a59d39ddcd"
@@ -287,6 +292,12 @@ version = "0.4.13"
 [[Dates]]
 deps = ["Printf"]
 uuid = "ade2ca70-3891-5945-98fb-dc099432e06a"
+
+[[DefaultApplication]]
+deps = ["InteractiveUtils"]
+git-tree-sha1 = "fc2b7122761b22c87fec8bf2ea4dc4563d9f8c24"
+uuid = "3f0dd361-4fe0-5fc6-8523-80b14ec94d85"
+version = "1.0.0"
 
 [[DelimitedFiles]]
 deps = ["Mmap"]
@@ -918,6 +929,12 @@ deps = ["Arpack", "LinearAlgebra", "SparseArrays", "SuiteSparse", "Test"]
 git-tree-sha1 = "2fc6f50ddd959e462f0a2dbc802ddf2a539c6e35"
 uuid = "90014a1f-27ba-587c-ab20-58faa44d9150"
 version = "0.9.12"
+
+[[PGFPlotsX]]
+deps = ["ArgCheck", "DataStructures", "Dates", "DefaultApplication", "DocStringExtensions", "MacroTools", "Parameters", "Requires", "StatsBase"]
+git-tree-sha1 = "50e805742e8d56fada59ef9c4065478aea7145cb"
+uuid = "8314cec4-20b6-5062-9cdb-752b83310925"
+version = "1.2.6"
 
 [[PNGFiles]]
 deps = ["CEnum", "ImageCore", "libpng_jll"]

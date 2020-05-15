@@ -15,6 +15,12 @@ function generate()
     (x,y)
 end
 
+function generate_pos()
+    x = rand(Float32, 2, 100) .* 2
+    y = f(x)
+    (x,y)
+end
+
 function test_generate()
     x = rand(Float32, 2, 1000) .* 8 .- 4
     y = f(x)

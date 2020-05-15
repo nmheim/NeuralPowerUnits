@@ -69,20 +69,35 @@
 \label{sec:introduction}
 
 Neural Networks (NN) have proven to perform exceptionally well at function
-approximation tasks\todo{cite universal approx}. The great approximation
-performance unfortunately come at the cost of generalization beyond the
+approximation tasks\todo{cite universal approx}. This great approximation
+performance unfortunately comes at the cost of generalization beyond the
 training domain\todo{cite something?}.  The inability to generalize to unseen
 inputs is a fundamental problem that hints at a lack of \emph{understanding} of
 the given task. The model merely memorizes the seen inputs and fails to
 abstract the true learning task.
+This can be demonstrated by training a traditional, dense NN to approximate
+three functions
+\begin{align}
+  \label{eq:approx_tasks}
+  f(x) = e^x, && g(x) = \log(x), && h(x) = \sin(x)
+\end{align}
+
+\begin{figure}
+  \centering
+  \input{../plots/exp_log_sin/dense_exp.tex}
+  \caption{}%
+  \label{fig:}
+\end{figure}
 
 Neural Arithmetic Units aim to overcome this problem with units that are able
 to represent simple arithmetic operations exactly. By composition of these
-units it becomes possible to learn e.g. exponentials, sinus functions,
-logarithms, etc. This promises to improve on the extrapolation capabilities of
-NNs even on tasks that are beyond artificial arithmetic tasks such as learning
+units it becomes possible to learn e.g. exponentials, logarithms, and power
+functions. This promises to improve on the extrapolation capabilities of NNs
+even on tasks that are beyond artificial arithmetic tasks such as learning
 multiplication, or a certain power function \todo{cite some examples}.
 \todo{mention ODEs as use case}
+
+
 
 \section{Related Work}%
 \label{sec:related_work}
@@ -127,12 +142,12 @@ The combination of NAU and NMU can thus learn $\{+,-,\times\}$, but no division.
 \todo{put this in acknowledgements
 all the results in this paper were create with the help of the following Julia
 packages: \cite{rackauckas_differentialequationsjl_2017} + (Flux.jl)}
-
+\todo{add sqrt and positive range to table~\ref{tab:compare_npu_npu_nalu}?}
 \begin{table}
   \centering
-  \caption{Comparison of different $2\times2$ layers on the task $(x,y)\rightarrow(xy,\frac{x}{y})$.
-  $(x,y) \in \mathcal U^2(-2,2)$}
-  \label{tab:label}
+  \caption{Comparison of different $2\times2$ layers on the task
+  $(x,y)\rightarrow(xy,\frac{x}{y})$.  $(x,y) \in \mathcal U^2(-2,2)$.}
+  \label{tab:compare_npu_npu_nalu}
   \input{table_x*y_xdivy.tex}
 \end{table}
 
