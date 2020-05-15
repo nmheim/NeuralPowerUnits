@@ -3,6 +3,7 @@ name = "NIPS_2020_NMUX"
 [deps]
 BSON = "fbb218c0-5317-5bc6-957e-2ee96dd4b1f0"
 CUDAdrv = "c5f51814-7f29-56b8-a69c-e4d8f6be1fde"
+ColorSchemes = "35d6a980-a343-548e-a6ea-1d62b119f2f4"
 ConditionalDists = "c648c4dd-c1e0-49a6-84b9-144ae7fd2468"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 DiffEqBase = "2b5f629d-d688-5b77-993f-72d75c75574e"
