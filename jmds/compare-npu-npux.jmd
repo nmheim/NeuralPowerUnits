@@ -59,7 +59,7 @@ The experiments are run with the following configuration:
     batch::Int      = 1000
     inlen::Int      = 10
     niters::Int     = 10000
-    lr::Real        = 5e-3
+    lr::Real        = 1e-3
     lowlim::Real    = -2
     uplim::Real     = 2
     subset::Real    = 0.5f0
@@ -137,7 +137,6 @@ p1 = heatmap(imag.(m[1].W[end:-1:1,:]), title=summary(m[1]), c=:bluesreds, clim=
 p2 = heatmap(imag.(m[2].W[end:-1:1,:]), title=summary(m[2]), c=:bluesreds, clim=(-1,1))
 display(plot(p1,p2,title="imag values", size=(600,300)))
 ```
-
 
 We can do the same experiment with the real NPU layer defined by
 ```math

@@ -15,7 +15,7 @@ using Flux
 using NeuralArithmetic
 using Distributions: Uniform
 using Plots
-pyplot()
+# pyplot()
 plotly()
 
 include(srcdir("arithmetic_st_models.jl"))
@@ -26,7 +26,7 @@ Definition of function that we want to learn
 ```julia
 w1 = Float32.(-1:0.04:1)
 w2 = Float32.(-1:0.04:1)
-r  = Uniform(-1,1)
+r  = Uniform(-3,3)
 
 X  = Float32.(rand(r, 4, 300))
 
@@ -56,15 +56,15 @@ nalu(x::Matrix{T}, w1::T, w2::T) where T = nacmult(nacplus(x, w1), w2)
 
 With a simple MSE the loss surface looks like this:
 ```julia
-function mse(model::Function, x::Matrix{T}, w1::T, w2::T; zmin=0, zmax=4) where T
+function mse(model::Function, x::Matrix{T}, w1::T, w2::T; zmin=0, zmax=1000) where T
     y = mapslices(f, x, dims=1)
     ŷ = model(x, w1, w2)
     max(min(Flux.mse(y,ŷ), zmax), zmin)
 end
 
-p1 = surface(w1, w2, (w1,w2)-> mse(nalu,X,w1,w2),
-    title="NALU", xlabel="w1", ylabel="w2")
-display(p1)
+# p1 = surface(w1, w2, (w1,w2)-> mse(nalu,X,w1,w2),
+#     title="NALU", xlabel="w1", ylabel="w2")
+# display(p1)
 ```
 The same for NAU/NMU
 ```julia
@@ -83,16 +83,22 @@ nmu(x::Matrix{T}, w::T) where T = nmu(x, [w w])
 
 naunmu(x::Matrix{T}, w1, w2) where T = nmu(nacplus(x,w1),w2)
 
-p1 = surface(w1, w2, (w1,w2)-> mse(naunmu,X,w1,w2),
-    title="NAU/NMU", xlabel="w1", ylabel="w2")
-display(p1)
+# p1 = surface(w1, w2, (w1,w2)-> mse(naunmu,X,w1,w2),
+#     title="NAU/NMU", xlabel="w1", ylabel="w2")
+# display(p1)
 ```
 And for NAU/NPU
 ```julia
 function npu(x::Matrix{T}, W::Matrix{T}) where T
     r = abs.(x)
+display(r)
     k = map(i -> T(i < 0 ? pi : 0.0), x)
-    exp.(W * log.(r)) .* cos.(W*k)
+    z = exp.(W * log.(r)) .* cos.(W*k)
+b = r .< 1f-1
+display(b)
+display(z)
+error()
+    z[vec(r .< 1f-1)] .= 0
 end
 npu(x::Matrix{T}, w::T) where T = npu(x, [w w])
 

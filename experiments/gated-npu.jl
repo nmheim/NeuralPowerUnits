@@ -46,10 +46,10 @@ end
 @with_kw struct Config
     batch::Int      = 128
     niters::Int     = 5000
-    lr::Real        = 1e-2
+    lr::Real        = 5e-3
 
-    lowlim::Real    = -1
-    uplim::Real     = 1
+    lowlim::Real    = 0
+    uplim::Real     = 3
     subset::Real    = 0.5f0
     overlap::Real   = 0.25f0
 
@@ -60,15 +60,15 @@ end
 c = Config()
 d = c.inlen
 init(a,b) = rand(Float32,a,b)/10
-#init(a,b) = Flux.glorot_uniform(a,b)
+init(a,b) = Flux.glorot_uniform(a,b)
 model = Chain(NAU(d,d,init=init), GatedNPU(d,1,init=init))
 #model = Chain(NAU(d,d,init=init), NPU(d,1,init=init))
 
-generate = arithmetic_dataset(*, c.inlen,
+generate = arithmetic_dataset(/, c.inlen,
     d=Uniform(c.lowlim,c.uplim),
     subset=c.subset,
     overlap=c.overlap)
-test_generate = arithmetic_dataset(*, c.inlen,
+test_generate = arithmetic_dataset(/, c.inlen,
     d=Uniform(c.lowlim-4,c.uplim+4),
     subset=c.subset,
     overlap=c.overlap)
@@ -78,10 +78,10 @@ ps = Flux.params(model)
 function loss(x,y)
     mse = Flux.mse(model(x),y)
     l1  = norm(ps, 1)
-    mse + 0.1l1
+    mse + 0.0001l1
     # st  = -logSt(ps, 0.5f0, 1f0)
     # mse + st
-    # mse
+    #mse
 end
 
 data     = (generate(c.batch) for _ in 1:c.niters)
