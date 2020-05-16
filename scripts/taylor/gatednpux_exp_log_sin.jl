@@ -10,21 +10,22 @@ pyplot()
 
 
 function run(c::Dict, f::Function)
-    @unpack dim, lowlim, uplim, niter = c
+    #@unpack dim, lowlim, uplim, niter, lr = c
+    @unpack dim, lowlim, uplim, niter, lr, βl1 = c
     x = Float32.(reshape(lowlim:0.1:uplim, 1, :))
     y = f.(x)
 
     data = Iterators.repeated((x,y), niter)
-    opt = ADAM(1e-3)
+    opt = ADAM(lr)
     model = Chain(GatedNPUX(1,dim), NAU(dim,1))
     ps = params(model)
-    loss(x,y) = sum(abs2, model(x) .- y) #+ βl1*norm(model[1].Im)
+    loss(x,y) = sum(abs2, model(x) .- y) + βl1*norm(model[1].Im)
 
     cb = [Flux.throttle(()->(
                xt = Float32.(reshape((lowlim*2):0.5:(uplim*1.5),1,:));
                yt = f.(xt);
-               p1 = plot(vec(xt), vec(yt), yscale=:log10);
-               plot!(p1, vec(xt), abs.(vec(model(xt))));
+               p1 = plot(vec(xt), vec(yt));
+               plot!(p1, vec(xt), vec(model(xt)));
                display(p1);
                @info loss(x,y) loss(xt,yt)
               ), 1)
@@ -34,18 +35,24 @@ function run(c::Dict, f::Function)
 end
 
 expres, _ = produce_or_load(datadir("exp_log_sin"),
-                         Dict(:lowlim=>-5, :uplim=>5, :dim=>10, :niter=>50000),
+                         Dict(:lowlim=>-5, :uplim=>5, :dim=>10, :niter=>50000, :lr=>1e-3),
                          c -> run(c, exp),
                          prefix="gatednpux_exp",
                          force=false)
 
 logres, _ = produce_or_load(datadir("exp_log_sin"),
-                         Dict(:lowlim=>0.1, :uplim=>2, :dim=>10, :niter=>50000),
+                         Dict(:lowlim=>0.1, :uplim=>2, :dim=>10, :niter=>50000, :lr=>1e-3),
                          c -> run(c, log),
                          prefix="gatednpux_log",
                          force=false)
 
-pgfplotsx()
+sinres, _ = produce_or_load(datadir("exp_log_sin"),
+                         Dict(:lowlim=>-5, :uplim=>5, :dim=>4, :niter=>50000, :lr=>1e-3, :βl1=>0.01),
+                         c -> run(c, sin),
+                         prefix="gatednpux_sin",
+                         force=false)
+
+pyplot()
 expmodel = expres[:model]
 c = expres[:config]
 @unpack dim, lowlim, uplim, niter = c
@@ -53,10 +60,12 @@ c = expres[:config]
 xt = Float32.(collect((lowlim*2):0.5:(uplim*2)))
 yt = exp.(xt)
 
-p1 = plot(xt, yt, label="Exp", yscale=:log10, lw=2, ls=:dash)
-plot!(p1, xt, abs.(vec(expmodel(reshape(xt,1,:)))), lw=2, label="GatedNPUX", size=(300,200))
-vline!(p1, [lowlim, uplim], lw=2, c=:gray, label="Train range")
-savefig(p1, plotsdir("exp_log_sin", "gatednpux_exp.tikz"))
+p1 = plot(xt, yt, label="Exp", lw=2, ls=:dash, yscale=:log10, ylim=[1e-4,1e4])
+plot!(p1, xt, abs.(vec(expmodel(reshape(xt,1,:)))),
+      lw=2, label="GatedNPUX", size=(300,200), legend=:bottomright)
+plot!(p1, [lowlim, lowlim], [1e-5, 1e5], c=:gray, label=false)
+plot!(p1, [uplim, uplim], [1e-5, 1e5], c=:gray, label="Train range")
+savefig(p1, plotsdir("exp_log_sin", "gatednpux_exp.tex"))
 display(p1)
 
 
@@ -71,3 +80,17 @@ plot!(p2, xt, vec(logmodel(reshape(xt,1,:))), lw=2, label="GatedNPUX", size=(300
 vline!(p2, [lowlim, uplim], lw=2, c=:gray, label="Train range")
 savefig(p2, plotsdir("exp_log_sin", "gatednpux_log.tikz"))
 display(p2)
+
+sinmodel = sinres[:model]
+c = sinres[:config]
+@unpack dim, lowlim, uplim, niter = c
+xt = Float32.(collect((lowlim*2):0.1:(uplim*2)))
+yt = sin.(xt)
+
+p3 = plot(xt, yt, label="Log", lw=2, ls=:dash)
+plot!(p3, xt, vec(sinmodel(reshape(xt,1,:))), lw=2, label="GatedNPUX", size=(300,200))
+plot!(p3, xt, sine_taylor.(xt,3), ylim=(-5,5))
+plot!(p3, xt, sine_taylor.(xt,4), ylim=(-5,5))
+vline!(p3, [lowlim, uplim], lw=2, c=:gray, label="Train range")
+savefig(p3, plotsdir("exp_log_sin", "gatednpux_sin.tikz"))
+display(p3)

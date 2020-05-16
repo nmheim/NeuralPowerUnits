@@ -32,9 +32,20 @@
 \usepackage{amsmath}
 \usepackage{graphicx}
 
+% figures
+\usepackage{tikz}
+\usetikzlibrary{arrows,backgrounds,positioning,intersections}
+\usepackage{pgfplots}
+\pgfplotsset{compat=newest}
+\usepgfplotslibrary{groupplots}
+\usepgfplotslibrary{polar}
+\usepgfplotslibrary{smithchart}
+\usepgfplotslibrary{statistics}
+\usepgfplotslibrary{dateplot}
 \graphicspath{{./../../plots/}}
 \newcommand{\real}{\text{real}}
 
+% tables
 \usepackage{booktabs}
 \renewcommand{\arraystretch}{1.2}
 
@@ -68,15 +79,26 @@
 \section{Introduction}%
 \label{sec:introduction}
 
-Neural Networks (NN) have proven to perform exceptionally well at function
-approximation tasks\todo{cite universal approx}. This great approximation
-performance unfortunately comes at the cost of generalization beyond the
-training domain\todo{cite something?}.  The inability to generalize to unseen
-inputs is a fundamental problem that hints at a lack of \emph{understanding} of
-the given task. The model merely memorizes the seen inputs and fails to
-abstract the true learning task.
-This can be demonstrated by training a traditional, dense NN to approximate
-three functions
+Numbers and simple algebra are essential not only to human intelligence but also
+to the survival of many other
+species~\citep{dehaene_number_2011,gallistel_finding_2018}.  This can be taken
+as a hint that arithmetic is an important ingredient to a successful,
+intelligent agent.  State of the art neural networks are capable of learning
+simple arithmetic, but they fail to extrapolate beyond the ranges seen during
+training~\citep{suzgun_evaluating_2018,lake_generalization_2018}.
+The inability to generalize to unseen inputs is a fundamental problem that
+hints at a lack of \emph{understanding} of the given task. The model merely
+memorizes the seen inputs and fails to abstract the true learning task.
+The failure of numerical extrapolation on simple arithmetic tasks has been shown
+by~\cite{trask_neural_2018},
+who also introduce a new class of \emph{Neural Arithmetic Units}
+that show exceptional extrapolation performance on most arithmetic tasks.
+...now explain drawbacks of NALU and NMU...
+...we introduce blah...
+
+  This
+can be demonstrated by training a traditional, dense NN to approximate three
+functions
 \begin{align}
   \label{eq:approx_tasks}
   f(x) = e^x, && g(x) = \log(x), && h(x) = \sin(x)
@@ -84,7 +106,7 @@ three functions
 
 \begin{figure}
   \centering
-  \input{../plots/exp_log_sin/dense_exp.tex}
+  \input{../plots/exp_log_sin/gatednpux_exp.tikz}
   \caption{}%
   \label{fig:}
 \end{figure}
@@ -96,6 +118,7 @@ functions. This promises to improve on the extrapolation capabilities of NNs
 even on tasks that are beyond artificial arithmetic tasks such as learning
 multiplication, or a certain power function \todo{cite some examples}.
 \todo{mention ODEs as use case}
+\todo{mention explainability}
 
 
 

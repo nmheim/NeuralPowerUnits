@@ -45,6 +45,12 @@ logres, _ = produce_or_load(datadir("exp_log_sin"),
                          prefix="dense_log",
                          force=false)
 
+sinres, _ = produce_or_load(datadir("exp_log_sin"),
+                         Dict(:lowlim=>-5, :uplim=>5, :dim=>10, :niter=>50000),
+                         c -> run(c, sin),
+                         prefix="dense_sin",
+                         force=false)
+
 pgfplotsx()
 expmodel = expres[:model]
 c = expres[:config]
@@ -54,7 +60,7 @@ xt = collect((lowlim*2):0.5:(uplim*2))
 yt = exp.(xt)
 
 p1 = plot(xt, yt, label="Exp", yscale=:log10, lw=2, ls=:dash)
-plot!(p1, xt, vec(expmodel(reshape(xt,1,:))), lw=2, label="Dense NN", size=(300,200))
+plot!(p1, xt, vec(expmodel(reshape(xt,1,:))), lw=2, label="Dense", size=(300,200))
 vline!(p1, [lowlim, uplim], lw=2, c=:gray, label="Train range")
 savefig(p1, plotsdir("exp_log_sin", "dense_exp.tikz"))
 display(p1)
@@ -68,7 +74,19 @@ xt = collect((lowlim*2):0.1:(uplim*4))
 yt = log.(xt)
 
 p2 = plot(xt, yt, label="Log", lw=2, ls=:dash)
-plot!(p2, xt, vec(logmodel(reshape(xt,1,:))), lw=2, label="Dense NN", size=(300,200))
+plot!(p2, xt, vec(logmodel(reshape(xt,1,:))), lw=2, label="Dense", size=(300,200))
 vline!(p2, [lowlim, uplim], lw=2, c=:gray, label="Train range")
 savefig(p2, plotsdir("exp_log_sin", "dense_log.tikz"))
 display(p2)
+
+sinmodel = sinres[:model]
+c = sinres[:config]
+@unpack dim, lowlim, uplim, niter = c
+xt = Float32.(collect((lowlim*2):0.1:(uplim*2)))
+yt = sin.(xt)
+
+p3 = plot(xt, yt, label="Sin", lw=2, ls=:dash)
+plot!(p3, xt, vec(sinmodel(reshape(xt,1,:))), lw=2, label="Dense", size=(300,200))
+vline!(p3, [lowlim, uplim], lw=2, c=:gray, label="Train range")
+savefig(p3, plotsdir("exp_log_sin", "dense_sin.tikz"))
+display(p3)
