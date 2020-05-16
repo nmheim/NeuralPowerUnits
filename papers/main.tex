@@ -42,8 +42,9 @@
 \usepgfplotslibrary{smithchart}
 \usepgfplotslibrary{statistics}
 \usepgfplotslibrary{dateplot}
-\graphicspath{{./../../plots/}}
+\graphicspath{{./../plots/}}
 \newcommand{\real}{\text{real}}
+
 
 % tables
 \usepackage{booktabs}
@@ -66,64 +67,79 @@
 
 \begin{abstract}
   Common Neural Networks can approximate simple arithmetic operations, but fail
-  to generalize well beyond the training manifold. A new class of units called
-  \emph{Neural Arithmetic Units} aim to overcome this difficulty, but are limited
-  either to operate on positive numbers (NALU by
+  to generalize beyond the range of numbers that were seen during training. A
+  new class of units called \emph{Neural Arithmetic Units} aim to overcome this
+  difficulty, but are limited either to operate on positive numbers (NALU by
   \citet{trask_neural_2018}), or can only represent simple addition and
-  multiplication (NAU \& NMU by \citet{madsen_neural_2020}).
-  We present the first Neural Arithmetic Unit that operates on the full domain
-  of real numbers and is capable of learning arbitrary power functions.
+  multiplication (NAU \& NMU by \citet{madsen_neural_2020}).  We introduce a
+  Neural Arithmetic Unit that operates on the full domain of real numbers and
+  is capable of learning arbitrary power functions called \emph{Neural Power
+  Unit} (NPU). The NPU enables not only the learning simple arithmetic
+  operations, but is also capable of learning e.g. Taylor expansions with very
+  few parameters, which makes the NPU highly explainable.
+  \footnote{Implementation of neural arithmetic units:
+  \url{https://github.com/nmheim/NeuralArithmetic.jl}}.
 \end{abstract}
 
 
 \section{Introduction}%
 \label{sec:introduction}
 
-Numbers and simple algebra are essential not only to human intelligence but also
-to the survival of many other
+Numbers and simple algebra are essential not only to human intelligence but
+also to the survival of many other
 species~\citep{dehaene_number_2011,gallistel_finding_2018}.  This can be taken
 as a hint that arithmetic is an important ingredient to a successful,
 intelligent agent.  State of the art neural networks are capable of learning
 simple arithmetic, but they fail to extrapolate beyond the ranges seen during
-training~\citep{suzgun_evaluating_2018,lake_generalization_2018}.
-The inability to generalize to unseen inputs is a fundamental problem that
-hints at a lack of \emph{understanding} of the given task. The model merely
-memorizes the seen inputs and fails to abstract the true learning task.
-The failure of numerical extrapolation on simple arithmetic tasks has been shown
-by~\cite{trask_neural_2018},
-who also introduce a new class of \emph{Neural Arithmetic Units}
-that show exceptional extrapolation performance on most arithmetic tasks.
-...now explain drawbacks of NALU and NMU...
-...we introduce blah...
+training~\citep{suzgun_evaluating_2018,lake_generalization_2018}.  The
+inability to generalize to unseen inputs is a fundamental problem that hints at
+a lack of \emph{understanding} of the given task. The model merely memorizes
+the seen inputs and fails to abstract the true learning task.  The failure of
+numerical extrapolation on simple arithmetic tasks has been shown
+by~\cite{trask_neural_2018}, who also introduce a new class of \emph{Neural
+Arithmetic Units} that show good extrapolation performance on some arithmetic
+tasks.
 
-  This
-can be demonstrated by training a traditional, dense NN to approximate three
-functions
-\begin{align}
-  \label{eq:approx_tasks}
-  f(x) = e^x, && g(x) = \log(x), && h(x) = \sin(x)
-\end{align}
+The \emph{Neural Arithmetic Logic Unit} (NALU) can learn addition,
+subtraction, multiplication, and division with two severe limitations: the
+inputs that the NALU is trained with have to be positive, and should be
+significantly larger than zero, otherwise the layer will not converge to
+a correct solution.
+
+\cite{madsen_neural_2020} introduce two new arithmetic layers, the \emph{Neural
+Addition Unit} (NAU) and the \emph{Neural Multiplication Unit} (NMU).
+Stacked, they can learn addition, subtraction, and multiplication and they converge
+for any input range. However, the NMU cannot learn division.
+
+\subsection*{Our Contribution}%
+\label{sub:our_contribution}
+
+We introduce a new arithmetic layer called the \emph{Neural Power Unit} (NPU)
+which is capable of learning addition, subtraction, and arbitrary power
+functions, which includes multiplication and division.
+Our approach is inspired by the NALU, but overcomes its limitations to
+non-small positive numbers by leveraging the complex plane.
 
 \begin{figure}
   \centering
-  \input{../plots/exp_log_sin/gatednpux_exp.tikz}
-  \caption{}%
-  \label{fig:}
+  %\includegraphics[width=0.8\linewidth]{compare-npu-nmu-nalu-xy-xdivy.tikz}
+  \input{../plots/compare-npu-nmu-nalu-xy-xdivy.tex}
+  \caption{Comparison of different models learning the function
+  $(x,y)\rightarrow(xy,\frac{x}{y})$ with $(x,y)\in\mathcal U^2(0.1,2)$.  Each
+  plot shows the mean-squared error on a logarithmic color scale ($\hat{\bm
+  t}=\text{model}(\bm x)$).  The Dense network learns both multiplication and
+  division, but fails to extrapolate. NALU learns both tasks perfectly, but
+  completely fails if one of the inputs is negative.  The NMU successfully
+  learns multiplication, but not division. Only the NPU learns both tasks and
+  can extrapolate with an error that is less than $0.01$ in most places.}%
+  \label{fig:compare-npu-nmu-nalu-xy-xdivy}
 \end{figure}
-
-Neural Arithmetic Units aim to overcome this problem with units that are able
-to represent simple arithmetic operations exactly. By composition of these
-units it becomes possible to learn e.g. exponentials, logarithms, and power
-functions. This promises to improve on the extrapolation capabilities of NNs
-even on tasks that are beyond artificial arithmetic tasks such as learning
-multiplication, or a certain power function \todo{cite some examples}.
-\todo{mention ODEs as use case}
-\todo{mention explainability}
-
-
 
 \section{Related Work}%
 \label{sec:related_work}
+
+\subsection{Neural Arithmetic Logic Unit}%
+\label{sub:neural_arithmetic_logic_unit}
 
 \citet{trask_neural_2018} have demonstrated how severe the extrapolation
 problem is even for the simplest arithmetic operations, such as summing or
@@ -143,10 +159,16 @@ to the logarithm in the multiplication part of the NALU:
   \text{Output: }         & \bm y = \bm a \odot \bm g + \bm m \odot (1-\bm g) 
                           & \bm g& = \sigma(\bm G\bm x)
 \end{align}
+Additionally the NALU has severe convergence problems for small inputs due to
+a non-smooth loss surface close to zero, as shown by \cite{madsen_neural_2020}.
 
-A multiplication layer that can handle negative inputs was introduced by \citet{madsen_neural_2020}.
-The \emph{Neural Multiplication Unit} (NMU) is defined by Eq.~\ref{eq:nmu} and is typically used in
-conjunction with the so-called \emph{Neural Addition Unit} (NAU) in Eq.~\ref{eq:nau}.
+\subsection{Neural Multiplication Unit}%
+\label{sub:neural_multiplication_unit}
+
+A multiplication layer that can handle small and negative inputs was introduced
+by \citet{madsen_neural_2020}.  The \emph{Neural Multiplication Unit} (NMU) is
+defined by Eq.~\ref{eq:nmu} and is typically used in conjunction with the
+so-called \emph{Neural Addition Unit} (NAU) in Eq.~\ref{eq:nau}.
 \begin{align}
   \label{eq:nmu}
   \text{NMU: } &y_j = \prod_i M_{ij} z_{i} + 1 - M_{ij}  &M_{ij}=\min(\max(M_{ij}, 0), 1)\\
@@ -171,7 +193,7 @@ packages: \cite{rackauckas_differentialequationsjl_2017} + (Flux.jl)}
   \caption{Comparison of different $2\times2$ layers on the task
   $(x,y)\rightarrow(xy,\frac{x}{y})$.  $(x,y) \in \mathcal U^2(-2,2)$.}
   \label{tab:compare_npu_npu_nalu}
-  \input{table_x*y_xdivy.tex}
+  \input{table-x*y-xdivy-pos-neg.tex}
 \end{table}
 
 \section{Neural Power Unit}%
@@ -220,6 +242,22 @@ where $k \in [0,1]$ is zero for positive inputs and one for negative inputs $z$.
 
 \section{Experimetns}%
 \label{sec:experimetns}
+This can be demonstrated by training a traditional, dense NN to approximate
+three functions
+\begin{align}
+  \label{eq:approx_tasks}
+  f(x) = e^x, && g(x) = \log(x), && h(x) = \sin(x)
+\end{align}
+
+Neural Arithmetic Units aim to overcome this problem with units that are able
+to represent simple arithmetic operations exactly. By composition of these
+units it becomes possible to learn e.g. exponentials, logarithms, and power
+functions. This promises to improve on the extrapolation capabilities of NNs
+even on tasks that are beyond artificial arithmetic tasks such as learning
+multiplication, or a certain power function \todo{cite some examples}.
+\todo{mention ODEs as use case}
+\todo{mention explainability}
+
 
 \subsection{10 param func}%
 \label{sub:10_param_func}

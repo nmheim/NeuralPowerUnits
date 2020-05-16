@@ -3,14 +3,18 @@ using DrWatson
 
 using Flux
 using LinearAlgebra
+using Random
+using DataFrames
 using NeuralArithmetic
+
+Random.seed!(0)
 
 f(x::Array) = cat(reshape(x[1,:] .* x[2,:], 1, :),
                   reshape(x[1,:] ./ x[2,:], 1, :),
                   dims=1)
 
 
-train_range = "pos-neg"
+train_range = "pos"
 
 function generate_pos_neg()
     x = rand(Float32, 2, 100) .* 4 .- 2
@@ -79,7 +83,7 @@ end
 function run_dense(c::Dict)
     model = Chain(Dense(2,10,σ),Dense(10,10,σ),Dense(10,2))
     ps = params(model)
-    opt = RMSProp(c[:lr])
+    opt = ADAM(c[:lr])
     data = (generate() for _ in 1:c[:niters])
     loss(x,y) = Flux.mse(model(x),y)
     (x,y) = generate()
@@ -109,14 +113,13 @@ res, _ = produce_or_load(datadir("layercomparison"),
 nalu = res[:model]
 
 res, _ = produce_or_load(datadir("layercomparison"),
-                         Dict(:niters=>40000, :lr=>0.001),
+                         Dict(:niters=>40000, :lr=>0.01),
                          run_dense,
                          prefix="$train_range-dense", force=false)
 dense = res[:model]
 
 
 
-using DataFrames
 
 multloss(model,x::Real,y::Real) = abs(model([x,y])[1] - f([x,y])[1])
 multloss(model,x::Array,y::Array) = Flux.mse(model(x)[1,:], y[1,:])
@@ -163,37 +166,54 @@ raw"""\bottomrule
 
 display(df)
 fname = papersdir("table-x*y-xdivy-$train_range.tex")
-open(fname, "w") do file
-    @info "Writing dataframe to $fname"
-    #latex_str = repr(MIME("text/latex"), df)
-    write(file, latex_str)
-end
+# open(fname, "w") do file
+#     @info "Writing dataframe to $fname"
+#     write(file, latex_str)
+# end
 
 using Plots
+using LaTeXStrings
 include(srcdir("turbocmap.jl"))
-pyplot()
+pgfplotsx()
+#pyplot()
 
 x = Float32.(collect(-4:0.1:4))
 y = Float32.(collect(-4:0.1:4))
 
 clim = (-3,2)
-s1 = heatmap(x,y,(x,y)->log10(multloss(npu,x,y)), clim=clim, c=turbo_cgrad)
-s2 = heatmap(x,y,(x,y)->log10(divloss(npu,x,y)), clim=clim, c=turbo_cgrad)
-p1 = plot(s1,s2)
+nantozero(z) = isnan(z) ? 0 : z
+function inftoextreme(z)
+    if isinf(z)
+        m = maxintfloat(typeof(z))
+        return z<0 ? -m : m
+    else
+        return z
+    end
+end
+rminvalid = nantozero ∘ inftoextreme
 
-s1 = heatmap(x,y,(x,y)->log10(multloss(nmu,x,y)+eps()), clim=clim, c=turbo_cgrad)
-s2 = heatmap(x,y,(x,y)->log10(divloss(nmu,x,y)), clim=clim, c=turbo_cgrad)
-p2 = plot(s1,s2)
+func(x,y) = rminvalid(log10(multloss(npu,x,y)))
+s1 = heatmap(x,y,func, c=turbo_cgrad, clim=clim, title="NPU "*L"\times", colorbar=true)
+func(x,y) = rminvalid(log10(divloss(npu,x,y)))
+s2 = heatmap(x,y,func, clim=clim, c=turbo_cgrad, title="NPU "*L"\div", colorbar=true)
+func(x,y) = rminvalid(log10(multloss(nmu,x,y)))
+s3 = heatmap(x,y,func, clim=clim, c=turbo_cgrad, title="NMU "*L"\times", colorbar=true)
+func(x,y) = rminvalid(log10(divloss(nmu,x,y)))
+s4 = heatmap(x,y,func, clim=clim, c=turbo_cgrad, title="NMU "*L"\div", colorbar=true)
+func(x,y) = rminvalid(log10(multloss(nalu,x,y)))
+s5 = heatmap(x,y,func, clim=clim, c=turbo_cgrad, title="NALU "*L"\times", colorbar=true)
+func(x,y) = rminvalid(log10(divloss(nalu,x,y)))
+s6 = heatmap(x,y,func, clim=clim, c=turbo_cgrad, title="NALU "*L"\div", colorbar=true)
+func(x,y) = rminvalid(log10(multloss(dense,x,y)))
+s7 = heatmap(x,y,func, clim=clim, c=turbo_cgrad, title="Dense "*L"\times",
+             colorbar_title=L"\log |\hat t-t|^2")
+func(x,y) = rminvalid(log10(divloss(dense,x,y)))
+s8 = heatmap(x,y,func, clim=clim, c=turbo_cgrad, title="Dense "*L"\div",
+             colorbar_title=L"\log |\hat t-t|^2")
 
-s1 = heatmap(x,y,(x,y)->log10(multloss(nalu,x,y)), clim=clim, c=turbo_cgrad)
-s2 = heatmap(x,y,(x,y)->log10(divloss(nalu,x,y)), clim=clim, c=turbo_cgrad)
-p3 = plot(s1,s2)
-
-s1 = heatmap(x,y,(x,y)->log10(multloss(dense,x,y)), clim=clim, c=turbo_cgrad)
-s2 = heatmap(x,y,(x,y)->log10(divloss(dense,x,y)), clim=clim, c=turbo_cgrad)
-p4 = plot(s1,s2)
-
-display(p1)
+plt = plot(s1,s3,s5,s7, s2,s4,s6,s8, layout=(2,4), size=(1000,400))
+savefig(plt, plotsdir("compare-npu-nmu-nalu-xy-xdivy.tex"))
+display(plt)
 
 #model = GatedNPU(2,2, init=(s...)->rand(Float32,s...)/10)
 #model = NALU(2,2)
