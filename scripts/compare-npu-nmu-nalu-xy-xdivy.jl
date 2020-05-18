@@ -94,7 +94,7 @@ end
 
 
 res, _ = produce_or_load(datadir("layercomparison"),
-                         Dict(:niters=>40000, :βl1=>0.1, :lr=>0.002),
+                         Dict(:niters=>50000, :βl1=>0.1, :lr=>0.0001),
                          run_npu,
                          prefix="$train_range-gatednpux",
                          force=false, digits=6)
@@ -113,7 +113,7 @@ res, _ = produce_or_load(datadir("layercomparison"),
 nalu = res[:model]
 
 res, _ = produce_or_load(datadir("layercomparison"),
-                         Dict(:niters=>40000, :lr=>0.01),
+                         Dict(:niters=>50000, :lr=>0.001),
                          run_dense,
                          prefix="$train_range-dense", force=false)
 dense = res[:model]
@@ -145,7 +145,7 @@ push!(df, ("Dense", multloss(dense,x,y), divloss(dense,x,y),
            multloss(dense,xt,yt), divloss(dense,xt,yt)))
 
 for col in ["mult_trn", "div_trn", "mult_val", "div_val"]
-    df[!,col] = round.(df[!,col], digits=4)
+    df[!,col] = round.(df[!,col], digits=6)
 end
 
 latex_str = (
@@ -166,16 +166,16 @@ raw"""\bottomrule
 
 display(df)
 fname = papersdir("table-x*y-xdivy-$train_range.tex")
-# open(fname, "w") do file
-#     @info "Writing dataframe to $fname"
-#     write(file, latex_str)
-# end
+open(fname, "w") do file
+    @info "Writing dataframe to $fname"
+    write(file, latex_str)
+end
 
 using Plots
 using LaTeXStrings
 include(srcdir("turbocmap.jl"))
-pgfplotsx()
-#pyplot()
+#pgfplotsx()
+pyplot()
 
 x = Float32.(collect(-4:0.1:4))
 y = Float32.(collect(-4:0.1:4))
@@ -192,27 +192,34 @@ function inftoextreme(z)
 end
 rminvalid = nantozero ∘ inftoextreme
 
+@info "Plotting NPU..."
 func(x,y) = rminvalid(log10(multloss(npu,x,y)))
-s1 = heatmap(x,y,func, c=turbo_cgrad, clim=clim, title="NPU "*L"\times", colorbar=true)
+s1 = heatmap(x,y,func, c=turbo_cgrad, clim=clim, title="NPU "*L"\times", colorbar=false, ylabel="y")
 func(x,y) = rminvalid(log10(divloss(npu,x,y)))
-s2 = heatmap(x,y,func, clim=clim, c=turbo_cgrad, title="NPU "*L"\div", colorbar=true)
+s2 = heatmap(x,y,func, clim=clim, c=turbo_cgrad, title="NPU "*L"\div", colorbar=false, ylabel="y", xlabel="x")
+@info "Plotting NMU..."
 func(x,y) = rminvalid(log10(multloss(nmu,x,y)))
-s3 = heatmap(x,y,func, clim=clim, c=turbo_cgrad, title="NMU "*L"\times", colorbar=true)
+s3 = heatmap(x,y,func, clim=clim, c=turbo_cgrad, title="NMU "*L"\times", colorbar=false)
 func(x,y) = rminvalid(log10(divloss(nmu,x,y)))
-s4 = heatmap(x,y,func, clim=clim, c=turbo_cgrad, title="NMU "*L"\div", colorbar=true)
+s4 = heatmap(x,y,func, clim=clim, c=turbo_cgrad, title="NMU "*L"\div", colorbar=false, xlabel="x")
+@info "Plotting NALU..."
 func(x,y) = rminvalid(log10(multloss(nalu,x,y)))
-s5 = heatmap(x,y,func, clim=clim, c=turbo_cgrad, title="NALU "*L"\times", colorbar=true)
+s5 = heatmap(x,y,func, clim=clim, c=turbo_cgrad, title="NALU "*L"\times", colorbar=false)
 func(x,y) = rminvalid(log10(divloss(nalu,x,y)))
-s6 = heatmap(x,y,func, clim=clim, c=turbo_cgrad, title="NALU "*L"\div", colorbar=true)
+s6 = heatmap(x,y,func, clim=clim, c=turbo_cgrad, title="NALU "*L"\div", colorbar=false, xlabel="x")
 func(x,y) = rminvalid(log10(multloss(dense,x,y)))
+@info "Plotting Dense..."
 s7 = heatmap(x,y,func, clim=clim, c=turbo_cgrad, title="Dense "*L"\times",
              colorbar_title=L"\log |\hat t-t|^2")
 func(x,y) = rminvalid(log10(divloss(dense,x,y)))
 s8 = heatmap(x,y,func, clim=clim, c=turbo_cgrad, title="Dense "*L"\div",
-             colorbar_title=L"\log |\hat t-t|^2")
+             colorbar_title=L"\log |\hat t-t|^2", xlabel="x")
 
+fname = papersdir("compare-npu-nmu-nalu-xy-xdivy.png")
+@info "Saving plot to $fname"
 plt = plot(s1,s3,s5,s7, s2,s4,s6,s8, layout=(2,4), size=(1000,400))
-savefig(plt, plotsdir("compare-npu-nmu-nalu-xy-xdivy.tex"))
+savefig(plt, fname)
+@info "Display plot..."
 display(plt)
 
 #model = GatedNPU(2,2, init=(s...)->rand(Float32,s...)/10)

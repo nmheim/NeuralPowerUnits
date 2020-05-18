@@ -33,6 +33,7 @@
 \usepackage{graphicx}
 
 % figures
+\graphicspath{{./../plots/}}
 \usepackage{tikz}
 \usetikzlibrary{arrows,backgrounds,positioning,intersections}
 \usepackage{pgfplots}
@@ -42,9 +43,9 @@
 \usepgfplotslibrary{smithchart}
 \usepgfplotslibrary{statistics}
 \usepgfplotslibrary{dateplot}
-\graphicspath{{./../plots/}}
-\newcommand{\real}{\text{real}}
 
+
+\newcommand{\real}{\text{real}}
 
 % tables
 \usepackage{booktabs}
@@ -111,6 +112,16 @@ Addition Unit} (NAU) and the \emph{Neural Multiplication Unit} (NMU).
 Stacked, they can learn addition, subtraction, and multiplication and they converge
 for any input range. However, the NMU cannot learn division.
 
+Including Neural Arithmetic Units in common neural networks, apart from the
+potential increase in extrapolation capabilities, has additional advantages.
+They promise to reduce the amount of parameters that are needed for a given
+task, can drastically improve the explainability of our models (more on the
+explainability of the NPU in Sec.~\ref{sec:neural_power_unit}).  Additionally,
+the field of Scientific Machine Learning, which, in part, is concerned with
+learning differential equations~\citep{rackauckas_universal_2020} could benefit
+from the inductive bias neural arithmetic.
+
+
 \subsection*{Our Contribution}%
 \label{sub:our_contribution}
 
@@ -119,21 +130,6 @@ which is capable of learning addition, subtraction, and arbitrary power
 functions, which includes multiplication and division.
 Our approach is inspired by the NALU, but overcomes its limitations to
 non-small positive numbers by leveraging the complex plane.
-
-\begin{figure}
-  \centering
-  %\includegraphics[width=0.8\linewidth]{compare-npu-nmu-nalu-xy-xdivy.tikz}
-  \input{../plots/compare-npu-nmu-nalu-xy-xdivy.tex}
-  \caption{Comparison of different models learning the function
-  $(x,y)\rightarrow(xy,\frac{x}{y})$ with $(x,y)\in\mathcal U^2(0.1,2)$.  Each
-  plot shows the mean-squared error on a logarithmic color scale ($\hat{\bm
-  t}=\text{model}(\bm x)$).  The Dense network learns both multiplication and
-  division, but fails to extrapolate. NALU learns both tasks perfectly, but
-  completely fails if one of the inputs is negative.  The NMU successfully
-  learns multiplication, but not division. Only the NPU learns both tasks and
-  can extrapolate with an error that is less than $0.01$ in most places.}%
-  \label{fig:compare-npu-nmu-nalu-xy-xdivy}
-\end{figure}
 
 \section{Related Work}%
 \label{sec:related_work}
@@ -162,6 +158,18 @@ to the logarithm in the multiplication part of the NALU:
 Additionally the NALU has severe convergence problems for small inputs due to
 a non-smooth loss surface close to zero, as shown by \cite{madsen_neural_2020}.
 
+\todo{should this be here already?}
+With the simple exemplary task of learning a function $f:\mathbb R^2 \rightarrow \mathbb R^2$
+\begin{equation}
+  \label{eq:xx_xdivy}
+  f(\bm x) = f(x,y) = [xy,x/y] = \bm t
+\end{equation}
+we can demonstrate the strengths and weaknesses of the NALU.  The NALU only
+learns successfully if it is trained on positive numbers, so we train with
+samples from $\bm x \in \mathcal U^2(0.1,2)$ and plot the error $\epsilon =
+|\bm t - \hat{\bm t}|^2$ in Fig.~\ref{fig:compare_npu_nmu_nalu_xy_xdivy}.
+
+
 \subsection{Neural Multiplication Unit}%
 \label{sub:neural_multiplication_unit}
 
@@ -183,21 +191,70 @@ with $\mathcal{R}$:
 \end{align}
 
 The combination of NAU and NMU can thus learn $\{+,-,\times\}$, but no division.
+This is shown in Fig.~\ref{fig:compare_npu_nmu_nalu_xy_xdivy} as well. The NMU
+can perfectly represent the multiplication of the two inputs, but fails at
+learning division.
 
 \todo{put this in acknowledgements
 all the results in this paper were create with the help of the following Julia
 packages: \cite{rackauckas_differentialequationsjl_2017} + (Flux.jl)}
-\todo{add sqrt and positive range to table~\ref{tab:compare_npu_npu_nalu}?}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.8\linewidth]{compare-npu-nmu-nalu-xy-xdivy.png}
+  \caption{Comparison of different models learning the function
+  $(x,y)\rightarrow(xy,x/y)$ with $(x,y)\in\mathcal U^2(0.1,2)$.  Each
+  plot shows the mean-squared error on a logarithmic color scale ($\hat{\bm
+  t}=\text{model}(\bm x)$).  The Dense network learns both multiplication and
+  division, but fails to extrapolate. NALU learns both tasks perfectly, but
+  completely fails if one of the inputs is negative.  The NMU successfully
+  learns multiplication, but not division. Only the NPU learns both tasks and
+  can extrapolate with an error that is less than $0.01$ in most places.}%
+  \label{fig:compare_npu_nmu_nalu_xy_xdivy}
+\end{figure}
+\todo{add in depth experiment desc. of fig.~\ref{fig:compare_npu_nmu_nalu_xy_xdivy} in appendix}
+\todo{add sqrt to table~\ref{tab:compare_npu_npu_nalu}?}
 \begin{table}
   \centering
   \caption{Comparison of different $2\times2$ layers on the task
   $(x,y)\rightarrow(xy,\frac{x}{y})$.  $(x,y) \in \mathcal U^2(-2,2)$.}
   \label{tab:compare_npu_npu_nalu}
-  \input{table-x*y-xdivy-pos-neg.tex}
+  \input{table-x*y-xdivy-pos.tex}
 \end{table}
 
 \section{Neural Power Unit}%
 \label{sec:neural_power_unit}
+
+Eq.~\ref{eq:nalu_mult} enables the NALU to learn multiplication. If the weight
+matrix $\bm W$ would not be restricted to values in the range $(-1,1)$ it could
+in principle learn arbitrary power functions, because
+\begin{align}
+  z = \exp(w\log x) = x^w \text{ for } x>0.
+\end{align}
+However, this would complicate the convergence issues of the NALU even more.
+We therefore suggest to leverage the power of the complex plane, by using the
+complex logarithm and by promoting $w$ to a complex number.  This will enable
+us not only to lift the positivity constraint on $x$, but also provides and
+additional dimension that helps to avoid regions with an uninformative gradient
+signal\todo{rephrase this. do we have an educating example where it is obvious
+that complex plane helps? the stuff in fig.1 does not work as well with
+non-complex NPU, but I have not idea how to plot that}.
+Introducing a complex weight matrix somewhere in a larger network would mean that
+the gradients in other layers would potentially become complex as well, which
+would result in converting the whole network to complex numbers.
+This seems like a high price to pay, but fortunately there is a way around this.
+We can output only the real part of the result $z$, but still maintain a complex $w$.
+
+\newcommand{\wre}{w_{\text{re}}}
+\newcommand{\wim}{w_{\text{im}}}
+\begin{align}
+  \real(z) &= \real(\exp(w\log x)) \\
+    &= \real(\exp((\wre + i\wim) (\log r + ik\pi))) \\
+    &= \exp(\wre\log r - \wim k\pi) \real(\exp(i\wim\log r + ik\pi\wre)) \\
+    &= \exp(\wre\log r - \wim k\pi) \cos(\wim\log r + k\pi\wre)
+\end{align}
+\todo{explicitly compute gradients?}
+
 
 Our \emph{Neural Power Unit} (NPU) can learn arbitrary power functions (which
 includes division) while still being able to correctly deal with negative
@@ -255,8 +312,6 @@ units it becomes possible to learn e.g. exponentials, logarithms, and power
 functions. This promises to improve on the extrapolation capabilities of NNs
 even on tasks that are beyond artificial arithmetic tasks such as learning
 multiplication, or a certain power function \todo{cite some examples}.
-\todo{mention ODEs as use case}
-\todo{mention explainability}
 
 
 \subsection{10 param func}%
