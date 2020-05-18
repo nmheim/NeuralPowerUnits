@@ -18,29 +18,7 @@ include(srcdir("mvhistory.jl"))
 include(srcdir("schedules.jl"))
 include(srcdir("arithmetic_dataset.jl"))
 include(srcdir("arithmetic_models.jl"))
-
-@with_kw struct DivL1SearchConfig
-    batch::Int      = 128
-    niters::Int     = 1000000
-    lr::Real        = 2e-3
-
-    βstart::Real    = 1f-7
-    βend::Real      = 1f-6
-    βgrowth::Real   = 10f0
-    βstep::Int      = 10000
-
-    lowlim::Real    = 0
-    uplim::Real     = 0.5
-    subset::Real    = 0.5f0
-    overlap::Real   = 0.25f0
-
-    inlen::Int      = 100
-    fstinit::String = "rand"
-    sndinit::String = "rand"
-    model::String   = "gatednpu"
-
-    run::Int        = 1
-end
+include(joinpath(@__DIR__, "configs.jl"))
 
 
 function run(c::DivL1SearchConfig)
@@ -78,7 +56,7 @@ end
 
 
 # set up dict which will be permuted to yield all config combinations
-config_dicts = Dict(:βend => 10f0 .^ (-4f0:-2f0),
+config_dicts = Dict(:βend => 10f0 .^ (-7f0:-5f0),
                     :init => [("rand","rand"),
                               ("glorotuniform", "glorotuniform")],
                     :model => ["gatednpu", "gatednpux"])
@@ -95,11 +73,11 @@ end
 
 using Distributed
 pmap(config_dicts) do d
-    config = DivL1SearchConfig()
+    config = DivL1SearchConfig(βstart=1f-8)
     for nr in 1:5
         d[:run] = nr
         config = reconstruct(config, d)
         res, fname = produce_or_load(
-            datadir(basename(splitext(@__FILE__)[1])), config, run, digits=6)
+            datadir(basename(splitext(@__FILE__)[1])), config, run, digits=10)
     end
 end

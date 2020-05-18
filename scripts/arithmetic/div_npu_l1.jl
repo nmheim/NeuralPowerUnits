@@ -20,7 +20,7 @@ include(srcdir("arithmetic_models.jl"))
 
 @with_kw struct DivL1Config
     batch::Int      = 128
-    niters::Int     = 1000000
+    niters::Int     = 1e5
     lr::Real        = 2e-3
 
     βstart::Real    = 1f-7

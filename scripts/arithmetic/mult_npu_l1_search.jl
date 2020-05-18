@@ -17,30 +17,7 @@ using NeuralArithmetic
 include(srcdir("schedules.jl"))
 include(srcdir("arithmetic_dataset.jl"))
 include(srcdir("arithmetic_models.jl"))
-
-@with_kw struct MultL1SearchConfig
-    batch::Int      = 128
-    niters::Int     = 1e5
-    lr::Real        = 5e-3
-
-    βstart::Real    = 1f-5
-    βend::Real      = 1f-3
-    βgrowth::Real   = 10f0
-    βstep::Int      = 10000
-
-    lowlim::Real    = -1
-    uplim::Real     = 1
-    subset::Real    = 0.5f0
-    overlap::Real   = 0.25f0
-
-    inlen::Int      = 100
-    fstinit::String = "rand"
-    sndinit::String = "rand"
-    model::String   = "gatednpu"
-
-    run::Int        = 1
-end
-
+include(srcdir("configs.jl"))
 
 function run(c::MultL1SearchConfig)
     generate = arithmetic_dataset(*, c.inlen,
