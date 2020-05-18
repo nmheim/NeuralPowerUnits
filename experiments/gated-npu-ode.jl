@@ -66,7 +66,7 @@ end
 
 function loss_n_ode(p)
     pred = predict_n_ode(p)
-    loss = sum(abs2,ode_data .- pred) + 1e-5*norm(p,1) + 0.1norm(p[hdim*2+1:hdim*4],1)
+    loss = sum(abs2,ode_data .- pred) + 1e-4*norm(p,1) + 0.1norm(p[hdim*2+1:hdim*4],1)
     loss,pred
 end
 
@@ -88,7 +88,7 @@ end
 # Display the ODE with the initial parameter values.
 cb(n_ode.p,loss_n_ode(n_ode.p)...)
 
-res1 = DiffEqFlux.sciml_train(loss_n_ode, n_ode.p, RMSProp(0.005), cb = cb, maxiters = 300)
+res1 = DiffEqFlux.sciml_train(loss_n_ode, n_ode.p, RMSProp(0.005), cb = cb, maxiters = 1000)
 cb(res1.minimizer,loss_n_ode(res1.minimizer)...;doplot=true)
 @info "opt 1 done ---------------------------------------------------------"
 @info "opt 1 done ---------------------------------------------------------"
@@ -96,17 +96,13 @@ cb(res1.minimizer,loss_n_ode(res1.minimizer)...;doplot=true)
 @info "opt 1 done ---------------------------------------------------------"
 @info "opt 1 done ---------------------------------------------------------"
 
-res2 = DiffEqFlux.sciml_train(loss_n_ode, res1.minimizer, RMSProp(0.0001), cb = cb, maxiters = 3000)
+res2 = DiffEqFlux.sciml_train(loss_n_ode, res1.minimizer, RMSProp(0.0005), cb = cb, maxiters = 2000)
 cb(res2.minimizer,loss_n_ode(res2.minimizer)...;doplot=true)
-error()
-
-res3 = DiffEqFlux.sciml_train(loss_n_ode, res2.minimizer, RMSProp(0.005), cb = cb, maxiters = 3000)
-cb(res3.minimizer,loss_n_ode(res3.minimizer)...;doplot=true)
 error()
 
 using Optim
-res3 = DiffEqFlux.sciml_train(loss_n_ode, res1.minimizer, LBFGS(), cb = cb)
-cb(res2.minimizer,loss_n_ode(res2.minimizer)...;doplot=true)
+res3 = DiffEqFlux.sciml_train(loss_n_ode, res2.minimizer, LBFGS(), cb = cb)
+cb(res3.minimizer,loss_n_ode(res3.minimizer)...;doplot=true)
 
 # result is res2 as an Optim.jl object
 # res2.minimizer are the best parameters
