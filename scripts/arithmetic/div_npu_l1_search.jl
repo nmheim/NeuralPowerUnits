@@ -59,7 +59,7 @@ end
 config_dicts = Dict(:βend => 10f0 .^ (-7f0:-5f0),
                     :init => [("rand","rand"),
                               ("glorotuniform", "glorotuniform")],
-                    :model => ["gatednpu", "gatednpux"])
+                    :model => ["gatednpu", "gatednpux", "nmu", "nalu"])
 
 # permute and flatten :init -> :initnau, initnmu
 config_dicts = map(dict_list(config_dicts)) do config

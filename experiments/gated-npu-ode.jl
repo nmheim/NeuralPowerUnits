@@ -6,45 +6,54 @@ using NeuralArithmetic
 using Plots
 unicodeplots()
 
+datasize = 40
+
 u0 = [2.; 0.]
-datasize = 30
-tspan = (0.0,1.5)
 
 function trueODEfunc(du,u,p,t)
     true_A = [-0.1 2.0; -2.0 -0.1]
-    du .= ((u.^1)'true_A)'
+    du .= ((u.^3)'true_A)'
 end
+tspan = (0.0,1.5)
 t = range(tspan[1],tspan[2],length=datasize)
 prob = ODEProblem(trueODEfunc,u0,tspan)
 ode_data = Array(solve(prob,Tsit5(),saveat=t))
 
-function lotka_volterra(du,u,p,t)
-  x, y = u
-  α, β, δ, γ = p
-  du[1] = dx = α*x - β*x*y
-  du[2] = dy = -δ*y + γ*x*y
-end
-u0 = [0.5,1.0]
-tspan = (0.0,7.0)
-truep = [1.1,1.0,1.3,1.0]
-t = range(tspan[1],tspan[2],length=datasize)
-prob = ODEProblem(lotka_volterra,u0,tspan,truep)
-ode_data = Array(solve(prob, Tsit5(), saveat=t))
+# function lotka_volterra(du,u,p,t)
+#   x, y = u
+#   α, β, δ, γ = p
+#   du[1] = dx = α*x - β*x*y
+#   du[2] = dy = -δ*y + γ*x*y
+# end
+# # function lotka_volterra(du,u,p,t)
+# #     x,y = u
+# #     α = 2.0
+# #     β = 1.5
+# #     γ = 0.6
+# #     du[1] = β*x*(1-x) - α*x*y/(1+x)
+# #     du[2] = -γ*y + α*x*y/(1+x)
+# # end
+# u0 = [0.5,1.0]
+# tspan = (0.0,10.0)
+# truep = [1.1,1.0,1.3,1.0]
+# t = range(tspan[1],tspan[2],length=datasize)
+# prob = ODEProblem(lotka_volterra,u0,tspan,truep)
+# ode_data = Array(solve(prob, Tsit5(), saveat=t))
 
 
-init(a,b) = rand(Float64,a,b)/2
-init(a,b) = Float64.(Flux.glorot_uniform(a,b))
+init(a,b) = rand(Float64,a,b)/10
+init(a,b) = Float64.(Flux.glorot_uniform(a,b))/3
 # dudt = Chain(NAU(2,10),
 #              GatedNPU(10,10,init=init),
 #              NAU(10,2,init=init))
 
-dudt = Chain(GatedNPU(2,10,init=init),
-             NAU(10,2,init=init))
 
-hdim = 20
+hdim = 50
 dudt = Chain(GatedNPUX(2,hdim,initRe=init, initIm=zeros),
              NAU(hdim,2,init=init))
 
+dudt = FastChain(NeuralArithmetic.FastGatedNPUX(2,hdim,initRe=init, initIm=zeros),
+                 NeuralArithmetic.FastNAU(hdim,2,init=init))
 #dudt = Chain(NALU(2,hdim),NALU(hdim,2))
 
 # dudt = Chain(GatedNPUX([3.1 0.0; 0.0 3.1],
@@ -56,24 +65,36 @@ dudt = Chain(GatedNPUX(2,hdim,initRe=init, initIm=zeros),
 
 
 
-# dudt = FastChain(FastDense(2,50,tanh),
-#                  FastDense(50,2))
+# dudt = FastChain(FastDense(2,hdim,tanh),
+#                  FastDense(hdim,hdim,tanh),
+#                  FastDense(hdim,2))
 n_ode = NeuralODE(dudt,tspan,Euler(),saveat=t, dt=0.01)
 
 function predict_n_ode(p)
   n_ode(u0,p)
 end
 
+reg_loss(p) = 1e-4*norm(p,1)
+mse_loss(pred) = sum(abs2, ode_data .- pred)
+img_loss(p) = 1e-3*norm(p[hdim*2+1:hdim*4],1)
+
 function loss_n_ode(p)
     pred = predict_n_ode(p)
-    loss = sum(abs2,ode_data .- pred) + 1e-4*norm(p,1) + 0.1norm(p[hdim*2+1:hdim*4],1)
+    loss = mse_loss(pred) + reg_loss(p) + img_loss(p)
     loss,pred
 end
 
+function plot_chain(p)
+    npuw = p[1:(hdim*4)]
+    nauw = p[(hdim*4+1+2):end]
+    UnicodePlots.heatmap(reshape(vcat(npuw,nauw), hdim, 6))
+end
 
-cb = function (p,l,pred;doplot=true) #callback function to observe training
+
+cb = function (p,l,pred;doplot=false) #callback function to observe training
   # plot current prediction against data
-  @info l p'
+  #@info l mse_loss(pred) reg_loss(p)
+  # plot_chain(p)
   if doplot
     pl = scatter(t,ode_data[1,:],label="data")
     scatter!(pl,t,ode_data[2,:],label="data")
@@ -88,21 +109,15 @@ end
 # Display the ODE with the initial parameter values.
 cb(n_ode.p,loss_n_ode(n_ode.p)...)
 
-res1 = DiffEqFlux.sciml_train(loss_n_ode, n_ode.p, RMSProp(0.005), cb = cb, maxiters = 1000)
+res1 = DiffEqFlux.sciml_train(loss_n_ode, n_ode.p, RMSProp(0.005), cb = cb, maxiters = 3000)
 cb(res1.minimizer,loss_n_ode(res1.minimizer)...;doplot=true)
-@info "opt 1 done ---------------------------------------------------------"
-@info "opt 1 done ---------------------------------------------------------"
-@info "opt 1 done ---------------------------------------------------------"
-@info "opt 1 done ---------------------------------------------------------"
-@info "opt 1 done ---------------------------------------------------------"
 
-res2 = DiffEqFlux.sciml_train(loss_n_ode, res1.minimizer, RMSProp(0.0005), cb = cb, maxiters = 2000)
-cb(res2.minimizer,loss_n_ode(res2.minimizer)...;doplot=true)
-error()
+# res2 = DiffEqFlux.sciml_train(loss_n_ode, res1.minimizer, RMSProp(0.0005), cb = cb, maxiters = 2000)
+# cb(res2.minimizer,loss_n_ode(res2.minimizer)...;doplot=true)
 
 using Optim
-res3 = DiffEqFlux.sciml_train(loss_n_ode, res2.minimizer, LBFGS(), cb = cb)
-cb(res3.minimizer,loss_n_ode(res3.minimizer)...;doplot=true)
+res2 = DiffEqFlux.sciml_train(loss_n_ode, res1.minimizer, LBFGS(), cb = cb, maxiters=300)
+cb(res2.minimizer,loss_n_ode(res2.minimizer)...;doplot=true)
 
 # result is res2 as an Optim.jl object
 # res2.minimizer are the best parameters

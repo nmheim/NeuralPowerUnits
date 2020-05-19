@@ -17,7 +17,7 @@ using NeuralArithmetic
 include(srcdir("schedules.jl"))
 include(srcdir("arithmetic_dataset.jl"))
 include(srcdir("arithmetic_models.jl"))
-include(srcdir("configs.jl"))
+include(joinpath(@__DIR__, "configs.jl"))
 
 function run(c::MultL1SearchConfig)
     generate = arithmetic_dataset(*, c.inlen,
@@ -57,7 +57,7 @@ end
 config_dicts = Dict(:βend => 10f0 .^ (-4f0:-2f0),
                     :init => [("rand","rand"),
                               ("glorotuniform", "glorotuniform")],
-                    :model => ["gatednpu", "gatednpux"])
+                    :model => ["gatednpu", "gatednpux", "nmu", "nalu"])
 
 # permute and flatten :init -> :initnau, initnmu
 config_dicts = map(dict_list(config_dicts)) do config

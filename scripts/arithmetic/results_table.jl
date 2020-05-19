@@ -38,9 +38,9 @@ function expand_config!(df::DataFrame)
     end
 end
 
-function find_best(hash::UInt, df::DataFrame)
+function find_best(hash::UInt, df::DataFrame, key::String)
     fdf = filter(row->row[:hash]==hash, df)
-    sort!(fdf, :mse)
+    sort!(fdf, key)
     fdf[1,:path]
 end
 
@@ -54,22 +54,27 @@ folders = ["addition_npu_l1_search"
           ,"div_npu_l1_search"]
 folders = map(datadir, folders)
 
-df = collect_results!(datadir(folders[4]), white_list=[],
+folder = folders[4]
+df = collect_results!(datadir(folder), white_list=[],
                       special_list=[:trn => data -> last(data[:history], :loss)[1],
                                     :mse => data -> last(data[:history], :loss)[2],
                                     :reg => data -> last(data[:history], :loss)[3],
                                     :val => data -> last(data[:history], :loss)[4],
                                     :config => data -> data[:c],
-                                    :hash => data -> hash(delete!(struct2dict(data[:c]),:run))])
+                                    :hash => data -> hash(delete!(struct2dict(data[:c]),:run)),
+                                    :task => data -> split(folder,"_")[1],
+                                   ],
+                     )
 expand_config!(df)
 display(df)
 
 adf = aggregateruns(df)
-sort!(adf,:μmse)
+key = "val"
+sort!(adf,"μ$key")
 display(adf)
 
-bestrun = find_best(adf[1,:hash], df)
-#bestrun = df[1,:path]
+# bestrun = find_best(adf[1,:hash], df, key)
+bestrun = sort!(df,key)[1,:path]
 res = load(bestrun)
 @unpack model, history = res
 
