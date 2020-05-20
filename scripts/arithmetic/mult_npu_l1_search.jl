@@ -69,8 +69,7 @@ config_dicts = map(dict_list(config_dicts)) do config
     d
 end
 
-using Distributed
-pmap(config_dicts) do d
+@progress name="Mult Search: " for d in config_dicts
     config = MultL1SearchConfig()
     for nr in 1:5
         d[:run] = nr

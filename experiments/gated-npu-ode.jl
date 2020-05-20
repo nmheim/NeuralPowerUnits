@@ -74,7 +74,7 @@ function predict_n_ode(p)
   n_ode(u0,p)
 end
 
-reg_loss(p) = 1e-4*norm(p,1)
+reg_loss(p) = 1e-5*norm(p,1)
 mse_loss(pred) = sum(abs2, ode_data .- pred)
 img_loss(p) = 1e-3*norm(p[hdim*2+1:hdim*4],1)
 
@@ -87,15 +87,15 @@ end
 function plot_chain(p)
     npuw = p[1:(hdim*4)]
     nauw = p[(hdim*4+1+2):end]
-    UnicodePlots.heatmap(reshape(vcat(npuw,nauw), hdim, 6))
+    UnicodePlots.heatmap(reshape(vcat(npuw,nauw), hdim, 6), height=hdim)
 end
 
 
 cb = function (p,l,pred;doplot=false) #callback function to observe training
   # plot current prediction against data
   #@info l mse_loss(pred) reg_loss(p)
-  # plot_chain(p)
   if doplot
+    display(plot_chain(p))
     pl = scatter(t,ode_data[1,:],label="data")
     scatter!(pl,t,ode_data[2,:],label="data")
     plot!(pl,t,pred[1,:],label="prediction")
@@ -109,14 +109,14 @@ end
 # Display the ODE with the initial parameter values.
 cb(n_ode.p,loss_n_ode(n_ode.p)...)
 
-res1 = DiffEqFlux.sciml_train(loss_n_ode, n_ode.p, RMSProp(0.005), cb = cb, maxiters = 3000)
+res1 = DiffEqFlux.sciml_train(loss_n_ode, n_ode.p, RMSProp(0.005), cb = cb, maxiters = 5000)
 cb(res1.minimizer,loss_n_ode(res1.minimizer)...;doplot=true)
 
 # res2 = DiffEqFlux.sciml_train(loss_n_ode, res1.minimizer, RMSProp(0.0005), cb = cb, maxiters = 2000)
 # cb(res2.minimizer,loss_n_ode(res2.minimizer)...;doplot=true)
 
 using Optim
-res2 = DiffEqFlux.sciml_train(loss_n_ode, res1.minimizer, LBFGS(), cb = cb, maxiters=300)
+res2 = DiffEqFlux.sciml_train(loss_n_ode, res1.minimizer, LBFGS(), cb = cb)
 cb(res2.minimizer,loss_n_ode(res2.minimizer)...;doplot=true)
 
 # result is res2 as an Optim.jl object

@@ -53,7 +53,7 @@ function run(c::SqrtL1SearchConfig)
 end
 
 # set up dict which will be permuted to yield all config combinations
-config_dicts = Dict(:βend => 10f0 .^ (-4f0:-2f0),
+config_dicts = Dict(:βend => 10f0 .^ (-6f0:-4f0),
                     :init => [("rand","rand"),
                               ("glorotuniform", "glorotuniform")],
                     :model => ["gatednpu", "gatednpux", "nmu", "nalu"])
@@ -68,7 +68,7 @@ config_dicts = map(dict_list(config_dicts)) do config
     d
 end
 
-for d in config_dicts
+@progress name="Sqrt Search: " for d in config_dicts
     config = SqrtL1SearchConfig()
     for nr in 1:5
         d[:run] = nr

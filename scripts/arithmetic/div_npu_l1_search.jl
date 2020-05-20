@@ -8,13 +8,12 @@ global_logger(TerminalLogger(right_justify=80))
 
 using Parameters
 using UnicodePlots
+using ValueHistories
 
 using Flux
 using LinearAlgebra
 using NeuralArithmetic
 
-include(srcdir("history.jl"))
-include(srcdir("mvhistory.jl"))
 include(srcdir("schedules.jl"))
 include(srcdir("arithmetic_dataset.jl"))
 include(srcdir("arithmetic_models.jl"))
@@ -56,7 +55,7 @@ end
 
 
 # set up dict which will be permuted to yield all config combinations
-config_dicts = Dict(:βend => 10f0 .^ (-7f0:-5f0),
+config_dicts = Dict(:βend => 10f0 .^ (-8f0:-7f0),
                     :init => [("rand","rand"),
                               ("glorotuniform", "glorotuniform")],
                     :model => ["gatednpu", "gatednpux", "nmu", "nalu"])
@@ -71,9 +70,8 @@ config_dicts = map(dict_list(config_dicts)) do config
     d
 end
 
-using Distributed
-pmap(config_dicts) do d
-    config = DivL1SearchConfig(βstart=1f-8)
+@progress name="Div Search: " for d in config_dicts
+    config = DivL1SearchConfig()
     for nr in 1:5
         d[:run] = nr
         config = reconstruct(config, d)

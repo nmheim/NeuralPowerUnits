@@ -21,10 +21,10 @@ include(srcdir("arithmetic_models.jl"))
 @with_kw struct SqrtL1Config
     batch::Int      = 128
     niters::Int     = 50000
-    lr::Real        = 1e-2
+    lr::Real        = 5e-3
 
-    βstart::Real    = 1f-4
-    βend::Real      = 1f-2
+    βstart::Real    = 1f-7
+    βend::Real      = 1f-5
     βgrowth::Real   = 10f0
     βstep::Int      = 10000
 
@@ -33,7 +33,7 @@ include(srcdir("arithmetic_models.jl"))
     subset::Real    = 0.5f0
     overlap::Real   = 0.25f0
 
-    inlen::Int      = 20
+    inlen::Int      = 100
     fstinit::String = "glorotuniform"
     sndinit::String = "glorotuniform"
     model::String   = "gatednpu"

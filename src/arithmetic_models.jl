@@ -56,11 +56,11 @@ function get_model(model::String, inlen::Int, fstinit::String, sndinit::String)
         return Chain(NALU(inlen, inlen,
                           initNAC=initf(fstinit),
                           initG=initf(fstinit),
-                          initb=initf(fstinit)),
+                          initb=Flux.zeros),
                      NALU(inlen, 1,
                           initNAC=initf(sndinit),
                           initG=initf(sndinit),
-                          initb=initf(sndinit)))
+                          initb=Flux.zeros))
     elseif model == "npux"
         return Chain(Flux.fmap(ComplexMatrix, NAU(inlen,inlen,init=initf(fstinit))),
                      NPU(inlen, 1, init=initf(sndinit)))

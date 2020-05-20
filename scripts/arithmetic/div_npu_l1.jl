@@ -21,10 +21,10 @@ include(srcdir("arithmetic_models.jl"))
 @with_kw struct DivL1Config
     batch::Int      = 128
     niters::Int     = 1e5
-    lr::Real        = 2e-3
+    lr::Real        = 5e-3
 
-    βstart::Real    = 1f-7
-    βend::Real      = 1f-6
+    βstart::Real    = 1f-9
+    βend::Real      = 1f-7
     βgrowth::Real   = 10f0
     βstep::Int      = 10000
 
