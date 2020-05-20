@@ -75,6 +75,6 @@ end
         d[:run] = nr
         config = reconstruct(config, d)
         res, fname = produce_or_load(
-            datadir(basename(splitext(@__FILE__)[1])), config, run, digits=6)
+            datadir(basename(splitext(@__FILE__)[1])), config, run, digits=10)
     end
 end
