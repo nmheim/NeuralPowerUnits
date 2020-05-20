@@ -8,8 +8,8 @@ using ValueHistories
 using NeuralArithmetic
 include(joinpath(@__DIR__, "configs.jl"))
 
-function aggregateruns(df::DataFrame)
-    gdf = groupby(df, :hash)
+function aggregateruns(dataframe::DataFrame)
+    gdf = groupby(dataframe, :hash)
     combine(gdf) do df
         (μmse = mean(df.mse),
          σmse = std(df.mse),
@@ -21,6 +21,7 @@ function aggregateruns(df::DataFrame)
          σval = std(df.val),
          fstinit = first(df.fstinit),
          sndinit = first(df.sndinit),
+         βend = first(df.βend),
          model = first(df.model),
          task = first(df.task))
     end
@@ -40,26 +41,45 @@ function expand_config!(df::DataFrame)
     end
 end
 
-function find_best(hash::UInt, df::DataFrame, key::String)
-    fdf = filter(row->row[:hash]==hash, df)
+function find_best(df::DataFrame, model::String, task::String, key::String)
+    fdf = filter(r->r.model==model, df)
+    fdf = filter(r->r.task==task, fdf)
     sort!(fdf, key)
-    fdf[1,:path]
+    fdf[1,:]
 end
 
 
 Base.last(h::MVHistory, k::Symbol) = get(h,k)[2][end]
 
+function delete_rows_with_nans!(df::DataFrame, cols=[:trn,:mse,:reg,:val])
+     idxs = map(cols) do col
+        findall(isnan, df[!,col])
+    end
+    idx = unique(vcat(idxs...))
+    if length(idx) != 0
+        @info "Deleting rows with nans: $(idx)"
+        delete!(df, idx)
+    end
+end
+
+function delete_from_savename(path,key)
+    (dir,dict,_) = parse_savename(path)
+    delete!(dict, key)
+    joinpath(dir, savename(dict,digits=20))
+end
+
 function collect_folder!(folder::String)
-     _df = collect_results!(datadir(folder), white_list=[],
+    _df = collect_results!(datadir(folder), white_list=[],
                           special_list=[:trn => data -> last(data[:history], :loss)[1],
                                         :mse => data -> last(data[:history], :loss)[2],
                                         :reg => data -> last(data[:history], :loss)[3],
                                         :val => data -> last(data[:history], :loss)[4],
                                         :config => data -> data[:c],
-                                        :hash => data -> hash(delete!(struct2dict(data[:c]),:run)),
                                         :task => data -> split(basename(folder),"_")[1],
                                        ],
                          )
+    _df.hash = delete_from_savename.(_df.path, "run")
+    delete_rows_with_nans!(_df)
     expand_config!(_df)
     return _df
 end
@@ -73,7 +93,7 @@ Creates table like this:
 function best_models_for_tasks(df::DataFrame, key::String)
     best = combine(groupby(df,"model")) do modeldf
         combine(groupby(modeldf, "task")) do taskdf
-            tdf = sort!(DataFrame(taskdf[1,:]), key)
+            tdf = sort!(DataFrame(taskdf), key)
             tdf[1,:]
         end
     end
@@ -87,7 +107,6 @@ function best_models_for_tasks(df::DataFrame, key::String)
     rename!(result, vcat(["task"], models))
     result[!,1] = tasks
 
-    #result.models = models
     for m in models
         mdf = filter(:model=>model->model==m, best)
         for (i,t) in zip(1:length(tasks), tasks)
@@ -129,13 +148,32 @@ function plot_result_folder(df::DataFrame, cols::Vector{String}, measure::String
     plot(ps...,modelplot,layout=(:,3))
 end
 
-key = "val"
+heat(m::Chain) = heatmap(cat(model[1].W[end:-1:1,:], model[2].W', dims=2))
+heat(m::Chain{<:Tuple{<:NAU,<:GatedNPUX}}) =
+    heatmap(cat(model[1].W[end:-1:1,:], model[2].Re', model[2].Im',dims=2))
+
+function print_table(df::DataFrame)
+    f = (v,i,j) -> (v isa Real ? round(v,digits=5) : v)
+    function high(data,i,j)
+        if data[i,j] isa Real
+            b = data[i,j] == minimum(filter(!ismissing, Array(df[i,2:end])))
+            b isa Missing ? false : b
+        else
+            false
+        end
+    end
+    h = Highlighter(high, bold=true, foreground=:yellow)
+    pretty_table(df,formatters=f,highlighters=h)
+end
+
+key = "mse"
 folders = ["addition_npu_l1_search"
           ,"mult_npu_l1_search"
           ,"sqrt_npu_l1_search"
           ,"div_npu_l1_search"]
 folders = map(datadir, folders)
 
+# using Plots
 # _df = collect_folder!(folders[1])
 # pyplot()
 # display(plot_result_folder(_df,["βend", "fstinit", "sndinit"], key))
@@ -146,33 +184,10 @@ adf = aggregateruns(df)
 
 models = ["gatednpux","nmu","nalu"]
 bestdf = best_models_for_tasks(df, key)
-bestdf = best_models_for_tasks(adf, "μ$key")
-#sort!(adf,"μ$key")
+#bestdf = best_models_for_tasks(adf, "μ$key")
+print_table(bestdf)
 
-# folder = folders[3]
-# df = collect_results!(datadir(folder), white_list=[],
-#                       special_list=[:trn => data -> last(data[:history], :loss)[1],
-#                                     :mse => data -> last(data[:history], :loss)[2],
-#                                     :reg => data -> last(data[:history], :loss)[3],
-#                                     :val => data -> last(data[:history], :loss)[4],
-#                                     :config => data -> data[:c],
-#                                     :hash => data -> hash(delete!(struct2dict(data[:c]),:run)),
-#                                     :task => data -> split(folder,"_")[1],
-#                                    ],
-#                      )
-# expand_config!(df)
-# key = "val"
-# display(df)
-# 
-# adf = aggregateruns(df)
-# sort!(adf,"μ$key")
-# display(adf)
-# 
-# bestrun = find_best(adf[1,:hash], df, key)
-# #bestrun = sort!(df,key)[1,:path]
-# res = load(bestrun)
-# @unpack model, history = res
-# 
-# using UnicodePlots
-# UnicodePlots.heatmap(model[1].W[end:-1:1,:], height=100, width=100)
-
+row = find_best(df,"gatednpu","sqrt",key)
+model = load(row.path)[:model]
+display(row.config)
+heat(model)
