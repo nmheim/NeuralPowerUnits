@@ -11,7 +11,6 @@ include(joinpath(@__DIR__, "configs.jl"))
 function aggregateruns(dataframe::DataFrame)
     gdf = groupby(dataframe, :hash)
     combine(gdf) do df
-        @assert !all(df[!,name] .== df[1,name])
         (μmse = mean(df.mse),
          σmse = std(df.mse),
          μreg = mean(df.reg),
@@ -42,10 +41,11 @@ function expand_config!(df::DataFrame)
     end
 end
 
-function find_best(hash::UInt, df::DataFrame, key::String)
-    fdf = filter(row->row[:hash]==hash, df)
+function find_best(df::DataFrame, model::String, task::String, key::String)
+    fdf = filter(r->r.model==model, df)
+    fdf = filter(r->r.task==task, fdf)
     sort!(fdf, key)
-    fdf[1,:path]
+    fdf[1,:]
 end
 
 
@@ -148,6 +148,10 @@ function plot_result_folder(df::DataFrame, cols::Vector{String}, measure::String
     plot(ps...,modelplot,layout=(:,3))
 end
 
+heat(m::Chain) = heatmap(cat(model[1].W[end:-1:1,:], model[2].W', dims=2))
+heat(m::Chain{<:Tuple{<:NAU,<:GatedNPUX}}) =
+    heatmap(cat(model[1].W[end:-1:1,:], model[2].Re', model[2].Im',dims=2))
+
 function print_table(df::DataFrame)
     f = (v,i,j) -> (v isa Real ? round(v,digits=5) : v)
     function high(data,i,j)
@@ -162,23 +166,28 @@ function print_table(df::DataFrame)
     pretty_table(df,formatters=f,highlighters=h)
 end
 
-key = "val"
+key = "mse"
 folders = ["addition_npu_l1_search"
           ,"mult_npu_l1_search"
           ,"sqrt_npu_l1_search"
           ,"div_npu_l1_search"]
 folders = map(datadir, folders)
 
-using Plots
-_df = collect_folder!(folders[1])
-pyplot()
-display(plot_result_folder(_df,["βend", "fstinit", "sndinit"], key))
-error()
+# using Plots
+# _df = collect_folder!(folders[1])
+# pyplot()
+# display(plot_result_folder(_df,["βend", "fstinit", "sndinit"], key))
+# error()
 
 df = collect_all_results!(folders)
 adf = aggregateruns(df)
 
 models = ["gatednpux","nmu","nalu"]
 bestdf = best_models_for_tasks(df, key)
-bestdf = best_models_for_tasks(adf, "μ$key")
+#bestdf = best_models_for_tasks(adf, "μ$key")
 print_table(bestdf)
+
+row = find_best(df,"gatednpu","sqrt",key)
+model = load(row.path)[:model]
+display(row.config)
+heat(model)
