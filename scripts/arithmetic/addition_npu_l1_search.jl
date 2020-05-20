@@ -53,7 +53,7 @@ function run(c::AddL1SearchConfig)
 end
 
 # set up dict which will be permuted to yield all config combinations
-config_dicts = Dict(:βend => 10f0 .^ (-4f0:-2f0),
+config_dicts = Dict(:βend => 10f0 .^ (-6f0:-5f0),
                     :init => [("rand","rand"),
                               ("glorotuniform", "glorotuniform")],
                     :model => ["gatednpu", "gatednpux", "nmu"])

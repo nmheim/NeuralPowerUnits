@@ -66,6 +66,10 @@ end
 
 collect_all_results!(folders::Vector{String}) = vcat(map(collect_folder!, folders)...)
 
+"""
+Creates table like this:
+| task | npu | npux | ... |
+"""
 function best_models_for_tasks(df::DataFrame, key::String)
     best = combine(groupby(df,"model")) do modeldf
         combine(groupby(modeldf, "task")) do taskdf
