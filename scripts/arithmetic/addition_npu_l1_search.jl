@@ -68,7 +68,7 @@ config_dicts = map(dict_list(config_dicts)) do config
     d
 end
 
-for d in config_dicts
+@progress name="Add Search: " for d in config_dicts
     config = AddL1SearchConfig()
     for nr in 1:5
         d[:run] = nr
