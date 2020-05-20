@@ -2,7 +2,6 @@ using DrWatson
 @quickactivate "NIPS_2020_NMUX"
 
 using Plots
-using Zygote
 using Distributions
 using LaTeXStrings
 #pgfplotsx()

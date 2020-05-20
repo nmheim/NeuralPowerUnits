@@ -109,9 +109,9 @@ version = "3.1.0"
 
 [[CategoricalArrays]]
 deps = ["DataAPI", "Future", "JSON", "Missings", "Printf", "Statistics", "Unicode"]
-git-tree-sha1 = "df774d7e905ca391178f0abc67f4fa5d3ff4ef12"
+git-tree-sha1 = "a6c17353ee38ddab30e73dcfaa1107752de724ec"
 uuid = "324d7699-5711-5eae-9e2f-1d82baa6b597"
-version = "0.8.0"
+version = "0.8.1"
 
 [[ChainRulesCore]]
 deps = ["MuladdMacro"]
@@ -234,9 +234,9 @@ uuid = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 
 [[DiffEqBase]]
 deps = ["ArrayInterface", "ChainRulesCore", "ConsoleProgressMonitor", "DataStructures", "Distributed", "DocStringExtensions", "FunctionWrappers", "IterativeSolvers", "IteratorInterfaceExtensions", "LabelledArrays", "LinearAlgebra", "Logging", "LoggingExtras", "MuladdMacro", "Parameters", "Printf", "ProgressLogging", "RecipesBase", "RecursiveArrayTools", "RecursiveFactorization", "Requires", "Roots", "SparseArrays", "StaticArrays", "Statistics", "SuiteSparse", "TableTraits", "TerminalLoggers", "TreeViews", "ZygoteRules"]
-git-tree-sha1 = "68072ae3ac7fbebfcef7bd3aafa05ba819413f35"
+git-tree-sha1 = "5645718e985de003d91c70a38b5fcd0816b4d55b"
 uuid = "2b5f629d-d688-5b77-993f-72d75c75574e"
-version = "6.34.2"
+version = "6.34.3"
 
 [[DiffEqCallbacks]]
 deps = ["DataStructures", "DiffEqBase", "ForwardDiff", "LinearAlgebra", "NLsolve", "OrdinaryDiffEq", "RecipesBase", "RecursiveArrayTools", "StaticArrays"]
@@ -246,9 +246,9 @@ version = "2.13.1"
 
 [[DiffEqFlux]]
 deps = ["Adapt", "BlackBoxOptim", "DiffEqBase", "DiffEqSensitivity", "DiffResults", "Flux", "ForwardDiff", "LinearAlgebra", "Logging", "Optim", "Printf", "ProgressLogging", "RecursiveArrayTools", "Requires", "ReverseDiff", "StaticArrays", "Tracker", "ZygoteRules"]
-git-tree-sha1 = "35da7a2af57709937a6db2647855351e5eec3bc6"
+git-tree-sha1 = "4f27450c6f24f098938d5febba08ad0d2e2bbfb2"
 uuid = "aae7a2af-3d4f-5e19-a356-7da93b79d9d0"
-version = "1.10.2"
+version = "1.10.3"
 
 [[DiffEqSensitivity]]
 deps = ["Adapt", "DiffEqBase", "DiffEqCallbacks", "Distributions", "FFTW", "FiniteDiff", "ForwardDiff", "LinearAlgebra", "Parameters", "QuadGK", "QuasiMonteCarlo", "RecursiveArrayTools", "Requires", "ReverseDiff", "Statistics", "Tracker", "Zygote", "ZygoteRules"]
@@ -419,9 +419,9 @@ version = "0.8.3"
 
 [[IRTools]]
 deps = ["InteractiveUtils", "MacroTools", "Test"]
-git-tree-sha1 = "8845400bd2d9815d37720251f1b53d27a335e1f4"
+git-tree-sha1 = "90ee39f9beaaa186e4968417ea2b8ed5673c91c0"
 uuid = "7869d1d1-7146-5819-86e3-90919afe41df"
-version = "0.3.2"
+version = "0.3.3"
 
 [[Inflate]]
 git-tree-sha1 = "f5fc07d4e706b84f72d54eedcc1c13d92fb0871c"
@@ -761,9 +761,9 @@ version = "0.8.0"
 
 [[RecursiveArrayTools]]
 deps = ["ArrayInterface", "LinearAlgebra", "RecipesBase", "Requires", "StaticArrays", "Statistics", "ZygoteRules"]
-git-tree-sha1 = "22c78faa1827e63f542895b5ceb5d1a1aa160751"
+git-tree-sha1 = "0a422065106506f75cd7a24caf49c17523884414"
 uuid = "731186ca-8d62-57ce-b412-fbd966d074cd"
-version = "2.3.2"
+version = "2.3.3"
 
 [[RecursiveFactorization]]
 deps = ["LinearAlgebra"]

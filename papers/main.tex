@@ -45,7 +45,12 @@
 \usepgfplotslibrary{dateplot}
 
 
-\newcommand{\real}{\text{real}}
+\newcommand{\real}{\text{Re}}
+\newcommand{\imag}{\text{Im}}
+\newcommand{\wre}{w_{r}}
+\newcommand{\wim}{w_{i}}
+\newcommand{\Wre}{\bm W_{r}}
+\newcommand{\Wim}{\bm W_{i}}
 
 % tables
 \usepackage{booktabs}
@@ -213,16 +218,9 @@ packages: \cite{rackauckas_differentialequationsjl_2017} + (Flux.jl)}
   \label{fig:compare_npu_nmu_nalu_xy_xdivy}
 \end{figure}
 \todo{add in depth experiment desc. of fig.~\ref{fig:compare_npu_nmu_nalu_xy_xdivy} in appendix}
-\todo{add sqrt to table~\ref{tab:compare_npu_npu_nalu}?}
-\begin{table}
-  \centering
-  \caption{Comparison of different $2\times2$ layers on the task
-  $(x,y)\rightarrow(xy,\frac{x}{y})$.  $(x,y) \in \mathcal U^2(-2,2)$.}
-  \label{tab:compare_npu_npu_nalu}
-  \input{table-x*y-xdivy-pos.tex}
-\end{table}
 
-\section{Neural Power Unit}%
+
+\section{Neural Power Units}%
 \label{sec:neural_power_unit}
 
 Eq.~\ref{eq:nalu_mult} enables the NALU to learn multiplication. If the weight
@@ -231,6 +229,7 @@ in principle learn arbitrary power functions, because
 \begin{align}
   z = \exp(w\log x) = x^w \text{ for } x>0.
 \end{align}
+
 However, this would complicate the convergence issues of the NALU even more.
 We therefore suggest to leverage the power of the complex plane, by using the
 complex logarithm and by promoting $w$ to a complex number.  This will enable
@@ -238,64 +237,91 @@ us not only to lift the positivity constraint on $x$, but also provides and
 additional dimension that helps to avoid regions with an uninformative gradient
 signal\todo{rephrase this. do we have an educating example where it is obvious
 that complex plane helps? the stuff in fig.1 does not work as well with
-non-complex NPU, but I have not idea how to plot that}.
-Introducing a complex weight matrix somewhere in a larger network would mean that
-the gradients in other layers would potentially become complex as well, which
-would result in converting the whole network to complex numbers.
-This seems like a high price to pay, but fortunately there is a way around this.
-We can output only the real part of the result $z$, but still maintain a complex $w$.
-
-\newcommand{\wre}{w_{\text{re}}}
-\newcommand{\wim}{w_{\text{im}}}
+non-complex NPU, but I have not idea how to plot that}.  Introducing a complex
+weight matrix somewhere in a larger network would mean that the gradients in
+other layers would potentially become complex as well, which would result in
+converting the whole network to complex numbers.  This seems like a high price
+to pay, but fortunately there is a way around this.  We can output only the
+real part of the result $\real(z)$, but still maintain a complex $w$ by
+treating it as a sum of real and imaginary part $w=\wre+i\wim$. We are thus
+interested in
 \begin{align}
-  \real(z) &= \real(\exp(w\log x)) \\
-    &= \real(\exp((\wre + i\wim) (\log r + ik\pi))) \\
-    &= \exp(\wre\log r - \wim k\pi) \real(\exp(i\wim\log r + ik\pi\wre)) \\
-    &= \exp(\wre\log r - \wim k\pi) \cos(\wim\log r + k\pi\wre)
+  \label{eq:exp_w_log_complex}
+  \real(z) &= \real(\exp(w\log x)),
 \end{align}
+with a real input $x$. The complex logarithm is defined as $\log z=\log r +
+i\theta$, which, for real inputs $x$, can be simplified to $\log z = \log r +
+ik\pi$, where $k\in \{0,1\}$. With that Eq.~\ref{eq:exp_w_log_complex} can be
+rewritten to
+\begin{align}
+  \real(z) &= \real(\exp((\wre + i\wim) (\log r + ik\pi))) \\
+    &= \exp(\wre\log r - \wim k\pi) \cos(\wim\log r + k\pi\wre),
+\end{align}
+where we used Euler's formula\footnote{Euler's formula states that for any real
+number $x$: $re^{ix} = \cos x + i\sin x$}.
 \todo{explicitly compute gradients?}
 
+\subsection{Neural Power Unit (NPU)}%
+\label{sub:neural_power_unit_npu_}
 
-Our \emph{Neural Power Unit} (NPU) can learn arbitrary power functions (which
-includes division) while still being able to correctly deal with negative
-inputs.  The NPU layer is defined by
+\begin{figure}
+  \centering
+  \resizebox{.3\textwidth}{!}{\input{../plots/exp_log_sin/log_comp.tikz.tex}}
+  \resizebox{.3\textwidth}{!}{\input{../plots/exp_log_sin/exp_comp.tikz.tex}}
+  \resizebox{.3\textwidth}{!}{\input{../plots/exp_log_sin/sin_comp.tikz.tex}}
+  \caption{Function learning comparison of different layers.}%
+  \label{fig:sin_comp}
+\end{figure}
+
+The \emph{Neural Power Unit} (NPU) with two weight matrices $\Wre$ and $\Wim$
+then reads
 \begin{align}
-  k_i &= \begin{cases}
+  \bm r = |\bm x|,
+  \hspace{1cm}
+  & k_i = \begin{cases}
      0  & x_i \leq 0 \\
     \pi & x_i > 0
-  \end{cases} \\
-  \bm r &= |\bm x| \\
-  \bm m &= \exp(\bm M \log(\bm r)) \odot \cos(\bm M \bm k)
+  \end{cases}
+\end{align}
+\begin{align}
+  \bm z &= \exp(\Wre \log\bm r - \Wim\bm k) \odot \cos(\Wim\log \bm r + \Wre\bm k)
 \end{align}
 where $\bm k$ is a vector that is zero where $\bm x$ is positive and $\pi$
-where it is negative, $\bm r$ is the elementwise absolute value, and $\bm M$
-the multiplication matrix that we want to learn.
+where it is negative, $\bm r$ is the element-wise absolute value.
+In the final network we are only interested in real powers, so we recommend to
+strongly regularize the imaginary part of the weights $\Wim$.
 
-The NPU is inspired by the multiplication part of the NALU
-Eq.~\ref{eq:nalu_mult}, extended to negative inputs by taking advantage of the
-complex logarithm. In general, for any complex number $z$\footnote{Note that
-complex numbers can be represented in the polar, complex plane where
-$z=re^{i\varphi}$ with $r>0$ and $\varphi \in (0,2\pi)$.}
-\begin{align}
-  \log(z) = \log\left(r\cdot e^{i\varphi}\right)
-     = \log(r) + i\varphi.
-\end{align}
-However, as $z$ is assumed to be real, we can simplify as follows:
-\begin{align}
-  \log(z) = \log(r) + ik\pi,
-\end{align}
-where $k \in [0,1]$ is zero for positive inputs and one for negative inputs $z$.
+\subsection{Gated NPU}%
+\label{sub:gated_npu}
+As pointed out by \cite{madsen_neural_2020}, the loss surface of the NALU, and
+thus also the NPU, is not always smooth. For some input and weight combinations
+it can happen that the loss close to zero becomes very large as shown in
+Fig.~\ref{fig:task_loss_npu_nmu}.
+\begin{figure}
+  \centering
+  \includegraphics[width=0.8\linewidth]{task_loss_npu_nmu.pdf}
+  \caption{asdf}%
+  \label{fig:task_loss_npu_nmu}
+\end{figure}
+However, most applications are dealing with batches of data which average out
+these cases, as shown in Fig.~\ref{fig:task_loss_npu_nmu_average} for a batch
+size of 32.
+\begin{figure}
+  \centering
+  \includegraphics[width=0.8\linewidth]{task_loss_npu_nmu_average.pdf}
+  \caption{asdfadsf}%
+  \label{fig:task_loss_npu_nmu_average}
+\end{figure}
 
-\begin{align}
-  \bm m &= \exp(\bm M \log(\bm x)) \\
-    &= \exp(\bm M ( \log(\bm r) + i\pi\bm k ))
-\end{align}
-
-\begin{align}
-  \bm m_{\text{re}} &= \real(\exp(\bm M \log \bm r + i\pi\bm M\bm k)) \\
-    &= \real(\exp(\bm M \log \bm r) \odot (\cos(\pi \bm M \bm k) + i \sin(\pi \bm M \bm k))) \\
-    &= \exp(\bm M \log \bm r) \odot \cos(\pi \bm M \bm k)
-\end{align}
+In practice we encountered difficulties of obtaining sparse solutions with the
+NPU. If the inputs to an NPU unit are small, the gradient becomes practically
+zero, as we can see in Fig.~\ref{fig:id_loss_npu_nmu}
+\begin{figure}
+  \centering
+  \includegraphics[width=0.8\linewidth]{id_loss_npu_nmu.pdf}
+  \caption{learning identity with small inputs}%
+  \label{fig:id_loss_npu_nmu}
+\end{figure}
 
 \section{Experimetns}%
 \label{sec:experimetns}
@@ -369,6 +395,21 @@ multiplication, or a certain power function \todo{cite some examples}.
 %   \caption{Test}%
 %   \label{fig:test}
 % \end{figure}
+
+\appendix
+\section*{Appendix A}%
+\label{sec:appendix_a}
+
+\todo{add sqrt to table~\ref{tab:compare_npu_npu_nalu}?}
+\begin{table}[h]
+  \centering
+  \caption{Comparison of different $2\times2$ layers on the task
+  $(x,y)\rightarrow(xy,\frac{x}{y})$.  $(x,y) \in \mathcal U^2(-2,2)$.}
+  \label{tab:compare_npu_npu_nalu}
+  \input{table-xy-xdivy-pos.tex}
+\end{table}
+
+
 
 \bibliographystyle{plainnat}
 \bibliography{refs}

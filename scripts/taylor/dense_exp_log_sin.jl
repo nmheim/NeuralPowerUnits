@@ -10,7 +10,7 @@ pyplot()
 
 
 function run(c::Dict, f::Function)
-    @unpack dim, lowlim, uplim, niter = c
+    @unpack dim, lr, lowlim, uplim, niter = c
     x = Float32.(reshape(lowlim:0.1:uplim, 1, :))
     y = f.(x)
 
@@ -23,8 +23,10 @@ function run(c::Dict, f::Function)
     cb = [Flux.throttle(()->(
                xt = Float32.(reshape((lowlim*2):0.5:(uplim*2),1,:));
                yt = f.(xt);
-               p1 = plot(vec(xt), vec(yt));
-               plot!(p1, vec(xt), vec(model(xt)));
+               p1 = plot(vec(xt), vec(yt), yscale=:log10);
+               plot!(p1, vec(xt), abs.(vec(model(xt))));
+               # p1 = plot(vec(xt), vec(yt));
+               # plot!(p1, vec(xt), vec(model(xt)));
                display(p1);
                @info loss(x,y) loss(xt,yt)
               ), 1)
@@ -34,19 +36,19 @@ function run(c::Dict, f::Function)
 end
 
 expres, _ = produce_or_load(datadir("exp_log_sin"),
-                         Dict(:lowlim=>-5, :uplim=>5, :dim=>10, :niter=>10000),
+                         Dict(:lowlim=>-5, :uplim=>5, :dim=>10, :niter=>100000, :lr=>1e-3),
                          c -> run(c, exp),
                          prefix="dense_exp",
-                         force=false)
+                         force=false, digits=6)
 
 logres, _ = produce_or_load(datadir("exp_log_sin"),
-                         Dict(:lowlim=>0.1, :uplim=>2, :dim=>10, :niter=>10000),
+                         Dict(:lowlim=>0.1, :uplim=>2, :dim=>10, :niter=>50000, :lr=>1e-3),
                          c -> run(c, log),
                          prefix="dense_log",
                          force=false)
 
 sinres, _ = produce_or_load(datadir("exp_log_sin"),
-                         Dict(:lowlim=>-5, :uplim=>5, :dim=>10, :niter=>50000),
+                         Dict(:lowlim=>-5, :uplim=>5, :dim=>4, :niter=>50000, :lr=>1e-3),
                          c -> run(c, sin),
                          prefix="dense_sin",
                          force=false)
