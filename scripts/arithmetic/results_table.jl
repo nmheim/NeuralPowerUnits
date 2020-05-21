@@ -57,7 +57,7 @@ function delete_rows_with_nans!(df::DataFrame, cols=[:trn,:mse,:reg,:val])
     end
     idx = unique(vcat(idxs...))
     if length(idx) != 0
-        @info "Deleting rows with nans: $(idx)"
+        @info "Deleting rows with nans:" df[idx,"path"]
         delete!(df, idx)
     end
 end
@@ -86,18 +86,21 @@ end
 
 collect_all_results!(folders::Vector{String}) = vcat(map(collect_folder!, folders)...)
 
-"""
-Creates table like this:
-| task | npu | npux | ... |
-"""
-function best_models_for_tasks(df::DataFrame, key::String)
-    best = combine(groupby(df,"model")) do modeldf
+function filter_best_model_task(df::DataFrame,key::String)
+    combine(groupby(df,"model")) do modeldf
         combine(groupby(modeldf, "task")) do taskdf
             tdf = sort!(DataFrame(taskdf), key)
             tdf[1,:]
         end
     end
+end
 
+"""
+Creates table like this:
+| task | npu | npux | ... |
+"""
+function table_best_models_tasks(df::DataFrame, key::String)
+    best = filter_best_model_task(df,key)
     best = select(best, "model", "task", key)
     tasks = unique(best, "task").task
     models = unique(best, "model").model
@@ -148,9 +151,10 @@ function plot_result_folder(df::DataFrame, cols::Vector{String}, measure::String
     plot(ps...,modelplot,layout=(:,3))
 end
 
-heat(m::Chain) = heatmap(cat(model[1].W[end:-1:1,:], model[2].W', dims=2))
+heat(m::Chain) =
+    UnicodePlots.heatmap(cat(model[1].W[end:-1:1,:], model[2].W', dims=2), height=100, width=101)
 heat(m::Chain{<:Tuple{<:NAU,<:GatedNPUX}}) =
-    heatmap(cat(model[1].W[end:-1:1,:], model[2].Re', model[2].Im',dims=2))
+    UnicodePlots.heatmap(cat(model[1].W[end:-1:1,:], model[2].Re', model[2].Im',dims=2), height=100, width=102)
 
 function print_table(df::DataFrame)
     f = (v,i,j) -> (v isa Real ? round(v,digits=5) : v)
@@ -163,31 +167,58 @@ function print_table(df::DataFrame)
         end
     end
     h = Highlighter(high, bold=true, foreground=:yellow)
-    pretty_table(df,formatters=f,highlighters=h)
+    pretty_table(df,names(df),formatters=f,highlighters=h)
 end
 
-key = "mse"
+function filter_by_best_average(df::DataFrame, adf::DataFrame, measure::String)
+    best = filter_best_model_task(adf,"μ$measure")
+    all_best = [filter(r->r.hash==h, df) for h in best.hash]
+    all_best = vcat(all_best...)
+end
+
 folders = ["addition_npu_l1_search"
           ,"mult_npu_l1_search"
           ,"sqrt_npu_l1_search"
           ,"div_npu_l1_search"]
 folders = map(datadir, folders)
 
+
+# key = "mse"
+# @info "Best $key"
+# bestdf = table_best_models_tasks(df, key)
+# print_table(bestdf)
+# @info "Avergae best $key"
+# bestdf = table_best_models_tasks(adf, "μ$key")
+# print_table(bestdf)
+# 
+# key = "val"
+# @info "Best $key"
+# bestdf = table_best_models_tasks(df, key)
+# print_table(bestdf)
+# @info "Avergae best $key"
+# bestdf = table_best_models_tasks(adf, "μ$key")
+# print_table(bestdf)
+
+
+
 # using Plots
-# _df = collect_folder!(folders[1])
+# _df = collect_folder!(folders[4])
 # pyplot()
+# key = "val"
 # display(plot_result_folder(_df,["βend", "fstinit", "sndinit"], key))
 # error()
 
+key = "val"
 df = collect_all_results!(folders)
 adf = aggregateruns(df)
+bestav_df = filter_by_best_average(df,adf,key)
+clean_adf = aggregateruns(bestav_df)
+#display(clean_adf[!,["model","task","μ$key","βend","fstinit"]])
+print_table(table_best_models_tasks(bestav_df,key))
+print_table(table_best_models_tasks(clean_adf,"μ$key"))
 
-models = ["gatednpux","nmu","nalu"]
-bestdf = best_models_for_tasks(df, key)
-#bestdf = best_models_for_tasks(adf, "μ$key")
-print_table(bestdf)
-
-row = find_best(df,"gatednpu","sqrt",key)
+using UnicodePlots
+row = find_best(df,"gatednpux","sqrt",key)
 model = load(row.path)[:model]
 display(row.config)
 heat(model)
