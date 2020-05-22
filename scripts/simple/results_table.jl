@@ -34,6 +34,7 @@ function aggregateruns(dataframe::DataFrame)
          σmult = std(df.mult_val),
          σdiv  = std(df.div_val),
          σsqrt = std(df.sqrt_val),
+         nr    = length(df.model),
          model = first(df.model))
     end
 end
@@ -80,7 +81,7 @@ function table_models_tasks(df::DataFrame)
         @assert size(mdf,1) == 1
         μcol = [mdf[1,k] for k in ["μadd","μmult","μdiv","μsqrt"]]
         σcol = [mdf[1,k] for k in ["σadd","σmult","σdiv","σsqrt"]]
-        result[!,m] = measurement.(μcol,σcol)
+        result[!,m] = measurement.(μcol,σcol ./sqrt.(mdf.nr))
     end
     return result
 end
