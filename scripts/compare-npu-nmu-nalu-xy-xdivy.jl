@@ -10,7 +10,6 @@ using NeuralArithmetic
 Random.seed!(0)
 
 f1(x::Array) = reshape(x[1,:] .+ x[2,:], 1, :)
-f1(x::Array) = reshape(x[1,:], 1, :)
 f2(x::Array) = reshape(x[1,:] .* x[2,:], 1, :)
 f3(x::Array) = reshape(x[1,:] ./ x[2,:], 1, :)
 f4(x::Array) = reshape(sqrt.(x[1,:]), 1, :)
@@ -25,7 +24,9 @@ function generate_pos_neg()
 end
 
 function generate_pos()
-    x = rand(Float32, 2, 100) .* 2 .+ 0.01f0
+    #x = rand(Float32, 2, 100) .* 2 .+ 0.01f0
+    x = rand(Float32, 2, 100) .* 2 .+ 0.1f0
+    #x = rand(Float32, 2, 100) .+ 1
     y = f(x)
     (x,y)
 end
@@ -47,20 +48,12 @@ function generate()
 end
 
 function run_npu(c::Dict)
-    # model = Chain(NAU(2,4),
-    #               #GatedNPUX(4,4,initRe=(s...)->rand(Float32,s...)/10))
-    #               GatedNPUX(4,4))
-    #model = GatedNPUX(2,4)
     hdim = 6
     model = Chain(GatedNPUX(2,hdim),NAU(hdim,4))
-    #model = Chain(NAU(2,hdim),GatedNPUX(hdim,4))
-    #model = GatedNPUX(2,4,initRe=(s...)->rand(Float32,s...)/10)
-    #model = NPU(2,4)
-    #model = GatedNPUX(2,4)
     ps = params(model)
     opt = ADAM(c[:lr])
     data = (generate() for _ in 1:c[:niters])
-    loss(x,y) = Flux.mse(model(x),y) #+ c[:βl1]*norm(ps, 1) #+ 0.1norm(model.Im,1)
+    loss(x,y) = Flux.mse(model(x),y) + c[:βl1]*norm(ps, 1) #+ 0.1norm(model.Im,1)
     (x,y) = generate()
     cb = Flux.throttle(() -> (@info loss(x,y)), 0.1)
     Flux.train!(loss, ps, data, opt, cb=cb)
@@ -70,7 +63,7 @@ end
 function run_nmu(c::Dict)
     model = NMU(2,4)
     ps = params(model)
-    opt = RMSProp(c[:lr])
+    opt = ADAM(c[:lr])
     data = (generate() for _ in 1:c[:niters])
     loss(x,y) = Flux.mse(model(x),y)
     (x,y) = generate()
@@ -80,7 +73,6 @@ function run_nmu(c::Dict)
 end
 
 function run_nalu(c::Dict)
-    #model = Chain(NALU(2,4))
     hdim = 6
     model = Chain(NALU(2,hdim),NALU(hdim,4))
     ps = params(model)
@@ -106,32 +98,24 @@ function run_dense(c::Dict)
 end
 
 
-res, _ = produce_or_load(datadir("simplefunctions"),
-                         Dict(:niters=>20000, :βl1=>1e-5, :lr=>0.01),
+res, _ = produce_or_load(datadir("test"),
+                         Dict(:niters=>20000, :βl1=>1e-5, :lr=>0.01, :run=>run),
                          run_npu,
                          prefix="$train_range-gatednpux",
                          force=true, digits=6)
 npu = res[:model]
 
-# res, _ = produce_or_load(datadir("simplefunctions"),
+# res, _ = produce_or_load(datadir("test"),
 #                          Dict(:niters=>20000, :lr=>0.001),
 #                          run_nmu,
 #                          prefix="$train_range-nmu")
 # nmu = res[:model]
 # 
-res, _ = produce_or_load(datadir("simplefunctions"),
-                         Dict(:niters=>20000, :lr=>0.01),
+res, _ = produce_or_load(datadir("test"),
+                         Dict(:niters=>20000, :lr=>0.01, :run=>run),
                          run_nalu,
-                         prefix="$train_range-nalu", force=true)
+                         prefix="$train_range-nalu", force=true, digits=6)
 nalu = res[:model]
-
-# res, _ = produce_or_load(datadir("simplefunctions"),
-#                          Dict(:niters=>50000, :lr=>0.001),
-#                          run_dense,
-#                          prefix="$train_range-dense", force=false)
-# dense = res[:model]
-
-
 
 
 addloss(model,x::Real,y::Real)  = abs(model([x,y])[1] - f1([x,y])[1])

@@ -172,7 +172,7 @@ With the simple exemplary task of learning a function $f:\mathbb R^2 \rightarrow
 we can demonstrate the strengths and weaknesses of the NALU.  The NALU only
 learns successfully if it is trained on positive numbers, so we train with
 samples from $\bm x \in \mathcal U^2(0.1,2)$ and plot the error $\epsilon =
-|\bm t - \hat{\bm t}|^2$ in Fig.~\ref{fig:compare_npu_nmu_nalu_xy_xdivy}.
+|\bm t - \hat{\bm t}|^2$ in Fig.~\ref{fig:simple_err}.
 
 
 \subsection{Neural Multiplication Unit}%
@@ -196,7 +196,7 @@ with $\mathcal{R}$:
 \end{align}
 
 The combination of NAU and NMU can thus learn $\{+,-,\times\}$, but no division.
-This is shown in Fig.~\ref{fig:compare_npu_nmu_nalu_xy_xdivy} as well. The NMU
+This is shown in Fig.~\ref{fig:simple_err} as well. The NMU
 can perfectly represent the multiplication of the two inputs, but fails at
 learning division.
 
@@ -206,7 +206,10 @@ packages: \cite{rackauckas_differentialequationsjl_2017} + (Flux.jl)}
 
 \begin{figure}
   \centering
-  \includegraphics[width=0.8\linewidth]{compare-npu-nmu-nalu-xy-xdivy.png}
+  \includegraphics[width=0.245\linewidth]{simple_err_add.pdf}
+  \includegraphics[width=0.245\linewidth]{simple_err_mult.pdf}
+  \includegraphics[width=0.245\linewidth]{simple_err_div.pdf}
+  \includegraphics[width=0.245\linewidth]{simple_err_sqrt.pdf}
   \caption{Comparison of different models learning the function
   $(x,y)\rightarrow(xy,x/y)$ with $(x,y)\in\mathcal U^2(0.1,2)$.  Each
   plot shows the mean-squared error on a logarithmic color scale ($\hat{\bm
@@ -215,9 +218,19 @@ packages: \cite{rackauckas_differentialequationsjl_2017} + (Flux.jl)}
   completely fails if one of the inputs is negative.  The NMU successfully
   learns multiplication, but not division. Only the NPU learns both tasks and
   can extrapolate with an error that is less than $0.01$ in most places.}%
-  \label{fig:compare_npu_nmu_nalu_xy_xdivy}
+  \label{fig:simple_err}
 \end{figure}
-\todo{add in depth experiment desc. of fig.~\ref{fig:compare_npu_nmu_nalu_xy_xdivy} in appendix}
+\todo{add in depth experiment desc. of fig.~\ref{fig:simple_err} in appendix}
+\begin{table}
+  \centering
+  \caption{Comparison of different $2\times2$ layers on the task
+  $(x,y)\rightarrow(xy,\frac{x}{y})$.  $(x,y) \in \mathcal U^2(-2,2)$.}
+  \label{tab:simple_err}
+  \input{simple_err.tex}
+\end{table}
+
+
+
 
 
 \section{Neural Power Units}%
@@ -395,21 +408,6 @@ multiplication, or a certain power function \todo{cite some examples}.
 %   \caption{Test}%
 %   \label{fig:test}
 % \end{figure}
-
-\appendix
-\section*{Appendix A}%
-\label{sec:appendix_a}
-
-\todo{add sqrt to table~\ref{tab:compare_npu_npu_nalu}?}
-\begin{table}[h]
-  \centering
-  \caption{Comparison of different $2\times2$ layers on the task
-  $(x,y)\rightarrow(xy,\frac{x}{y})$.  $(x,y) \in \mathcal U^2(-2,2)$.}
-  \label{tab:compare_npu_npu_nalu}
-  \input{table-xy-xdivy-pos.tex}
-\end{table}
-
-
 
 \bibliographystyle{plainnat}
 \bibliography{refs}
