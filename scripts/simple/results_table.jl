@@ -23,13 +23,17 @@ function aggregateruns(dataframe::DataFrame)
     gdf = groupby(dataframe, :hash)
     combine(gdf) do df
         (μmse  = mean(df.mse),
-         σmse  = std(df.mse),
          μval  = mean(df.val),
-         σval  = std(df.val),
          μadd  = mean(df.add_val),
          μmult = mean(df.mult_val),
          μdiv  = mean(df.div_val),
          μsqrt = mean(df.sqrt_val),
+         σmse  = std(df.mse),
+         σval  = std(df.val),
+         σadd  = std(df.add_val),
+         σmult = std(df.mult_val),
+         σdiv  = std(df.div_val),
+         σsqrt = std(df.sqrt_val),
          model = first(df.model))
     end
 end
@@ -67,15 +71,16 @@ Creates table like this:
 | task | npu | npux | ... |
 """
 function table_models_tasks(df::DataFrame)
-    result = DataFrame(Union{Float64,Missing}, 4, length(df.model)+1)
+    result = DataFrame(Union{Measurement,Missing}, 4, length(df.model)+1)
     rename!(result, vcat(["task"], df.model))
     result[!,1] = ["Add", "Mult", "Div", "Sqrt"]
 
     for m in df.model
         mdf = filter(:model=>model->model==m, df)
         @assert size(mdf,1) == 1
-        col = [mdf[1,k] for k in ["μadd","μmult","μdiv","μsqrt"]]
-        result[!,m] = col
+        μcol = [mdf[1,k] for k in ["μadd","μmult","μdiv","μsqrt"]]
+        σcol = [mdf[1,k] for k in ["σadd","σmult","σdiv","σsqrt"]]
+        result[!,m] = measurement.(μcol,σcol)
     end
     return result
 end
@@ -109,18 +114,19 @@ end
 
 function latex_table(results::DataFrame)
 
-    function latex_row(row::DataFrameRow)
+    function latex_row(row)
         vals = convert(Vector, row[2:end])
         i  = findmin(vals)[2]
         ss = map(x->string(round(x,digits=3)), vals)
+        ss = map(s->replace(s,"±"=>"\$\\pm\$"), ss)
         ss[i] = "\\textbf{$(ss[i])}"
         srow = DataFrame(Dict(zip(names(row[2:end]),ss)))
     end
 
-    r1 = latex_row(result[1,:])
-    r2 = latex_row(result[2,:])
-    r3 = latex_row(result[3,:])
-    r4 = latex_row(result[4,:])
+    r1 = latex_row(results[1,:])
+    r2 = latex_row(results[2,:])
+    r3 = latex_row(results[3,:])
+    r4 = latex_row(results[4,:])
 
     latex_str = (
 raw"""
