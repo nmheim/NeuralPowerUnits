@@ -12,6 +12,7 @@ using ValueHistories
 using UnicodePlots
 using DataFrames
 using PrettyTables
+using Sobol
 
 include(joinpath(@__DIR__, "configs.jl"))
 include(srcdir("unicodeheat.jl"))
@@ -80,7 +81,7 @@ function validation_samples(c,xs)
 end
 
 validation_samples(c::Union{MultL1SearchConfig,AddL1SearchConfig,DivL1SearchConfig}) =
-    validation_samples(c,[-4.5f0,-2.5f0,-1.5f0,-0.3f0,-0.2f0,0.1f0, 1f0,2f0,3f0,10f0])
+    validation_samples(c,[-4.5f0,-2.5f0,-1.5f0,-0.3f0,-0.2f0,-0.01f0,0.1f0, 1f0,2f0,3f0,10f0])
 
     # validation_samples(c,[ 1f0, 2f0, 3f0, 4f0, 0.1f0, 0.2f0,
     #                       -1f0,-2f0,-3f0,-4f0,-0.1f0,-0.2f0])
@@ -90,11 +91,11 @@ validation_samples(c::SqrtL1SearchConfig) =
 
 function sobol_samples(c)
     s = SobolSeq(c.inlen)
+    # discard first zero sample
+    next!(s)
     x = reduce(hcat, [next!(s) for i = 1:100000])
     xs = c.uplim * 2
     xe = c.lowlim * 2
-    xs = 0
-    xe = 2
     Float32.(x .* (xs - xe) .+ xe)
 end
 
@@ -149,8 +150,8 @@ end
 key = "val"
 print_table(table_models_tasks(bestmodels,key))
 @progress for row in eachrow(bestmodels)
-    #x = sobol_samples(row.config)
-    x = validation_samples(row.config)
+    x = sobol_samples(row.config)
+    #x = validation_samples(row.config)
     y = task(x,row.config)
     m = load(row.path)[:model]
     row.val = Flux.mse(m(x),y)

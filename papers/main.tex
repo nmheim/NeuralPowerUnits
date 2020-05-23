@@ -211,20 +211,25 @@ packages: \cite{rackauckas_differentialequationsjl_2017} + (Flux.jl)}
   \includegraphics[width=0.245\linewidth]{simple_err_div.pdf}
   \includegraphics[width=0.245\linewidth]{simple_err_sqrt.pdf}
   \caption{Comparison of different models learning the function
-  $(x,y)\rightarrow(xy,x/y)$ with $(x,y)\in\mathcal U^2(0.1,2)$.  Each
-  plot shows the mean-squared error on a logarithmic color scale ($\hat{\bm
-  t}=\text{model}(\bm x)$).  The Dense network learns both multiplication and
-  division, but fails to extrapolate. NALU learns both tasks perfectly, but
-  completely fails if one of the inputs is negative.  The NMU successfully
-  learns multiplication, but not division. Only the NPU learns both tasks and
-  can extrapolate with an error that is less than $0.01$ in most places.}%
+  $(x,y)\rightarrow(x+y,xy,x/y,\sqrt(x))$ with $(x,y)\in\mathcal U^2(0.1,2)$.
+  Each plot shows the mean-squared error on a logarithmic color scale
+  ($\hat{\bm t}=\text{model}(\bm x)$) of the best model of 20 runs.
+  The Dense network learns all tasks, but fails to extrapolate. NALU is
+  slightly better at extrapolating to positive numbers, but fails if one of the
+  inputs is negative.  The NMU successfully learns addition and multiplication,
+  but not division and the square-root.  Only the NPU learns all tasks and can
+  extrapolate both to positive and negative numbers.}%
   \label{fig:simple_err}
 \end{figure}
 \todo{add in depth experiment desc. of fig.~\ref{fig:simple_err} in appendix}
 \begin{table}
   \centering
-  \caption{Comparison of different $2\times2$ layers on the task
-  $(x,y)\rightarrow(xy,\frac{x}{y})$.  $(x,y) \in \mathcal U^2(-2,2)$.}
+  \caption{Validation error of different models learning the function
+  $(x,y)\rightarrow(x+y,xy,x/y,\sqrt(x))$ with $(x,y)\in\mathcal U^2(0.1,2)$.
+  The validation ranges are $(x,y) \in -4.1:0.2:4$ for addition, multiplication,
+  and division, and $(x,y) \in 0.1:0.2:4$ for the square-root.
+  Each value is the averaged absolute of 20 models.
+  }
   \label{tab:simple_err}
   \input{simple_err.tex}
 \end{table}

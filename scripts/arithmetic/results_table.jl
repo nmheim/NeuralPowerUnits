@@ -226,6 +226,12 @@ print_table(table_best_models_tasks(clean_adf,"μ$key"))
 
 using UnicodePlots
 row = find_best(df,"gatednpu","div",key)
-model = load(row.path)[:model]
+@unpack history,model = load(row.path)
 display(row.config)
 heat(model)
+
+using Plots
+pyplot()
+z = reduce(hcat, get(history, :μz)[2])[1:100,:]
+plot(z',legend=false)
+
