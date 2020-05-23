@@ -55,7 +55,7 @@ end
 
 config = DivL1SearchConfig()
 @info config
-@progress name="All division runs: " for i in 1:100
+@progress name="All runs: " for i in 1:100
     config = DivL1SearchConfig(run=i)
     res, fname = produce_or_load(datadir(basename(splitext(@__FILE__)[1])),
                                  config, run, digits=10)

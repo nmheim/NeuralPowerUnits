@@ -29,9 +29,11 @@ end
 
 invx(x::Real) = 1/x
 invx(X::Array, subset::Real) = applyoperator(invx, X, subset)
+invx(X::Array, subset::Real, overlap) = applyoperator(invx, X, subset)
+Base.Math.sqrt(X::Array, subset::Real) = applyoperator(sqrt, X, subset)
+Base.Math.sqrt(X::Array, subset::Real, overlap) = applyoperator(sqrt, X, subset)
 add(X::Array, subset::Real, overlap::Real) = applyoperator(+, X, subset, overlap)
 mult(X::Array, subset::Real, overlap::Real) = applyoperator(*, X, subset, overlap)
-Base.Math.sqrt(X::Array, subset::Real) = applyoperator(sqrt, X, subset)
 
 
 function get_sampler(sampler::String, xlen::Int)
@@ -46,24 +48,6 @@ end
 
 sample(s::SobolSeq, batch::Int) = reduce(hcat, [next!(s) for i = 1:batch])
 sample(s::Uniform, batch::Int) = rand(d,xlen,batch)
-
-# function arithmetic_invx_dataset(xlen::Int, subset::Real, lowlim::Real, uplim::Real; sampler="sobol")
-#     r = get_sampler(sampler, xlen)
-#     function generate(batch::Int)
-#         X = Float32.(sample(r,batch) .* (uplim-lowlim) .+ lowlim)
-#         t = invx(X, subset)
-#         (X,t)
-#     end
-# end
-# 
-# function arithmetic_sqrt_dataset(xlen::Int, subset::Real, lowlim::Real, uplim::Real; sampler="sobol")
-#     r = get_sampler(sampler, xlen)
-#     function generate(batch::Int)
-#         X = Float32.(sample(r,batch))
-#         t = sqrt(X,subset)
-#         (X,t)
-#     end
-# end
 
 """
 arithmetic_dataset(op::Function, xlen::Int; d::Uniform=Uniform(-2,2)
