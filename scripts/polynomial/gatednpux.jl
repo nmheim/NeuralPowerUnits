@@ -42,10 +42,12 @@ function run(c::Dict, f::Function)
     #model = Chain(NAU(1,dim), GatedNPUX(dim,dim), NAU(dim,1))
     #model = Chain(NALU(1,dim), NALU(dim,1))
     model = Chain(GatedNPUX(1,dim), NAU(dim,dim), GatedNPUX(dim,1))
+    #model = Chain(Dense(1,dim,σ),Dense(dim,dim,σ),Dense(dim,1))
     ps = params(model)
 
     iml1(model::GatedNPUX) = norm(model.Im,1)
     iml1(model::NAU) = 0
+    iml1(model::Dense) = 0
     iml1(model::Chain) = sum(iml1, model)
     mse(x,y) = sum(abs2, model(x) .- y)
 
@@ -80,7 +82,7 @@ res, _ = produce_or_load(datadir("polynomial"),
                               :βiml1  =>  0.0,
                               :βpsl1  =>  1.0),
                          c -> run(c, f), prefix="rational",
-                         force=false, digits=8)
+                         force=true, digits=8)
 
 model = res[:model]
 history = res[:history]
