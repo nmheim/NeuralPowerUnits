@@ -1,8 +1,19 @@
 concat(m::Chain{<:Tuple{<:NAU,<:GatedNPUX}}) =
-    cat(model[1].W[end:-1:1,:], model[2].Re', model[2].Im',dims=2)
-concat(m::Chain) = cat(model[1].W[end:-1:1,:], model[2].W', dims=2)
+    cat(m[1].W, m[2].Re', m[2].Im',dims=2)
+concat(m::Chain) = cat(m[1].W, m[2].W', dims=2)
 
-function heat(m::Chain)
+function concat(m::Chain{<:Tuple{<:GatedNPUX,<:NAU,<:GatedNPUX}})
+    R1 = m[1].Re
+    I1 = m[1].Im
+    W  = m[2].W
+    R3 = m[3].Re'
+    I3 = m[3].Im'
+    h  = cat(R1,I1,W,R3,I3,dims=2)
+end
+
+concat(m::NAU) = m.W
+
+function heat(m)
     arr = concat(m)
     (h,w) = size(arr)
     UnicodePlots.heatmap(arr,height=h,width=w)

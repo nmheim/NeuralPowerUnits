@@ -7,13 +7,15 @@ using LinearAlgebra
 using NeuralArithmetic
 using ValueHistories
 using Plots
-#unicodeplots()
-pyplot()
+unicodeplots()
+
+include(srcdir("unicodeheat.jl"))
+#pyplot()
 
 f(x) = x^2
 f(x) = x^4/10 + x^3/10 - (13x^2)/10 - x/10 + 6/5
 f(x) = (x^3-2x)/2(x^2-5)
-#f(x) = (x-2)/(x-3)
+f(x) = 1/(x-2.15)
 
 function validationplot(xt,yt,tt,lowlim,uplim)
     p1 = plot(vec(xt), vec(yt))
@@ -22,36 +24,47 @@ function validationplot(xt,yt,tt,lowlim,uplim)
 end
 
 
-
-function run(c::Dict, f::Function)
-    @unpack dim, lowlim, uplim, niter, lr, βpsl1, βiml1 = c
+function generate(lowlim,uplim)
     x = Float32.(reshape(lowlim:0.1:uplim, 1, :))
     y = f.(x)
     xt = Float32.(reshape((lowlim*1.1):0.1:(uplim*1.1),1,:))
     yt = f.(xt)
+    (x,y,xt,yt)
+end
 
+function run(c::Dict, f::Function)
+    @unpack dim, lowlim, uplim, niter, lr, βpsl1, βiml1 = c
     h = MVHistory()
+    (x,y,xt,yt) = generate(lowlim,uplim)
     data = Iterators.repeated((x,y), niter)
     opt = ADAM(lr)
+
     #model = Chain(NAU(1,dim), GatedNPUX(dim,dim), NAU(dim,1))
+    #model = Chain(NALU(1,dim), NALU(dim,1))
     model = Chain(GatedNPUX(1,dim), NAU(dim,dim), GatedNPUX(dim,1))
+    ps = params(model)
+
     iml1(model::GatedNPUX) = norm(model.Im,1)
     iml1(model::NAU) = 0
     iml1(model::Chain) = sum(iml1, model)
-    #model = Chain(NALU(1,dim), NALU(dim,1))
-    ps = params(model)
     mse(x,y) = sum(abs2, model(x) .- y)
+
     iml1() = βiml1*iml1(model)
     psl1() = βpsl1*norm(ps,1)
-    loss(x,y) = mse(x,y) #+ iml1() + psl1()
+    loss(x,y) = mse(x,y) + iml1() + psl1()
 
+    niter = 1
     cb = [Flux.throttle(()->(
                p1 = validationplot(xt,yt,model(xt),lowlim,uplim);
                display(p1);
-               @info loss(x,y) loss(xt,yt)
+               println();
+               display(heat(model));
+               println();
+               @info niter loss(x,y) loss(xt,yt)
               ), 1),
           Flux.throttle(() -> (push!(h, :μz, Flux.destructure(model)[1]);
-                               push!(h, :mse, mse(xt,yt))), 0.1)
+                               push!(h, :mse, mse(xt,yt))), 0.1),
+          () -> (niter += 1)
          ]
     Flux.train!(loss, ps, data, opt, cb=cb)
     return Dict(:model=>model, :config=>c, :history=>h)
@@ -59,14 +72,25 @@ end
 
 
 res, _ = produce_or_load(datadir("polynomial"),
-                         Dict(:lowlim=>-5, :uplim=>5, :dim=>50, :niter=>100000, :lr=>1e-4, :βiml1=>0.1, :βpsl1=>0.01),
+                         Dict(:lowlim =>  -5,
+                              :uplim  =>  5,
+                              :dim    =>  10,
+                              :niter  =>  100000,
+                              :lr     =>  1e-4,
+                              :βiml1  =>  0.0,
+                              :βpsl1  =>  1.0),
                          c -> run(c, f), prefix="rational",
-                         force=true, digits=8)
+                         force=false, digits=8)
 
 model = res[:model]
 history = res[:history]
+c = res[:config]
+@unpack lowlim,uplim = c
+(x,y,xt,yt) = generate(lowlim,uplim)
+display(validationplot(xt,yt,model(xt),lowlim,uplim))
+println("")
+heat(model)
 
-pyplot()
 # function concat(m::Chain{<:Tuple{<:GatedNPUX,<:NAU}})
 #     Re = m[1].Re[end:-1:1,:]
 #     Im = m[1].Im[end:-1:1,:]
