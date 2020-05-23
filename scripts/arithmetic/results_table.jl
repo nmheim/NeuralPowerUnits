@@ -6,7 +6,11 @@ using Statistics
 using Flux
 using ValueHistories
 using NeuralArithmetic
+using PrettyTables
+
+
 include(joinpath(@__DIR__, "configs.jl"))
+include(srcdir("unicodeheat.jl"))
 
 function aggregateruns(dataframe::DataFrame)
     gdf = groupby(dataframe, :hash)
@@ -79,7 +83,7 @@ function collect_folder!(folder::String)
                                        ],
                          )
     _df.hash = delete_from_savename.(_df.path, "run")
-    delete_rows_with_nans!(_df)
+    #delete_rows_with_nans!(_df)
     expand_config!(_df)
     return _df
 end
@@ -151,11 +155,6 @@ function plot_result_folder(df::DataFrame, cols::Vector{String}, measure::String
     plot(ps...,modelplot,layout=(:,3))
 end
 
-heat(m::Chain) =
-    UnicodePlots.heatmap(cat(model[1].W[end:-1:1,:], model[2].W', dims=2), height=100, width=101)
-heat(m::Chain{<:Tuple{<:NAU,<:GatedNPUX}}) =
-    UnicodePlots.heatmap(cat(model[1].W[end:-1:1,:], model[2].Re', model[2].Im',dims=2), height=100, width=102)
-
 function print_table(df::DataFrame)
     f = (v,i,j) -> (v isa Real ? round(v,digits=5) : v)
     function high(data,i,j)
@@ -208,9 +207,17 @@ folders = map(datadir, folders)
 # display(plot_result_folder(_df,["βend", "fstinit", "sndinit"], key))
 # error()
 
+
 key = "val"
 df = collect_all_results!(folders)
 adf = aggregateruns(df)
+
+# bestmodels = filter_best_model_task(df,"val")
+# wsave(datadir("arithmetic_best_models.bson"), @dict(bestmodels))
+# 
+# bestmodels = filter_best_model_task(adf,"μval")
+# wsave(datadir("arithmetic_aggregate_best_models.bson"), @dict(bestmodels))
+
 bestav_df = filter_by_best_average(df,adf,key)
 clean_adf = aggregateruns(bestav_df)
 #display(clean_adf[!,["model","task","μ$key","βend","fstinit"]])
@@ -218,7 +225,7 @@ print_table(table_best_models_tasks(bestav_df,key))
 print_table(table_best_models_tasks(clean_adf,"μ$key"))
 
 using UnicodePlots
-row = find_best(df,"gatednpux","sqrt",key)
+row = find_best(df,"gatednpu","div",key)
 model = load(row.path)[:model]
 display(row.config)
 heat(model)
