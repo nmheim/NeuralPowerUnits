@@ -32,6 +32,7 @@ include(srcdir("arithmetic_models.jl"))
     uplim::Real     = 0.5
     subset::Real    = 0.5f0
     overlap::Real   = 0.25f0
+    sampler::String = "sobol"
 
     inlen::Int      = 100
     fstinit::String = "rand"
@@ -43,9 +44,9 @@ end
 
 function run(c::DivL1Config)
     generate = arithmetic_invx_dataset(c.inlen, c.subset, c.lowlim, c.uplim,
-        sampler="sobol")
+        sampler=c.sampler)
     test_generate = arithmetic_invx_dataset(c.inlen, c.subset, c.lowlim-2, c.uplim+2,
-        sampler="sobol")
+        sampler=c.sampler)
     model = get_model(c.model, c.inlen, c.fstinit, c.sndinit)
     βgrowth = ExpSchedule(c.βstart, c.βend, c.βgrowth, c.βstep)
     ps = params(model)
@@ -54,7 +55,6 @@ function run(c::DivL1Config)
         mse = Flux.mse(model(x),y)
         L1  = β * norm(ps,1)
         (mse+L1), mse, L1
-        #mse, mse, L1
     end
     
     data     = (generate(c.batch) for _ in 1:c.niters)
