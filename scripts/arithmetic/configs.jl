@@ -14,11 +14,12 @@ using Parameters
     uplim::Real     = 1
     subset::Real    = 0.5f0
     overlap::Real   = 0.25f0
+    sampler::String = "sobol"
 
     inlen::Int      = 100
     fstinit::String = "rand"
     sndinit::String = "rand"
-    model::String   = "gatednpu"
+    model::String   = "gatednpux"
 
     run::Int        = 1
 end
