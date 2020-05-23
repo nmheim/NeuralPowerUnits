@@ -52,7 +52,7 @@ end
     lr::Real        = 5e-3
 
     βstart::Real    = 1f-9
-    βend::Real      = 1f-7
+    βend::Real      = 1f-6
     βgrowth::Real   = 10f0
     βstep::Int      = 10000
 
@@ -60,11 +60,12 @@ end
     uplim::Real     = 0.5
     subset::Real    = 0.5f0
     overlap::Real   = 0.25f0
+    sampler::String = "sobol"
 
     inlen::Int      = 100
     fstinit::String = "rand"
     sndinit::String = "rand"
-    model::String   = "gatednpu"
+    model::String   = "gatednpux"
 
     run::Int        = 1
 end

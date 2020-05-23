@@ -17,6 +17,7 @@ using NeuralArithmetic
 include(srcdir("schedules.jl"))
 include(srcdir("arithmetic_dataset.jl"))
 include(srcdir("arithmetic_models.jl"))
+include(srcdir("unicodeheat.jl"))
 include(joinpath(@__DIR__, "configs.jl"))
 
 
@@ -55,10 +56,11 @@ end
 config = DivL1SearchConfig()
 @info config
 @progress name="All division runs: " for i in 1:100
-    config = reconstruct(config, run=i)
+    config = DivL1SearchConfig(run=i)
     res, fname = produce_or_load(datadir(basename(splitext(@__FILE__)[1])),
                                  config, run, digits=10)
-    @info "Validation error run #$i: $val"
+    display(heat(res[:model]))
+    @info "Validation error run #$i: $(res[:val])"
 end
 
 
