@@ -36,7 +36,7 @@ include(srcdir("arithmetic_models.jl"))
     inlen::Int      = 100
     fstinit::String = "rand"
     sndinit::String = "rand"
-    model::String   = "gatednpu"
+    model::String   = "gatednpux"
 
 end
 
@@ -78,6 +78,18 @@ res, fname = produce_or_load(outdir, config, run, force=true)
 
 m = get_mapping(res[:model])
 h = res[:history]
+
+
+
+
+
+error()
+
+
+
+
+
+
 
 using Plots
 include(srcdir("plots.jl"))

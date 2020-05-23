@@ -26,29 +26,36 @@ function applyoperator(op::Function, x::Array, subset::Real)
     t = reshape(op.(a), 1, :)
 end
 
+invx(x::Real) = 1/x
+invx(X::Array, subset::Real) = applyoperator(invx, X, subset)
 add(X::Array, subset::Real, overlap::Real) = applyoperator(+, X, subset, overlap)
 mult(X::Array, subset::Real, overlap::Real) = applyoperator(*, X, subset, overlap)
 Base.Math.sqrt(X::Array, subset::Real) = applyoperator(sqrt, X, subset)
-invx(X::Array, subset::Real) = applyoperator(invx, X, subset)
-
-
-invx(x::Real) = 1/x
-# function invx(x::Array,subset::Real)
-#     len = round(Int, size(x,1)*subset)
-#     ii = 1:len
-#     a = vec(sum(X[ii,:], dims=1))
-#     t = reshape(invx.(a), 1, :)
-# end
 
 
 function arithmetic_invx_dataset(xlen::Int, d::Uniform=Uniform(-0.5,0.5), subset::Real=0.25)
     len = round(Int, xlen*subset)
     ii = 1:len
 
+    #s = SobolSeq(xlen)
+    ## get rid of the first zero sample
+    #next!(s)
+
+    # s = HaltonPoint(xlen,length=1e5)
+    # n = 1
+
     function generate(batch::Int)
+        #rand sample
         X = Float32.(rand(d, xlen, batch))
-        a = vec(sum(X[ii,:], dims=1))
-        t = reshape(invx.(a), 1, :)
+
+        #sobol sample
+        #X = Float32.(reduce(hcat, [next!(s) for i = 1:batch]))  .- 0.5f0
+
+        #halton sample
+        #X = Float32.(reduce(hcat, s[n:(n+batch-1)])) .- 0.5f0
+        #n += batch
+
+        t = invx(X, subset)
         (X,t)
     end
 end
