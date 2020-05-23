@@ -230,8 +230,8 @@ row = find_best(df,"gatednpu","div",key)
 display(row.config)
 heat(model)
 
-using Plots
-pyplot()
-z = reduce(hcat, get(history, :μz)[2])[1:100,:]
-plot(z',legend=false)
+# using Plots
+# pyplot()
+# z = reduce(hcat, get(history, :μz)[2])[1:100,:]
+# plot(z',legend=false)
 

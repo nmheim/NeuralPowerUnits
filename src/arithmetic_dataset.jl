@@ -1,4 +1,5 @@
 using Distributions: Uniform
+using Sobol
 
 function ranges(xlen::Int,subset::Real,overlap::Real)
     len = round(Int, xlen*subset)
@@ -33,28 +34,25 @@ mult(X::Array, subset::Real, overlap::Real) = applyoperator(*, X, subset, overla
 Base.Math.sqrt(X::Array, subset::Real) = applyoperator(sqrt, X, subset)
 
 
-function arithmetic_invx_dataset(xlen::Int, d::Uniform=Uniform(-0.5,0.5), subset::Real=0.25)
-    len = round(Int, xlen*subset)
-    ii = 1:len
+function arithmetic_invx_dataset(xlen::Int, subset::Real, lowlim::Real, uplim::Real; sampler="sobol")
+    r = nothing
+    function get_sampler()
+        if sampler == "rand"
+            return Uniform(0,1)
+        elseif sampler == "sobol"
+            return SobolSeq(xlen)
+        else
+            error("unknown sampler: $sampler")
+        end
+    end
 
-    #s = SobolSeq(xlen)
-    ## get rid of the first zero sample
-    #next!(s)
+    sample(s::SobolSeq, batch::Int) = reduce(hcat, [next!(s) for i = 1:batch])
+    sample(s::Uniform, batch::Int) = rand(d,xlen,batch)
 
-    # s = HaltonPoint(xlen,length=1e5)
-    # n = 1
+    r = get_sampler()
 
     function generate(batch::Int)
-        #rand sample
-        X = Float32.(rand(d, xlen, batch))
-
-        #sobol sample
-        #X = Float32.(reduce(hcat, [next!(s) for i = 1:batch]))  .- 0.5f0
-
-        #halton sample
-        #X = Float32.(reduce(hcat, s[n:(n+batch-1)])) .- 0.5f0
-        #n += batch
-
+        X = Float32.(sample(r,batch) .* (uplim-lowlim) .+ lowlim)
         t = invx(X, subset)
         (X,t)
     end

@@ -24,7 +24,7 @@ include(srcdir("arithmetic_models.jl"))
     lr::Real        = 5e-3
 
     βstart::Real    = 1f-9
-    βend::Real      = 1f-7
+    βend::Real      = 1f-6
     βgrowth::Real   = 10f0
     βstep::Int      = 10000
 
@@ -42,15 +42,10 @@ end
 
 
 function run(c::DivL1Config)
-    generate = arithmetic_dataset(invx, c.inlen,
-        d=Uniform(c.lowlim,c.uplim),
-        subset=c.subset,
-        overlap=c.overlap)
-    test_generate = arithmetic_dataset(invx, c.inlen,
-        d=Uniform(c.lowlim-4,c.uplim+4),
-        subset=c.subset,
-        overlap=c.overlap)
-
+    generate = arithmetic_invx_dataset(c.inlen, c.subset, c.lowlim, c.uplim,
+        sampler="sobol")
+    test_generate = arithmetic_invx_dataset(c.inlen, c.subset, c.lowlim-2, c.uplim+2,
+        sampler="sobol")
     model = get_model(c.model, c.inlen, c.fstinit, c.sndinit)
     βgrowth = ExpSchedule(c.βstart, c.βend, c.βgrowth, c.βstep)
     ps = params(model)
