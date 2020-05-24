@@ -21,6 +21,15 @@ function concat(m::Chain{<:Tuple{<:GatedNPUX,<:NAU,<:GatedNPUX}})
     h  = cat(R1,I1,W,R3,I3,dims=2)
 end
 
+function concat(m::Chain{<:Tuple{<:NPUX,<:NAU,<:NPUX}})
+    R1 = m[1].Re
+    I1 = m[1].Im
+    W  = m[2].W
+    R3 = m[3].Re'
+    I3 = m[3].Im'
+    h  = cat(R1,I1,W,R3,I3,dims=2)
+end
+
 concat(m::NAU) = m.W
 
 function heat(m)
