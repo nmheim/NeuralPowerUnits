@@ -179,6 +179,12 @@ folders = ["addition_npu_l1_search"
           ,"mult_npu_l1_search"
           ,"sqrt_npu_l1_search"
           ,"div_npu_l1_search"]
+
+folders = ["add_l1_runs"
+          ,"mult_l1_runs"
+          ,"invx_l1_runs"
+          ,"sqrt_l1_runs"]
+
 folders = map(datadir, folders)
 
 
@@ -212,10 +218,10 @@ key = "val"
 df = collect_all_results!(folders)
 adf = aggregateruns(df)
 
-# bestmodels = filter_best_model_task(df,"val")
+# bestmodels = filter_best_model_task(df,"mse")
 # wsave(datadir("arithmetic_best_models.bson"), @dict(bestmodels))
 # 
-# bestmodels = filter_best_model_task(adf,"μval")
+# bestmodels = filter_best_model_task(adf,"μmse")
 # wsave(datadir("arithmetic_aggregate_best_models.bson"), @dict(bestmodels))
 
 bestav_df = filter_by_best_average(df,adf,key)
@@ -225,7 +231,7 @@ print_table(table_best_models_tasks(bestav_df,key))
 print_table(table_best_models_tasks(clean_adf,"μ$key"))
 
 using UnicodePlots
-row = find_best(df,"gatednpu","div",key)
+row = find_best(df,"gatednpux","invx",key)
 @unpack history,model = load(row.path)
 display(row.config)
 heat(model)

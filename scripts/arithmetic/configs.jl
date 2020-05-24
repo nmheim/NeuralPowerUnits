@@ -43,7 +43,7 @@ end
     inlen::Int      = 100
     fstinit::String = "rand"
     sndinit::String = "rand"
-    model::String   = "gatednpu"
+    model::String   = "gatednpux"
 
     run::Int        = 1
 end
@@ -77,7 +77,7 @@ end
     niters::Int     = 1e5
     lr::Real        = 5e-3
 
-    βstart::Real    = 1f-6
+    βstart::Real    = 1f-5
     βend::Real      = 1f-4
     βgrowth::Real   = 10f0
     βstep::Int      = 10000
@@ -91,7 +91,7 @@ end
     inlen::Int      = 100
     fstinit::String = "rand"
     sndinit::String = "rand"
-    model::String   = "gatednpu"
+    model::String   = "gatednpux"
 
     run::Int        = 1
 end

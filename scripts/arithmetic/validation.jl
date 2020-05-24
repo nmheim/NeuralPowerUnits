@@ -87,15 +87,15 @@ validation_samples(c::Union{MultL1SearchConfig,AddL1SearchConfig,DivL1SearchConf
     #                       -1f0,-2f0,-3f0,-4f0,-0.1f0,-0.2f0])
 
 validation_samples(c::SqrtL1SearchConfig) =
-    validation_samples(c,[1f0,2f0,3f0,4f0,0.1f0,0.2f0])
+    validation_samples(c,[4.5f0,2.5f0,1.5f0,0.3f0,0.2f0,0.1f0,1f0,2f0,3f0,10f0])
 
 function sobol_samples(c)
     s = SobolSeq(c.inlen)
     # discard first zero sample
     next!(s)
     x = reduce(hcat, [next!(s) for i = 1:100000])
-    xs = c.uplim * 2
-    xe = c.lowlim * 2
+    xs = c.uplim * 4
+    xe = c.lowlim * 4
     Float32.(x .* (xs - xe) .+ xe)
 end
 
