@@ -1,6 +1,16 @@
 concat(m::Chain{<:Tuple{<:NAU,<:GatedNPUX}}) =
     cat(m[1].W, m[2].Re', m[2].Im',dims=2)
+
 concat(m::Chain) = cat(m[1].W, m[2].W', dims=2)
+
+function concat(m::Chain{<:Tuple{<:NALU,<:NALU,<:NALU}})
+    cat(m[1].nac.M,
+        m[1].nac.W,
+        m[2].nac.M,
+        m[2].nac.W,
+        m[3].nac.M',
+        m[3].nac.W', dims=2)
+end
 
 function concat(m::Chain{<:Tuple{<:GatedNPUX,<:NAU,<:GatedNPUX}})
     R1 = m[1].Re

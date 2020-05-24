@@ -14,8 +14,8 @@ include(srcdir("unicodeheat.jl"))
 
 f(x) = x^2
 f(x) = x^4/10 + x^3/10 - (13x^2)/10 - x/10 + 6/5
-f(x) = (x^3-2x)/2(x^2-5)
-f(x) = 1/(x-2.15)
+f(x) = (x^3-2x)/(2(x^2-5))
+#f(x) = 1/(x-2.15)
 
 function validationplot(xt,yt,tt,lowlim,uplim)
     p1 = plot(vec(xt), vec(yt))
@@ -24,7 +24,7 @@ function validationplot(xt,yt,tt,lowlim,uplim)
 end
 
 
-function generate(lowlim,uplim)
+function generate(f,lowlim,uplim)
     x = Float32.(reshape(lowlim:0.1:uplim, 1, :))
     y = f.(x)
     xt = Float32.(reshape((lowlim*1.1):0.1:(uplim*1.1),1,:))
@@ -32,28 +32,36 @@ function generate(lowlim,uplim)
     (x,y,xt,yt)
 end
 
+iml1(model::GatedNPUX) = norm(model.Im,1)
+iml1(model::NAU) = 0
+iml1(model::Dense) = 0
+iml1(model::NALU) = 0
+iml1(model::Chain) = sum(iml1, model)
+
+function get_model(layer,dim)
+    if layer == "nalu"
+        return Chain(NALU(1,dim), NALU(dim,dim), NALU(dim,1))
+    elseif layer == "gatednpux"
+        return Chain(GatedNPUX(1,dim), NAU(dim,dim), GatedNPUX(dim,1))
+    elseif layer == "dense"
+        return Chain(Dense(1,dim,σ),Dense(dim,dim,σ),Dense(dim,1))
+    else
+        error("unknown layer: $layer")
+    end
+end
+
 function run(c::Dict, f::Function)
-    @unpack dim, lowlim, uplim, niter, lr, βpsl1, βiml1 = c
+    @unpack dim, lowlim, uplim, niter, lr, βpsl1, βiml1, layer = c
     h = MVHistory()
-    (x,y,xt,yt) = generate(lowlim,uplim)
+    (x,y,xt,yt) = generate(f,lowlim,uplim)
     data = Iterators.repeated((x,y), niter)
     opt = ADAM(lr)
 
-    #model = Chain(NAU(1,dim), GatedNPUX(dim,dim), NAU(dim,1))
-    #model = Chain(NALU(1,dim), NALU(dim,1))
-    model = Chain(GatedNPUX(1,dim), NAU(dim,dim), GatedNPUX(dim,1))
-    #model = Chain(Dense(1,dim,σ),Dense(dim,dim,σ),Dense(dim,1))
+    model = get_model(layer, dim)
     ps = params(model)
 
-    iml1(model::GatedNPUX) = norm(model.Im,1)
-    iml1(model::NAU) = 0
-    iml1(model::Dense) = 0
-    iml1(model::Chain) = sum(iml1, model)
     mse(x,y) = sum(abs2, model(x) .- y)
-
-    iml1() = βiml1*iml1(model)
-    psl1() = βpsl1*norm(ps,1)
-    loss(x,y) = mse(x,y) + iml1() + psl1()
+    loss(x,y) = mse(x,y) + βiml1*iml1(model) + βpsl1*norm(ps,1)
 
     niter = 1
     cb = [Flux.throttle(()->(
@@ -62,7 +70,7 @@ function run(c::Dict, f::Function)
                println();
                display(heat(model));
                println();
-               @info niter loss(x,y) loss(xt,yt)
+               @info niter mse(x,y) loss(x,y) loss(xt,yt)
               ), 1),
           Flux.throttle(() -> (push!(h, :μz, Flux.destructure(model)[1]);
                                push!(h, :mse, mse(xt,yt))), 0.1),
@@ -79,10 +87,11 @@ res, _ = produce_or_load(datadir("polynomial"),
                               :dim    =>  10,
                               :niter  =>  100000,
                               :lr     =>  1e-4,
+                              :layer  => "nalu",
                               :βiml1  =>  0.0,
-                              :βpsl1  =>  1.0),
-                         c -> run(c, f), prefix="rational",
-                         force=true, digits=8)
+                              :βpsl1  =>  0.0),
+                         c -> run(c, f), prefix="complicated_rational",
+                         force=false, digits=8)
 
 model = res[:model]
 history = res[:history]
