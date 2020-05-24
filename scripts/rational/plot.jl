@@ -15,12 +15,21 @@ folder = datadir("rational")
 # files = map(f->joinpath(folder,f), files)
 
 f(x) = (x^3-2x)/(2(x^2-5))
+#xt = Float32.(reshape(-5:0.05:5,1,:))
+#xt = Float32.(reshape(-10:0.05:10,1,:))
 xt = Float32.(reshape(-10:0.1:10,1,:))
+#xt = Float32.(reshape(-15:0.1:15,1,:))
 yt = f.(xt)
 
 df = collect_results!(folder, black_list=[:history])
-df = filter(r->r.dim==20, df)
+
+df = filter(r->(a = r.dim==20;
+                b = r.layer=="gatednpux" ? r.βpsl1==0.1 : true;
+                a && b),
+            df)
+
 df.val = map(m->Flux.mse(m(xt),yt), df.model)
+df.output = map(m->vec(m(xt)), df.model)
 
 adf = combine(groupby(df,"layer")) do gdf
     (mse = measurement(mean(gdf.mse), std(gdf.mse)/sqrt(length(gdf.mse))),
@@ -29,20 +38,21 @@ adf = combine(groupby(df,"layer")) do gdf
 end
 display(adf)
 
-df.output = map(m->vec(m(xt)), df.model)
 x = vec(xt)
 y = vec(yt)
+key = "val"
+ylim = (-5,5)
+#ylim = (-10,10)
 
-s1 = plot(x, y, label="Truth", ylim=(-5,5), lw=2, title="GatedNPU")
+s1 = plot(x, y, label="Truth", ylim=ylim, lw=2, title="GatedNPU")
 for row in eachrow(df)
     d = parse_savename(row.path)[2]
     if d["layer"] == "gatednpux"
         plot!(s1, x, row.output, label="run #$(d["run"])", c=:gray)
     end
 end
-#plot!(p1, x, y, label="Truth", ylim=(-5,5), lw=2, title="GatedNPU", c=:blue)
 
-s2 = plot(x, y, label="Truth", ylim=(-5,5), lw=2, title="NALU")
+s2 = plot(x, y, label="Truth", ylim=ylim, lw=2, title="NALU")
 for row in eachrow(df)
     d = parse_savename(row.path)[2]
     if d["layer"] == "nalu"
@@ -50,7 +60,7 @@ for row in eachrow(df)
     end
 end
 
-s3 = plot(x, y, label="Truth", ylim=(-5,5), lw=2, title="Dense")
+s3 = plot(x, y, label="Truth", ylim=ylim, lw=2, title="Dense")
 for row in eachrow(df)
     d = parse_savename(row.path)[2]
     if d["layer"] == "dense"
@@ -63,16 +73,16 @@ p1 = plot(s1,s2,s3,layout=(1,3),size=(1000,300))
 display(p1)
 
 best = combine(groupby(df, "layer")) do gdf
-    out = sort!(DataFrame(gdf), "mse")
+    out = sort!(DataFrame(gdf), key)
     out[1,:]
 end
 
 
-s1 = plot(x, y, label="Truth", ylim=(-5,5), lw=2)
-plot!(s1, x, best[1,"output"], label=best[1,"layer"], title="MSE: $(best[1,"val"])")
-s2 = plot(x, y, label="Truth", ylim=(-5,5), lw=2)
-plot!(s2, x, best[2,"output"], label=best[2,"layer"], title="MSE: $(best[2,"val"])")
-s3 = plot(x, y, label="Truth", ylim=(-5,5), lw=2)
-plot!(s3, x, best[3,"output"], label=best[3,"layer"], title="MSE: $(best[3,"val"])")
+s1 = plot(x, y, label="Truth", ylim=ylim, lw=2)
+plot!(s1, x, best[1,"output"], title=best[1,"layer"], label="MSE: $(best[1,"val"])")
+s2 = plot(x, y, label="Truth", ylim=ylim, lw=2)
+plot!(s2, x, best[2,"output"], title=best[2,"layer"], label="MSE: $(best[2,"val"])")
+s3 = plot(x, y, label="Truth", ylim=ylim, lw=2)
+plot!(s3, x, best[3,"output"], title=best[3,"layer"], label="MSE: $(best[3,"val"])")
 p2 = plot(s1,s2,s3,layout=(1,3),size=(1000,300))
 display(p2)
