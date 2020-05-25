@@ -21,7 +21,7 @@ function trueODEfunc(du,u,p,t)
   #du[2] = -2u[1]^2
   du[2] = -u[2] - 0u[1] - u[1]^(-1)
 end
-tspan = (0.0,2.5)
+tspan = (0.0,3.0)
 t = range(tspan[1],tspan[2],length=datasize)
 prob = ODEProblem(trueODEfunc,u0,tspan)
 ode_data = Array(solve(prob,Tsit5(),saveat=t))
@@ -33,7 +33,7 @@ init(a,b) = Float64.(Flux.glorot_uniform(a,b))/3
 #              NAU(10,2,init=init))
 
 
-hdim = 5
+hdim = 2
 dudt = Chain(GatedNPUX(2,hdim,initRe=init, initIm=zeros),
              NAU(hdim,2,init=init))
 
@@ -59,9 +59,9 @@ function predict_n_ode(p)
   n_ode(u0,p)
 end
 
-reg_loss(p) = 1e-4*norm(p,1)
+reg_loss(p) = 1e-1*norm(p,1)
 mse_loss(pred) = sum(abs2, ode_data .- pred)
-img_loss(p) = 1e-1*norm(p[hdim*2+1:hdim*4],1)
+img_loss(p) = 1e0*norm(p[hdim*2+1:hdim*4],1)
 
 function loss_n_ode(p)
     pred = predict_n_ode(p)
