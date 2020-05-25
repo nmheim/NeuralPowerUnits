@@ -33,7 +33,7 @@ validation_samples(c::Union{MultL1SearchConfig,AddL1SearchConfig,DivL1SearchConf
     validation_samples(c,[-4.5f0,-2.5f0,-1.5f0,-0.3f0,-0.2f0,0.1f0,1f0,2f0,3f0,10f0])
 
 validation_samples(c::SqrtL1SearchConfig) =
-    validation_samples(c,[4.5f0,2.5f0,1.5f0,0.3f0,0.2f0,0.1f0,1f0,2f0,3f0,10f0])
+    validation_samples(c,[4.5f0,2.5f0,1.5f0,0.3f0,0.2f0,0.1f0,1f0,2f0,3f0,10f0,20f0])
 
 
 function expand_config!(df::DataFrame)
@@ -112,10 +112,12 @@ task(x::Array,c::MultL1SearchConfig) = mult(x,c.subset,c.overlap)
 
 function pareto(d::Dict)
     @unpack thresh = d
-    #x = validation_samples(df[1,"config"],[4.5f0,2.5f0,1.5f0,0.3f0,0.2f0,0.1f0,1f0,2f0,3f0,10f0])
+    c = first(filter(r->r.task=="sqrt",df)).config
+    x = validation_samples(c)
+    x = sobol_samples(c)
     @progress for row in eachrow(df)
         m = load(row.path)[:model]
-        x = validation_samples(row.config)
+        #x = validation_samples(row.config)
         y = task(x,row.config)
         row.val = Flux.mse(m(x),y)
         row.reg = nrparams(m, thresh)
@@ -123,7 +125,12 @@ function pareto(d::Dict)
     return @dict(df)
 end
 
-res = produce_or_load(datadir("pareto"),Dict(:thresh=>1e-1), pareto, digits=10)[1]
+(res,_) = produce_or_load(datadir("pareto"),
+                          prefix="sobol",
+                          Dict(:thresh=>1e-1),
+                          pareto,
+                          digits=10,
+                          force=true)
 df = res[:df]
 
 ps = []
