@@ -1,12 +1,40 @@
 using DrWatson
 @quickactivate "NIPS_2020_NMUX"
 
+using Logging
+using TerminalLoggers
+using ProgressLogging
+global_logger(TerminalLogger(right_justify=80))
+
 using Flux
 using NeuralArithmetic
 using ValueHistories
 using DataFrames
 
 include(joinpath(@__DIR__, "configs.jl"))
+include(srcdir("arithmetic_dataset.jl"))
+
+function validation_samples(c,xs)
+    samples = []
+    (ii,jj) = ranges(c.inlen,c.subset,c.overlap)
+    ii = ii.start:5:ii.stop
+    jj = jj.start:5:jj.stop
+    indices = Iterators.product(ii,jj,xs,xs)
+    for (i,j,x,y) in indices
+        z = zeros(Float32,c.inlen)
+        z[i] = x
+        z[j] = y
+        push!(samples,z)
+    end
+    reduce(hcat, samples)
+end
+
+validation_samples(c::Union{MultL1SearchConfig,AddL1SearchConfig,DivL1SearchConfig}) =
+    validation_samples(c,[-4.5f0,-2.5f0,-1.5f0,-0.3f0,-0.2f0,0.1f0,1f0,2f0,3f0,10f0])
+
+validation_samples(c::SqrtL1SearchConfig) =
+    validation_samples(c,[4.5f0,2.5f0,1.5f0,0.3f0,0.2f0,0.1f0,1f0,2f0,3f0,10f0])
+
 
 function expand_config!(df::DataFrame)
     if "config" in names(df)
@@ -28,7 +56,7 @@ function delete_rows_with_nans!(df::DataFrame, cols=[:trn,:mse,:reg,:val])
     idxs = map(cols) do col
         findall(isnan, df[!,col])
     end
-    idx = unique(vcat(idxs...))
+    idx = sort(unique(vcat(idxs...)))
     if length(idx) != 0
         @info "Deleting rows with nans:" df[idx,"path"]
         delete!(df, idx)
@@ -53,7 +81,7 @@ function collect_folder!(folder::String)
                                        ],
                          )
     _df.hash = delete_from_savename.(_df.path, "run")
-    #delete_rows_with_nans!(_df)
+    delete_rows_with_nans!(_df)
     expand_config!(_df)
     return _df
 end
@@ -77,6 +105,11 @@ folders = ["addition_npu_l1_search"
 
 df = collect_all_results!(folders)
 
+task(x::Array,c::SqrtL1SearchConfig) = sqrt(x,c.subset)
+task(x::Array,c::DivL1SearchConfig) = invx(x,c.subset)
+task(x::Array,c::AddL1SearchConfig) = add(x,c.subset,c.overlap)
+task(x::Array,c::MultL1SearchConfig) = mult(x,c.subset,c.overlap)
+
 function pareto(d::Dict)
     @unpack thresh = d
     #x = validation_samples(df[1,"config"],[4.5f0,2.5f0,1.5f0,0.3f0,0.2f0,0.1f0,1f0,2f0,3f0,10f0])
@@ -90,10 +123,15 @@ function pareto(d::Dict)
     return @dict(df)
 end
 
-res = produce_or_load(datadir("pareto"),Dict(:thresh=>0.001), pareto)
+res = produce_or_load(datadir("pareto"),Dict(:thresh=>1e-5), pareto, digits=10)[1]
 df = res[:df]
 
-p1 = scatterplot([0],[0],title="Pareto")
-for g in groupby(df,"model")
-    scatterplot!(p1, g.val, g.reg)
+ps = []
+for dft in groupby(df, "task")
+    s1 = plot(title=dft.task[1])
+    for dfm in groupby(dft,"model")
+        scatter!(s1, log10.(dfm.val), log10.(dfm.reg), label=dfm.model[1])
+    end
+    push!(ps, s1)
 end
+plot(ps...)
