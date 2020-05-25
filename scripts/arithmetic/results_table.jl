@@ -231,7 +231,7 @@ print_table(table_best_models_tasks(bestav_df,key))
 print_table(table_best_models_tasks(clean_adf,"μ$key"))
 
 using UnicodePlots
-row = find_best(df,"gatednpux","invx",key)
+row = find_best(df,"gatednpux","sqrt",key)
 @unpack history,model = load(row.path)
 display(row.config)
 heat(model)

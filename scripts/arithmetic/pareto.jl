@@ -11,7 +11,8 @@ using NeuralArithmetic
 using ValueHistories
 using DataFrames
 
-include(joinpath(@__DIR__, "configs.jl"))
+#include(joinpath(@__DIR__, "configs.jl"))
+include(joinpath(@__DIR__, "sobolconfigs.jl"))
 include(srcdir("arithmetic_dataset.jl"))
 
 function validation_samples(c,xs)
@@ -35,6 +36,15 @@ validation_samples(c::Union{MultL1SearchConfig,AddL1SearchConfig,DivL1SearchConf
 validation_samples(c::SqrtL1SearchConfig) =
     validation_samples(c,[4.5f0,2.5f0,1.5f0,0.3f0,0.2f0,0.1f0,1f0,2f0,3f0,10f0,20f0])
 
+function sobol_samples(c)
+    s = SobolSeq(c.inlen)
+    # discard first zero sample
+    next!(s)
+    x = reduce(hcat, [next!(s) for i = 1:10000])
+    xs = c.uplim * 4
+    xe = c.lowlim * 4
+    Float32.(x .* (xs - xe) .+ xe)
+end
 
 function expand_config!(df::DataFrame)
     if "config" in names(df)
@@ -103,6 +113,11 @@ folders = ["addition_npu_l1_search"
           ,"sqrt_npu_l1_search"
           ,"div_npu_l1_search"]
 
+folders = ["add_l1_runs"
+          ,"mult_l1_runs"
+          ,"invx_l1_runs"
+          ,"sqrt_l1_runs"]
+
 df = collect_all_results!(folders)
 
 task(x::Array,c::SqrtL1SearchConfig) = sqrt(x,c.subset)
@@ -127,10 +142,10 @@ end
 
 (res,_) = produce_or_load(datadir("pareto"),
                           prefix="sobol",
-                          Dict(:thresh=>1e-1),
+                          Dict(:thresh=>1e-3),
                           pareto,
                           digits=10,
-                          force=true)
+                          force=false)
 df = res[:df]
 
 ps = []
