@@ -93,7 +93,7 @@ nrparams(x::Array, thresh) = sum(abs.(x) .> thresh)
 nrparams(m::NAU, thresh) = nrparams(m.W, thresh)
 nrparams(m::NMU, thresh) = nrparams(m.W, thresh)
 nrparams(m::GatedNPUX, thresh) = sum(map(x->nrparams(x,thresh), [m.Re,m.Im,m.g]))
-nrparams(m::GatedNPU, thres) = sum(map(x->nrparams(x,thresh), [m.W,m.g]))
+nrparams(m::GatedNPU, thresh) = sum(map(x->nrparams(x,thresh), [m.W,m.g]))
 nrparams(m::NAC, thresh) = sum(map(x->nrparams(x,thresh), [m.W,m.M]))
 nrparams(m::NALU, thresh) = sum(map(x->nrparams(x,thresh), [m.nac,m.G,m.b]))
 nrparams(m::Chain, thres) = sum(map(x->nrparams(x,thres), m))
@@ -131,7 +131,7 @@ for dft in groupby(df, "task")
     s1 = plot(title=dft.task[1])
     for dfm in groupby(dft,"model")
         scatter!(s1, log10.(dfm.val), log10.(dfm.reg),
-                 ms=2, label=dfm.model[1])
+                 ms=5, label=dfm.model[1], alpha=0.5)
     end
     push!(ps, s1)
 end
