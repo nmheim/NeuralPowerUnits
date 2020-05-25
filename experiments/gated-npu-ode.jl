@@ -19,36 +19,36 @@ t = range(tspan[1],tspan[2],length=datasize)
 prob = ODEProblem(trueODEfunc,u0,tspan)
 ode_data = Array(solve(prob,Tsit5(),saveat=t))
 
+function lotka_volterra(du,u,p,t)
+  x, y = u
+  α, β, δ, γ = p
+  du[1] = dx = α*x - β*x*y
+  du[2] = dy = -δ*y + γ*x*y
+end
 # function lotka_volterra(du,u,p,t)
-#   x, y = u
-#   α, β, δ, γ = p
-#   du[1] = dx = α*x - β*x*y
-#   du[2] = dy = -δ*y + γ*x*y
+#     x,y = u
+#     α = 2.0
+#     β = 1.5
+#     γ = 0.6
+#     du[1] = β*x*(1-x) - α*x*y/(1+x)
+#     du[2] = -γ*y + α*x*y/(1+x)
 # end
-# # function lotka_volterra(du,u,p,t)
-# #     x,y = u
-# #     α = 2.0
-# #     β = 1.5
-# #     γ = 0.6
-# #     du[1] = β*x*(1-x) - α*x*y/(1+x)
-# #     du[2] = -γ*y + α*x*y/(1+x)
-# # end
-# u0 = [0.5,1.0]
-# tspan = (0.0,10.0)
-# truep = [1.1,1.0,1.3,1.0]
-# t = range(tspan[1],tspan[2],length=datasize)
-# prob = ODEProblem(lotka_volterra,u0,tspan,truep)
-# ode_data = Array(solve(prob, Tsit5(), saveat=t))
+u0 = [0.5,1.0]
+tspan = (0.0,10.0)
+truep = [1.1,1.0,1.3,1.0]
+t = range(tspan[1],tspan[2],length=datasize)
+prob = ODEProblem(lotka_volterra,u0,tspan,truep)
+ode_data = Array(solve(prob, Tsit5(), saveat=t))
 
 
 init(a,b) = rand(Float64,a,b)/10
-init(a,b) = Float64.(Flux.glorot_uniform(a,b))/3
+init(a,b) = Float64.(Flux.glorot_uniform(a,b))
 # dudt = Chain(NAU(2,10),
 #              GatedNPU(10,10,init=init),
 #              NAU(10,2,init=init))
 
 
-hdim = 50
+hdim = 5
 dudt = Chain(GatedNPUX(2,hdim,initRe=init, initIm=zeros),
              NAU(hdim,2,init=init))
 
@@ -74,9 +74,9 @@ function predict_n_ode(p)
   n_ode(u0,p)
 end
 
-reg_loss(p) = 1e-5*norm(p,1)
+reg_loss(p) = 1e-4*norm(p,1)
 mse_loss(pred) = sum(abs2, ode_data .- pred)
-img_loss(p) = 1e-3*norm(p[hdim*2+1:hdim*4],1)
+img_loss(p) = 1e-1*norm(p[hdim*2+1:hdim*4],1)
 
 function loss_n_ode(p)
     pred = predict_n_ode(p)
@@ -91,7 +91,7 @@ function plot_chain(p)
 end
 
 
-cb = function (p,l,pred;doplot=false) #callback function to observe training
+cb = function (p,l,pred;doplot=true) #callback function to observe training
   # plot current prediction against data
   #@info l mse_loss(pred) reg_loss(p)
   if doplot
@@ -109,7 +109,7 @@ end
 # Display the ODE with the initial parameter values.
 cb(n_ode.p,loss_n_ode(n_ode.p)...)
 
-res1 = DiffEqFlux.sciml_train(loss_n_ode, n_ode.p, RMSProp(0.005), cb = cb, maxiters = 5000)
+res1 = DiffEqFlux.sciml_train(loss_n_ode, n_ode.p, RMSProp(0.003), cb = Flux.throttle(cb,1), maxiters = 5000)
 cb(res1.minimizer,loss_n_ode(res1.minimizer)...;doplot=true)
 
 # res2 = DiffEqFlux.sciml_train(loss_n_ode, res1.minimizer, RMSProp(0.0005), cb = cb, maxiters = 2000)
