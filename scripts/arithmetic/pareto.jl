@@ -123,14 +123,15 @@ function pareto(d::Dict)
     return @dict(df)
 end
 
-res = produce_or_load(datadir("pareto"),Dict(:thresh=>1e-5), pareto, digits=10)[1]
+res = produce_or_load(datadir("pareto"),Dict(:thresh=>1e-1), pareto, digits=10)[1]
 df = res[:df]
 
 ps = []
 for dft in groupby(df, "task")
     s1 = plot(title=dft.task[1])
     for dfm in groupby(dft,"model")
-        scatter!(s1, log10.(dfm.val), log10.(dfm.reg), label=dfm.model[1])
+        scatter!(s1, log10.(dfm.val), log10.(dfm.reg),
+                 ms=2, label=dfm.model[1])
     end
     push!(ps, s1)
 end
