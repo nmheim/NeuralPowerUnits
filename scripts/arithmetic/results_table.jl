@@ -180,10 +180,10 @@ folders = ["addition_npu_l1_search"
           ,"sqrt_npu_l1_search"
           ,"div_npu_l1_search"]
 
-folders = ["add_l1_runs"
-          ,"mult_l1_runs"
-          ,"invx_l1_runs"
-          ,"sqrt_l1_runs"]
+# folders = ["add_l1_runs"
+#           ,"mult_l1_runs"
+#           ,"invx_l1_runs"
+#           ,"sqrt_l1_runs"]
 
 folders = map(datadir, folders)
 
@@ -218,11 +218,11 @@ key = "val"
 df = collect_all_results!(folders)
 adf = aggregateruns(df)
 
-# bestmodels = filter_best_model_task(df,"mse")
-# wsave(datadir("arithmetic_best_models.bson"), @dict(bestmodels))
-# 
-# bestmodels = filter_best_model_task(adf,"μmse")
-# wsave(datadir("arithmetic_aggregate_best_models.bson"), @dict(bestmodels))
+bestmodels = filter_best_model_task(df,"val")
+wsave(datadir("arithmetic_best_models.bson"), @dict(bestmodels))
+
+bestmodels = filter_best_model_task(adf,"μmse")
+wsave(datadir("arithmetic_aggregate_best_models.bson"), @dict(bestmodels))
 
 bestav_df = filter_by_best_average(df,adf,key)
 clean_adf = aggregateruns(bestav_df)

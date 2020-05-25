@@ -14,7 +14,6 @@ using Parameters
     uplim::Real     = 1
     subset::Real    = 0.5f0
     overlap::Real   = 0.25f0
-    sampler::String = "sobol"
 
     inlen::Int      = 100
     fstinit::String = "rand"
@@ -38,7 +37,6 @@ end
     uplim::Real     = 1
     subset::Real    = 0.5f0
     overlap::Real   = 0.25f0
-    sampler::String = "sobol"
 
     inlen::Int      = 100
     fstinit::String = "rand"
@@ -62,7 +60,6 @@ end
     uplim::Real     = 0.5
     subset::Real    = 0.5f0
     overlap::Real   = 0.25f0
-    sampler::String = "sobol"
 
     inlen::Int      = 100
     fstinit::String = "rand"
@@ -86,7 +83,6 @@ end
     uplim::Real     = 2
     subset::Real    = 0.5f0
     overlap::Real   = 0.25f0
-    sampler::String = "sobol"
 
     inlen::Int      = 100
     fstinit::String = "rand"
