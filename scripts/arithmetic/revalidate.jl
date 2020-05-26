@@ -10,6 +10,8 @@ using Flux
 using NeuralArithmetic
 using ValueHistories
 using DataFrames
+using Statistics
+using Measurements
 using Sobol
 
 include(joinpath(@__DIR__, "sobolconfigs.jl"))
@@ -21,8 +23,8 @@ function sobol_samples(c)
     # discard first zero sample
     next!(s)
     x = reduce(hcat, [next!(s) for i = 1:10000])
-    xs = c.uplim * 2
-    xe = c.lowlim * 2
+    xs = c.lowlim*2
+    xe = c.uplim*2
     Float32.(x .* (xs - xe) .+ xe)
 end
 
@@ -40,6 +42,30 @@ task(x::Array,c::SqrtL1SearchConfig) = sqrt(x,c.subset)
 task(x::Array,c::DivL1SearchConfig) = invx(x,c.subset)
 task(x::Array,c::AddL1SearchConfig) = add(x,c.subset,c.overlap)
 task(x::Array,c::MultL1SearchConfig) = mult(x,c.subset,c.overlap)
+
+"""
+Creates table like this:
+| task | npu | npux | ... |
+
+with "key" values
+
+expects dataframe with columns "task" and "model" (and "key")
+"""
+function create_table(df, key)
+    table = DataFrame()
+    table.task = unique(df.task)
+    table.gatednpux = Vector{}(undef, 4)
+    table.nalu = Vector{}(undef, 4)
+    table.nmu = Vector{}(undef, 4)
+    table.npux = Vector{}(undef, 4)
+    
+    for gdf in groupby(μdf, ["model","task"])
+        row = gdf[1,:]
+        table[findall(r->r.task==row.task, eachrow(table)), row.model] = row[key]
+    end
+    return table
+end
+
 
 function pareto(d::Dict)
     @unpack thresh = d
@@ -61,24 +87,31 @@ end
                           Dict(:thresh=>1e-5),
                           pareto,
                           digits=10,
-                          force=true)
-error()
-display(fname)
+                          force=false)
 df = res[:df]
 
-using Plots
-pyplot()
-ps = []
-for dft in groupby(df, "task")
-    s1 = plot(title=dft.task[1])
-    for dfm in groupby(dft,"model")
-        #if dfm.model[1] != "gatednpu"
-            scatter!(s1, log10.(dfm.reg), log10.(dfm.mse),
-            #scatter!(s1, dfm.val, dfm.reg,
-                     ylabel="log(mse)", xlabel="log(nr params)",
-                     ms=5, label=dfm.model[1], alpha=0.5, ylim=-(-2,10))
-        #end
-    end
-    push!(ps, s1)
+# remove rows with infs
+df = combine(groupby(df, ["model","task"])) do gdf
+    gdf.val[findall(isinf, gdf.val)] .= 1e10
+    gdf.mse[findall(isinf, gdf.mse)] .= 1e10
+    gdf[1:min(10,size(gdf,1)),:]
 end
-plot(ps...)
+
+# average runs
+μdf = combine(groupby(df,["model","task"])) do gdf
+    σmse = std(gdf.mse)
+    σval = std(gdf.val)
+    σmse = isinf(σmse) ? 1e20 : σmse
+    σval = isinf(σval) ? 1e20 : σval
+    (task = gdf.task[1],
+     model = gdf.model[1],
+     mse = measurement(mean(gdf.mse), σmse),
+     val = measurement(mean(gdf.val), σval),
+    )
+end
+
+
+table = create_table(μdf, "mse")
+@pt table
+table = create_table(μdf, "val")
+@pt table
