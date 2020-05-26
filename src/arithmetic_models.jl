@@ -64,8 +64,8 @@ function get_model(model::String, inlen::Int, fstinit::String, sndinit::String)
                           initG=initf(sndinit),
                           initb=Flux.zeros))
     elseif model == "npux"
-        return Chain(Flux.fmap(ComplexMatrix, NAU(inlen,inlen,init=initf(fstinit))),
-                     NPU(inlen, 1, init=initf(sndinit)))
+        return Chain(NAU(inlen, inlen, init=initf(fstinit)),
+                     NPUX(inlen, 1, initRe=initf(sndinit)))
     elseif model == "gatednpu"
         nau = NAU(inlen, inlen, init=initf(fstinit))
         W   = initf(sndinit)(1,inlen)
@@ -95,7 +95,6 @@ function train!(loss, model, data, val_data, opt, sch::Schedule, history=MVHisto
     logging = Flux.throttle((i)->(
             @info("Step $i | β=$(sch.eta)", trn_loss, mse_loss, reg_loss, val_loss);
             m = get_mapping(model) |> cpu;
-            (h,w) = size(m[1].W);
             p1 = heat(m);
             display(p1);
         ),

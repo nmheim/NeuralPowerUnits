@@ -54,9 +54,9 @@ end
 ################################################################################
 
 config = SqrtL1SearchConfig()
-for m in ["gatednpux","nmu"]
+@progress name="All runs: " for i in 1:10
     @info config
-    @progress name="All runs: " for i in 1:10
+    for m in ["gatednpux","nalu","nmu","npux"]
         config = SqrtL1SearchConfig(run=i, model=m)
         res, fname = produce_or_load(datadir(basename(splitext(@__FILE__)[1])),
                                      config, run, digits=10)
@@ -64,6 +64,7 @@ for m in ["gatednpux","nmu"]
         @info "Validation error run #$i: $(res[:val])"
     end
 end
+
 
 
 ################################################################################

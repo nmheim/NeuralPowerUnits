@@ -18,14 +18,14 @@ include(srcdir("schedules.jl"))
 include(srcdir("arithmetic_dataset.jl"))
 include(srcdir("arithmetic_models.jl"))
 include(srcdir("unicodeheat.jl"))
-include(joinpath(@__DIR__, "configs.jl"))
+include(joinpath(@__DIR__, "sobolconfigs.jl"))
 
 
 function run(c::DivL1SearchConfig)
-    generate = arithmetic_invx_dataset(c.inlen, c.subset, c.lowlim, c.uplim,
-        sampler=c.sampler)
-    test_generate = arithmetic_invx_dataset(c.inlen, c.subset, c.lowlim-2, c.uplim+2,
-        sampler=c.sampler)
+    generate = arithmetic_dataset(invx, c.inlen, c.subset, c.overlap,
+                                  c.lowlim, c.uplim, sampler=c.sampler)
+    test_generate = arithmetic_dataset(invx, c.inlen, c.subset, c.overlap,
+                                       c.lowlim-2, c.uplim+2, sampler=c.sampler)
 
     #togpu = Flux.gpu
     togpu = identity
@@ -54,15 +54,16 @@ end
 ################################################################################
 
 config = DivL1SearchConfig()
-@info config
-@progress name="All runs: " for i in 1:100
-    config = DivL1SearchConfig(run=i)
-    res, fname = produce_or_load(datadir(basename(splitext(@__FILE__)[1])),
-                                 config, run, digits=10)
-    display(heat(res[:model]))
-    @info "Validation error run #$i: $(res[:val])"
+@progress name="All runs: " for i in 1:10
+    @info config
+    for m in ["gatednpux","nalu","nmu","npux"]
+        config = DivL1SearchConfig(run=i, model=m)
+        res, fname = produce_or_load(datadir(basename(splitext(@__FILE__)[1])),
+                                     config, run, digits=10)
+        display(heat(res[:model]))
+        @info "Validation error run #$i: $(res[:val])"
+    end
 end
-
 
 ################################################################################
 # this code performs grid search

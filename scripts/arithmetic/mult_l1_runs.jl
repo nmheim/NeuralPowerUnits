@@ -18,7 +18,7 @@ include(srcdir("schedules.jl"))
 include(srcdir("arithmetic_dataset.jl"))
 include(srcdir("arithmetic_models.jl"))
 include(srcdir("unicodeheat.jl"))
-include(joinpath(@__DIR__, "configs.jl"))
+include(joinpath(@__DIR__, "sobolconfigs.jl"))
 
 function run(c::MultL1SearchConfig)
     generate = arithmetic_dataset(mult, c.inlen, c.subset, c.overlap, c.lowlim, c.uplim,
@@ -53,14 +53,24 @@ end
 ################################################################################
 
 config = MultL1SearchConfig()
-@info config
-@progress name="All runs: " for i in 1:100
-    config = MultL1SearchConfig(run=i)
-    res, fname = produce_or_load(datadir(basename(splitext(@__FILE__)[1])),
-                                 config, run, digits=10)
-    display(heat(res[:model]))
-    @info "Validation error run #$i: $(res[:val])"
+@progress name="All runs: " for i in 1:10
+    @info config
+    for m in ["gatednpux","nalu","nmu","npux"]
+        config = if m == "nmu"
+            MultL1SearchConfig(run=i, model=m, βstart=1e-7)
+        elseif m == "nalu"
+            MultL1SearchConfig(run=i, model=m,
+                               βstart=0, βend=0, βstep=100000, βgrowth=1)
+        else
+            MultL1SearchConfig(run=i, model=m)
+        end
+        res, fname = produce_or_load(datadir(basename(splitext(@__FILE__)[1])),
+                                     config, run, digits=10)
+        display(heat(res[:model]))
+        @info "Validation error run #$i: $(res[:val])"
+    end
 end
+
 
 
 ################################################################################

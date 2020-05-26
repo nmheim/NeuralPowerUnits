@@ -21,10 +21,10 @@ include(srcdir("arithmetic_models.jl"))
 @with_kw struct MultL1Config
     batch::Int      = 128
     niters::Int     = 300000
-    lr::Real        = 1e-3
+    lr::Real        = 5e-3
 
-    βstart::Real    = 1f-4
-    βend::Real      = 1f-3
+    βstart::Real    = 1f-7
+    βend::Real      = 1f-4
     βgrowth::Real   = 10f0
     βstep::Int      = 10000
 
@@ -32,24 +32,21 @@ include(srcdir("arithmetic_models.jl"))
     uplim::Real     = 1
     subset::Real    = 0.5f0
     overlap::Real   = 0.25f0
+    sampler::String = "sobol"
 
-    inlen::Int      = 20
+    inlen::Int      = 100
     fstinit::String = "rand"
     sndinit::String = "rand"
-    model::String   = "gatednpu"
+    model::String   = "nmu"
 
 end
 
 
 function run(c::MultL1Config)
-    generate = arithmetic_dataset(*, c.inlen,
-        d=Uniform(c.lowlim,c.uplim),
-        subset=c.subset,
-        overlap=c.overlap)
-    test_generate = arithmetic_dataset(*, c.inlen,
-        d=Uniform(c.lowlim-4,c.uplim+4),
-        subset=c.subset,
-        overlap=c.overlap)
+    generate = arithmetic_dataset(mult, c.inlen, c.subset, c.overlap, c.lowlim, c.uplim,
+        sampler=c.sampler)
+    test_generate = arithmetic_dataset(mult, c.inlen, c.subset, c.overlap, c.lowlim-4, c.uplim+4,
+        sampler=c.sampler)
 
     model = get_model(c.model, c.inlen, c.fstinit, c.sndinit)
     βgrowth = ExpSchedule(c.βstart, c.βend, c.βgrowth, c.βstep)
