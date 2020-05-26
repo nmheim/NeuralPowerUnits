@@ -1,3 +1,5 @@
+include(srcdir("unicodeheat.jl"))
+
 struct SingleGatedNPU
     W::AbstractMatrix
     g::AbstractVector
@@ -76,7 +78,7 @@ function get_model(model::String, inlen::Int, fstinit::String, sndinit::String)
     elseif model == "gatednpux"
         nau = NAU(inlen, inlen, init=initf(fstinit))
         Re  = initf(sndinit)(1,inlen)
-        Im  = initf(sndinit)(1,inlen)
+        Im  = zeros(Float32,1,inlen)
         g   = ones(Float32, inlen) #.* Float32(0.99)
         #g   = rand(Float32, inlen)
         npu = GatedNPUX(Re, Im, g)
@@ -94,7 +96,7 @@ function train!(loss, model, data, val_data, opt, sch::Schedule, history=MVHisto
             @info("Step $i | β=$(sch.eta)", trn_loss, mse_loss, reg_loss, val_loss);
             m = get_mapping(model) |> cpu;
             (h,w) = size(m[1].W);
-            p1 = UnicodePlots.heatmap(m[1].W[end:-1:1,:], height=h, width=w);
+            p1 = heat(m);
             display(p1);
         ),
     5)

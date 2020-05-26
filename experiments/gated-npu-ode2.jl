@@ -33,7 +33,7 @@ init(a,b) = Float64.(Flux.glorot_uniform(a,b))/3
 #              NAU(10,2,init=init))
 
 
-hdim = 2
+hdim = 4
 dudt = Chain(GatedNPUX(2,hdim,initRe=init, initIm=zeros),
              NAU(hdim,2,init=init))
 
@@ -59,13 +59,13 @@ function predict_n_ode(p)
   n_ode(u0,p)
 end
 
-reg_loss(p) = 1e-1*norm(p,1)
+reg_loss(p) = 1e-4*norm(p,1)
 mse_loss(pred) = sum(abs2, ode_data .- pred)
-img_loss(p) = 1e0*norm(p[hdim*2+1:hdim*4],1)
+img_loss(p) = 1e-1*norm(p[hdim*2+1:hdim*4],1)
 
 function loss_n_ode(p)
     pred = predict_n_ode(p)
-    loss = mse_loss(pred) + reg_loss(p) + img_loss(p)
+    loss = mse_loss(pred) #+ reg_loss(p) + img_loss(p)
     loss,pred
 end
 
@@ -95,7 +95,7 @@ end
 cb(n_ode.p,loss_n_ode(n_ode.p)...)
 #error()
 
-res1 = DiffEqFlux.sciml_train(loss_n_ode, n_ode.p, RMSProp(0.0005), cb = Flux.throttle(cb,1), maxiters = 10000)
+res1 = DiffEqFlux.sciml_train(loss_n_ode, n_ode.p, RMSProp(0.001), cb = Flux.throttle(cb,1), maxiters = 10000)
 cb(res1.minimizer,loss_n_ode(res1.minimizer)...;doplot=true)
 
 # res2 = DiffEqFlux.sciml_train(loss_n_ode, res1.minimizer, RMSProp(0.0005), cb = cb, maxiters = 2000)

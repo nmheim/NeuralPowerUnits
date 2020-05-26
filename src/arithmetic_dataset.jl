@@ -46,8 +46,8 @@ function get_sampler(sampler::String, xlen::Int)
     end
 end
 
-sample(s::SobolSeq, batch::Int) = reduce(hcat, [next!(s) for i = 1:batch])
-sample(s::Uniform, batch::Int) = rand(d,xlen,batch)
+sample(s::SobolSeq, xlen::Int, batch::Int) = reduce(hcat, [next!(s) for i = 1:batch])
+sample(d::Uniform, xlen::Int, batch::Int) = rand(d,xlen,batch)
 
 """
 arithmetic_dataset(op::Function, xlen::Int; d::Uniform=Uniform(-2,2)
@@ -62,7 +62,7 @@ function arithmetic_dataset(op::Function, xlen::Int, subset::Real, overlap::Real
     @info "Arithmetic dataset: ($op)"
     r = get_sampler(sampler,xlen)
     function generate(batch::Int)
-        X = Float32.(sample(r,batch) .* (uplim-lowlim) .+ lowlim)
+        X = Float32.(sample(r,xlen,batch) .* (uplim-lowlim) .+ lowlim)
         t = op(X,subset,overlap)
         (X,t)
     end
