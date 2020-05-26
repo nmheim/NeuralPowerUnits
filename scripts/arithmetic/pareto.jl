@@ -61,10 +61,10 @@ end
                           Dict(:thresh=>1e-5),
                           pareto,
                           digits=10,
-                          force=true)
-error()
-display(fname)
-df = res[:df]
+                          force=false)
+df = combine(groupby(res[:df], ["model","task"])) do gdf
+    gdf[1:min(10,size(gdf,1)),:]
+end
 
 using Plots
 using LaTeXStrings
@@ -118,3 +118,41 @@ for m in plotmodels
 end
 
 p1 = plot(s1,s2,s3,s4,layout=(2,2))
+
+s1 = plot(title="Addition +")
+pdf  = filter(row->row.task=="add", df)
+for m in plotmodels
+    mdf = filter(row->row.model==m, pdf)
+    scatter!(s1, mdf.reg, mdf.mse,
+             label=models[m], yscale=yscale, xscale=xscale, alpha=alpha, ms=ms,
+             ylabel="Traingin MSE", legend=false)
+end
+
+s2 = plot(title="Multiplication \$\\times\$")
+pdf  = filter(row->row.task=="mult", df)
+for m in plotmodels
+    mdf = filter(row->row.model==m, pdf)
+    scatter!(s2, mdf.reg, mdf.mse,
+             label=models[m], yscale=yscale, xscale=xscale, alpha=alpha, ms=ms)
+end
+
+s3 = plot(title="Division \$\\div\$")
+pdf  = filter(row->row.task=="invx", df)
+for m in plotmodels
+    mdf = filter(row->row.model==m, pdf)
+    scatter!(s3, mdf.reg, mdf.mse,
+             label=models[m], yscale=yscale, xscale=xscale, alpha=alpha, ms=ms,
+             ylabel="Traingin MSE",
+             xlabel="Nr. Parameters", legend=false)
+end
+
+s4 = plot(title="Square root \$\\sqrt\\cdot\$")
+pdf  = filter(row->row.task=="sqrt", df)
+for m in plotmodels
+    mdf = filter(row->row.model==m, pdf)
+    scatter!(s4, mdf.reg, mdf.mse,
+             label=models[m], yscale=yscale, xscale=xscale, alpha=alpha, ms=ms,
+             xlabel="Nr. Parameters", legend=false, ylim=(1e-3,1e4))
+end
+
+p2 = plot(s1,s2,s3,s4,layout=(2,2))
