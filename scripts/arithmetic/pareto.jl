@@ -103,6 +103,7 @@ collect_all_results!(folders::Vector{String}) = vcat(map(collect_folder!, folder
 nrparams(x::Array, thresh) = sum(abs.(x) .> thresh)
 nrparams(m::NAU, thresh) = nrparams(m.W, thresh)
 nrparams(m::NMU, thresh) = nrparams(m.W, thresh)
+nrparams(m::NPUX, thresh) = sum(map(x->nrparams(x,thresh), [m.Re,m.Im]))
 nrparams(m::GatedNPUX, thresh) = sum(map(x->nrparams(x,thresh), [m.Re,m.Im,m.g]))
 nrparams(m::GatedNPU, thresh) = sum(map(x->nrparams(x,thresh), [m.W,m.g]))
 nrparams(m::NAC, thresh) = sum(map(x->nrparams(x,thresh), [m.W,m.M]))
@@ -120,7 +121,7 @@ sobol_folder = ["add_l1_runs"
           ,"sqrt_l1_runs"]
 folders = SOBOL ? sobol_folder : uni_folders
 
-# df = collect_all_results!(folders)
+df = collect_all_results!(folders)
 
 task(x::Array,c::SqrtL1SearchConfig) = sqrt(x,c.subset)
 task(x::Array,c::DivL1SearchConfig) = invx(x,c.subset)
@@ -147,7 +148,8 @@ end
                           Dict(:thresh=>1e-5),
                           pareto,
                           digits=10,
-                          force=false)
+                          force=true)
+error()
 display(fname)
 df = res[:df]
 

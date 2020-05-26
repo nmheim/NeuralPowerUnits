@@ -54,7 +54,7 @@ end
 ################################################################################
 
 config = SqrtL1SearchConfig()
-for m in ["gatednpux","nmu"]
+for m in ["gatednpux","nmu","npux","nalu"]
     @info config
     @progress name="All runs: " for i in 1:10
         config = SqrtL1SearchConfig(run=i, model=m)
