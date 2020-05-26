@@ -152,18 +152,54 @@ display(fname)
 df = res[:df]
 
 using Plots
-pyplot()
-ps = []
-for dft in groupby(df, "task")
-    s1 = plot(title=dft.task[1])
-    for dfm in groupby(dft,"model")
-        #if dfm.model[1] != "gatednpu"
-            scatter!(s1, log10.(dfm.reg), log10.(dfm.mse),
-            #scatter!(s1, dfm.val, dfm.reg,
-                     ylabel="log(mse)", xlabel="log(nr params)",
-                     ms=5, label=dfm.model[1], alpha=0.5, ylim=-(-2,10))
-        #end
-    end
-    push!(ps, s1)
+using LaTeXStrings
+pgfplotsx()
+
+models = Dict("npux"=>"NPU",
+              "gatednpux"=>"GatedNPU",
+              "nalu"=>"NALU",
+              "nmu"=>"NMU")
+ms     = 4
+alpha  = 0.7
+xscale = :log10
+yscale = :log10
+plotmodels = ["gatednpux","nalu","nmu","npux"]
+#plotmodels = ["gatednpux","nalu","nmu"]
+
+s1 = plot(title="Addition +")
+pdf  = filter(row->row.task=="add", df)
+for m in plotmodels
+    mdf = filter(row->row.model==m, pdf)
+    scatter!(s1, mdf.reg, mdf.val,
+             label=models[m], yscale=yscale, xscale=xscale, alpha=alpha, ms=ms,
+             ylabel="Validation MSE", legend=false)
 end
-plot(ps...)
+
+s2 = plot(title="Multiplication \$\\times\$")
+pdf  = filter(row->row.task=="mult", df)
+for m in plotmodels
+    mdf = filter(row->row.model==m, pdf)
+    scatter!(s2, mdf.reg, mdf.val,
+             label=models[m], yscale=yscale, xscale=xscale, alpha=alpha, ms=ms)
+end
+
+s3 = plot(title="Division \$\\div\$")
+pdf  = filter(row->row.task=="invx", df)
+for m in plotmodels
+    mdf = filter(row->row.model==m, pdf)
+    scatter!(s3, mdf.reg, mdf.val,
+             label=models[m], yscale=yscale, xscale=xscale, alpha=alpha, ms=ms,
+             ylabel="Validation MSE",
+             xlabel="Nr. Parameters", legend=false)
+end
+
+s4 = plot(title="Square root \$\\sqrt\\cdot\$")
+pdf  = filter(row->row.task=="sqrt", df)
+for m in plotmodels
+    mdf = filter(row->row.model==m, pdf)
+    scatter!(s4, mdf.reg, mdf.val,
+             label=models[m], yscale=yscale, xscale=xscale, alpha=alpha, ms=ms,
+             xlabel="Nr. Parameters", legend=false)
+end
+
+p1 = plot(s1,s2,s3,s4,layout=(2,2))
