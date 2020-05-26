@@ -13,19 +13,30 @@ using DataFrames
 using Statistics
 using Measurements
 using Sobol
+using PrettyTables
 
 include(joinpath(@__DIR__, "sobolconfigs.jl"))
 include(joinpath(@__DIR__, "collect.jl"))
 include(srcdir("arithmetic_dataset.jl"))
 
-function sobol_samples(c)
-    s = SobolSeq(c.inlen)
+function sobol_samples(xs,xe,dim)
+    s = SobolSeq(dim)
     # discard first zero sample
     next!(s)
     x = reduce(hcat, [next!(s) for i = 1:10000])
+    Float32.(x .* (xs - xe) .+ xe)
+end
+
+function sobol_samples(c)
     xs = c.lowlim*2
     xe = c.uplim*2
-    Float32.(x .* (xs - xe) .+ xe)
+    sobol_samples(xs,xe,c.inlen)
+end
+
+function sobol_samples(c::DivL1SearchConfig)
+    xs = c.lowlim/5
+    xe = c.lowlim/5
+    sobol_samples(xs,xe,c.inlen)
 end
 
 nrparams(x::Array, thresh) = sum(abs.(x) .> thresh)
@@ -61,13 +72,13 @@ function create_table(df, key)
     
     for gdf in groupby(μdf, ["model","task"])
         row = gdf[1,:]
-        table[findall(r->r.task==row.task, eachrow(table)), row.model] = row[key]
+        table[findall(r->r.task==row.task, eachrow(table)), row.model] .= row[key]
     end
     return table
 end
 
 
-function pareto(d::Dict)
+function revalidate(d::Dict)
     @unpack thresh = d
     df = collect_all_results!(["add_l1_runs",
                                "mult_l1_runs",
@@ -85,17 +96,17 @@ end
 
 (res,fname) = produce_or_load(datadir("pareto"),
                           Dict(:thresh=>1e-5),
-                          pareto,
+                          revalidate,
                           digits=10,
                           force=false)
 df = res[:df]
 
 # remove rows with infs
-df = combine(groupby(df, ["model","task"])) do gdf
-    gdf.val[findall(isinf, gdf.val)] .= 1e10
-    gdf.mse[findall(isinf, gdf.mse)] .= 1e10
-    gdf[1:min(10,size(gdf,1)),:]
-end
+# df = combine(groupby(df, ["model","task"])) do gdf
+#     gdf.val[findall(isinf, gdf.val)] .= 1e10
+#     gdf.mse[findall(isinf, gdf.mse)] .= 1e10
+#     gdf[1:min(10,size(gdf,1)),:]
+# end
 
 # average runs
 μdf = combine(groupby(df,["model","task"])) do gdf

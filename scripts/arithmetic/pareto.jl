@@ -41,29 +41,7 @@ task(x::Array,c::DivL1SearchConfig) = invx(x,c.subset)
 task(x::Array,c::AddL1SearchConfig) = add(x,c.subset,c.overlap)
 task(x::Array,c::MultL1SearchConfig) = mult(x,c.subset,c.overlap)
 
-function pareto(d::Dict)
-    @unpack thresh = d
-    df = collect_all_results!(["add_l1_runs",
-                               "mult_l1_runs",
-                               "invx_l1_runs",
-                               "sqrt_l1_runs"])
-    @progress for row in eachrow(df)
-        m = load(row.path)[:model]
-        x = sobol_samples(row.config)
-        y = task(x,row.config)
-        row.val = Flux.mse(m(x),y)
-        row.reg = nrparams(m, thresh)
-    end
-    return @dict(df)
-end
-
-(res,fname) = produce_or_load(datadir("pareto"),
-                          Dict(:thresh=>1e-5),
-                          pareto,
-                          digits=10,
-                          force=true)
-error()
-display(fname)
+res = load(datadir("pareto","thresh=1e-5.bson"))
 df = res[:df]
 
 using Plots
