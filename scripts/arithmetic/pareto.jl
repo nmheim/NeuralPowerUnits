@@ -6,69 +6,17 @@ using TerminalLoggers
 using ProgressLogging
 global_logger(TerminalLogger(right_justify=80))
 
-using Flux
-using NeuralArithmetic
-using ValueHistories
-using DataFrames
-using Sobol
-
-include(joinpath(@__DIR__, "sobolconfigs.jl"))
-include(joinpath(@__DIR__, "collect.jl"))
-include(srcdir("arithmetic_dataset.jl"))
-
-function sobol_samples(c)
-    s = SobolSeq(c.inlen)
-    # discard first zero sample
-    next!(s)
-    x = reduce(hcat, [next!(s) for i = 1:10000])
-    xs = c.uplim * 2
-    xe = c.lowlim * 2
-    Float32.(x .* (xs - xe) .+ xe)
-end
-
-nrparams(x::Array, thresh) = sum(abs.(x) .> thresh)
-nrparams(m::NAU, thresh) = nrparams(m.W, thresh)
-nrparams(m::NMU, thresh) = nrparams(m.W, thresh)
-nrparams(m::NPUX, thresh) = sum(map(x->nrparams(x,thresh), [m.Re,m.Im]))
-nrparams(m::GatedNPUX, thresh) = sum(map(x->nrparams(x,thresh), [m.Re,m.Im,m.g]))
-nrparams(m::GatedNPU, thresh) = sum(map(x->nrparams(x,thresh), [m.W,m.g]))
-nrparams(m::NAC, thresh) = sum(map(x->nrparams(x,thresh), [m.W,m.M]))
-nrparams(m::NALU, thresh) = sum(map(x->nrparams(x,thresh), [m.nac,m.G,m.b]))
-nrparams(m::Chain, thres) = sum(map(x->nrparams(x,thres), m))
-
-task(x::Array,c::SqrtL1SearchConfig) = sqrt(x,c.subset)
-task(x::Array,c::DivL1SearchConfig) = invx(x,c.subset)
-task(x::Array,c::AddL1SearchConfig) = add(x,c.subset,c.overlap)
-task(x::Array,c::MultL1SearchConfig) = mult(x,c.subset,c.overlap)
-
-function pareto(d::Dict)
-    @unpack thresh = d
-    df = collect_all_results!(["add_l1_runs",
-                               "mult_l1_runs",
-                               "invx_l1_runs",
-                               "sqrt_l1_runs"])
-    @progress for row in eachrow(df)
-        m = load(row.path)[:model]
-        x = sobol_samples(row.config)
-        y = task(x,row.config)
-        row.val = Flux.mse(m(x),y)
-        row.reg = nrparams(m, thresh)
-    end
-    return @dict(df)
-end
-
-(res,fname) = produce_or_load(datadir("pareto"),
-                          Dict(:thresh=>1e-5),
-                          pareto,
-                          digits=10,
-                          force=false)
-df = combine(groupby(res[:df], ["model","task"])) do gdf
-    gdf[1:min(10,size(gdf,1)),:]
-end
-
 using Plots
 using LaTeXStrings
 pgfplotsx()
+
+include(joinpath(@__DIR__, "sobolconfigs.jl"))
+include(srcdir("arithmetic_dataset.jl"))
+
+res = load(datadir("pareto","thresh=1e-5.bson"))
+df = combine(groupby(res[:df], ["model","task"])) do gdf
+    gdf[1:min(10,size(gdf,1)),:]
+end
 
 models = Dict("npux"=>"NPU",
               "gatednpux"=>"GatedNPU",
