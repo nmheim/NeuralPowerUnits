@@ -42,8 +42,8 @@ function sobol_samples(c)
     # discard first zero sample
     next!(s)
     x = reduce(hcat, [next!(s) for i = 1:10000])
-    xs = c.uplim * 4
-    xe = c.lowlim * 4
+    xs = c.uplim * 2
+    xe = c.lowlim * 2
     Float32.(x .* (xs - xe) .+ xe)
 end
 

@@ -54,9 +54,9 @@ end
 ################################################################################
 
 config = DivL1SearchConfig()
-for m in ["gatednpux","nmu","npux","nalu"]
+@progress name="All runs: " for i in 1:10
     @info config
-    @progress name="All runs: " for i in 1:10
+    for m in ["gatednpux","nalu","nmu","npux"]
         config = DivL1SearchConfig(run=i, model=m)
         res, fname = produce_or_load(datadir(basename(splitext(@__FILE__)[1])),
                                      config, run, digits=10)
@@ -64,8 +64,6 @@ for m in ["gatednpux","nmu","npux","nalu"]
         @info "Validation error run #$i: $(res[:val])"
     end
 end
-
-
 
 ################################################################################
 # this code performs grid search
