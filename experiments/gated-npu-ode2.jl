@@ -8,53 +8,36 @@ unicodeplots()
 
 datasize = 40
 
-u0 = [2.; 0.]
+u0 = [1.; 0.]
 
 function trueODEfunc(du,u,p,t)
     true_A = [-0.1 2.0; -2.0 -0.1]
     du .= ((u.^3)'true_A)'
 end
-tspan = (0.0,1.5)
+
+function trueODEfunc(du,u,p,t)
+  du[1] = u[2]
+  #du[2] = -2sqrt(u[1])
+  #du[2] = -2u[1]^2
+  du[2] = -u[2] - 0u[1] - u[1]^(-1)
+end
+tspan = (0.0,3.0)
 t = range(tspan[1],tspan[2],length=datasize)
 prob = ODEProblem(trueODEfunc,u0,tspan)
 ode_data = Array(solve(prob,Tsit5(),saveat=t))
 
-function lotka_volterra(du,u,p,t)
-  x, y = u
-  α, β, δ, γ = p
-  du[1] = dx = α*x - β*x*y
-  du[2] = dy = -δ*y + γ*x*y
-end
-function lotka_volterra(du,u,p,t)
-    x,y = u
-    α = 2.0
-    β = 1.5
-    γ = 0.6
-    du[1] = β*x*(1-x) - α*x*y/(1+x)
-    du[2] = -γ*y + α*x*y/(1+x)
-end
-u0 = [0.5,1.0]
-tspan = (0.0,20.0)
-truep = [1.1,1.0,1.3,1.0]
-t = range(tspan[1],tspan[2],length=datasize)
-prob = ODEProblem(lotka_volterra,u0,tspan,truep)
-ode_data = Array(solve(prob, Tsit5(), saveat=t))
-
-
 init(a,b) = rand(Float64,a,b)/10
-init(a,b) = Float64.(Flux.glorot_uniform(a,b))
+init(a,b) = Float64.(Flux.glorot_uniform(a,b))/3
 # dudt = Chain(NAU(2,10),
 #              GatedNPU(10,10,init=init),
 #              NAU(10,2,init=init))
 
 
-hdim = 5
+hdim = 4
 dudt = Chain(GatedNPUX(2,hdim,initRe=init, initIm=zeros),
              NAU(hdim,2,init=init))
 
-dudt = FastChain(FastDense(2,hdim,initW=init),
-                 #NeuralArithmetic.FastNAU(2,hdim,initW=init),
-                 NeuralArithmetic.FastGatedNPUX(hdim,hdim,initRe=init, initIm=zeros),
+dudt = FastChain(NeuralArithmetic.FastGatedNPUX(2,hdim,initRe=init, initIm=zeros),
                  NeuralArithmetic.FastNAU(hdim,2,init=init))
 #dudt = Chain(NALU(2,hdim),NALU(hdim,2))
 
@@ -82,7 +65,7 @@ img_loss(p) = 1e-1*norm(p[hdim*2+1:hdim*4],1)
 
 function loss_n_ode(p)
     pred = predict_n_ode(p)
-    loss = mse_loss(pred) #+ reg_loss(p) #+ img_loss(p)
+    loss = mse_loss(pred) #+ reg_loss(p) + img_loss(p)
     loss,pred
 end
 
@@ -95,9 +78,9 @@ end
 
 cb = function (p,l,pred;doplot=true) #callback function to observe training
   # plot current prediction against data
-  #@info l mse_loss(pred) reg_loss(p)
+  @info l mse_loss(pred) reg_loss(p) minimum(p) maximum(p)
   if doplot
-    #display(plot_chain(p))
+    display(plot_chain(p))
     pl = scatter(t,ode_data[1,:],label="data")
     scatter!(pl,t,ode_data[2,:],label="data")
     plot!(pl,t,pred[1,:],label="prediction")
@@ -112,7 +95,7 @@ end
 cb(n_ode.p,loss_n_ode(n_ode.p)...)
 #error()
 
-res1 = DiffEqFlux.sciml_train(loss_n_ode, n_ode.p, RMSProp(0.003), cb = Flux.throttle(cb,1), maxiters = 2000)
+res1 = DiffEqFlux.sciml_train(loss_n_ode, n_ode.p, RMSProp(0.001), cb = Flux.throttle(cb,1), maxiters = 10000)
 cb(res1.minimizer,loss_n_ode(res1.minimizer)...;doplot=true)
 
 # res2 = DiffEqFlux.sciml_train(loss_n_ode, res1.minimizer, RMSProp(0.0005), cb = cb, maxiters = 2000)

@@ -36,7 +36,7 @@ end
 function generate(f,lowlim,uplim)
     x = Float32.(reshape(lowlim:0.1:uplim, 1, :))
     y = f.(x)
-    xt = Float32.(reshape((lowlim*1.1):0.1:(uplim*1.1),1,:))
+    xt = Float32.(reshape((lowlim*1.5):0.1:(uplim*1.5),1,:))
     yt = f.(xt)
     (x,y,xt,yt)
 end
@@ -126,15 +126,15 @@ end
 
 @progress for nr in 1:10
     npures, _ = produce_or_load(datadir("rational"),
-                             Dict(:lowlim =>  -5,
-                                  :uplim  =>  5,
-                                  :dim    =>  20,
+                             Dict(:lowlim =>  -7,
+                                  :uplim  =>  7,
+                                  :dim    =>  10,
                                   :niter  =>  20000,
                                   :lr     =>  5e-4,
                                   :run    =>  nr,
                                   :layer  => "gatednpux",
                                   :βiml1  =>  0.0,
-                                  :βpsl1  =>  0.0),
+                                  :βpsl1  =>  1.0),
                              c -> run(c, f), prefix=prefix,
                              force=false, digits=8)
     nalures, _ = produce_or_load(datadir("rational"),
