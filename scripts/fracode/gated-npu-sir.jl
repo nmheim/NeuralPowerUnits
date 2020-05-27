@@ -1,6 +1,11 @@
 using DrWatson
 @quickactivate "NIPS_2020_NMUX"
 
+using Logging
+using TerminalLoggers
+using ProgressLogging
+global_logger(TerminalLogger(right_justify=80))
+
 using DiffEqFlux
 using DiffEqFlux: paramlength
 using OrdinaryDiffEq
@@ -9,6 +14,7 @@ using Optim
 using LinearAlgebra
 using NeuralArithmetic
 using Plots
+using RecursiveArrayTools
 unicodeplots()
 
 include(joinpath(@__DIR__, "odedata.jl"))
@@ -30,7 +36,6 @@ function run(d::Dict)
     idim = 3
     @unpack hdim, αinit, βps, βim, niters, lr = d
 
-    # TODO: does it still work with standard glorot?
     init(a,b) = Float64.(Flux.glorot_uniform(a,b))*αinit
 
     ode_data,u0,t,tspan = fracsir_data()
@@ -58,57 +63,65 @@ function run(d::Dict)
         npu = dudt.layers[1]
         Re,Im,_ = NeuralArithmetic._restructure(npu, p[1:paramlength(npu)])
         W = reshape(p[(paramlength(npu)+1):end], idim, hdim)
-        UnicodePlots.heatmap(cat(Re,Im,W',dims=1))
+        UnicodePlots.heatmap(cat(Re,Im,W',dims=2))
     end
 
     function cb(p,l,pred;doplot=true)
         @info l mse_loss(pred) reg_loss(p) img_loss(p)
-        display(plot_cb(t,ode_data,pred))
-        println("\n")
-        display(plot_chain(p))
-        println("\n")
+        if doplot
+            display(plot_cb(t,ode_data,pred))
+            println("\n")
+            display(plot_chain(p))
+            println("\n")
+        end
         return false
     end
 
     cb(node.p, node_loss(node.p)...)
 
-    res1 = DiffEqFlux.sciml_train(node_loss, node.p, RMSProp(lr),
+    res = DiffEqFlux.sciml_train(node_loss, node.p, RMSProp(lr),
                                   cb=Flux.throttle(cb,1), maxiters=niters)
-    cb(res1.minimizer,node_loss(res1.minimizer)...)
+    cb(res.minimizer,node_loss(res.minimizer)...)
 
-    res2 = DiffEqFlux.sciml_train(node_loss, res1.minimizer, LBFGS(),
-                                  cb=(p,l,pred)->cb(p,l,pred,doplot=false))
-    cb(res2.minimizer,node_loss(res2.minimizer)...)
+    try
+        res = DiffEqFlux.sciml_train(node_loss, res.minimizer, LBFGS(),
+                                      cb=(p,l,pred)->cb(p,l,pred,doplot=false))
+        cb(res.minimizer,node_loss(res.minimizer)...)
+    catch e
+        println("Error during LBFGS training!")
+        for (exc,bt) in Base.catch_stack()
+            showerror(stdout,exc,bt)
+            println()
+        end
+    end
 
     ϵ = 0.001
-    ps = node.p
-    pred = predict(ps)
-    mse = mse_loss(pred)
-    nrps = nrparams(res2.minimizer, ϵ)
-    @info "# params" nrps
-    @dict(dudt, ps, pred, mse, nrps)
+    d[:dudt] = dudt
+    d[:ps]   = res.minimizer
+    d[:pred] = predict(d[:ps])
+    d[:mse]  = mse_loss(d[:pred])
+    d[:nrps] = nrparams(res.minimizer, ϵ)
+    return d
 end
 
-produce_or_load(datadir("fracsir"),
-                Dict(:hdim=>3,
-                     :βim=>1,
-                     :βps=>1,
-                     :lr=>0.005,
-                     :niters=>2000,
-                     :αinit=>0.2),
-                run,
-                prefix="gatednpux",
-                digits=10,
-                force=false)
-error()
+@progress for nr in 1:10
+    produce_or_load(datadir("fracsir"),
+                    Dict{Symbol,Any}(
+                         :hdim=>20,
+                         :βim=>1,
+                         :βps=>1,
+                         :lr=>0.005,
+                         :niters=>2000,
+                         :αinit=>0.2,
+                         :run=>nr),
+                    run,
+                    prefix="gatednpux",
+                    digits=10,
+                    force=false)
+end
 
-
-res2 = DiffEqFlux.sciml_train(loss_n_ode, res1.minimizer, LBFGS(), cb = cb)
-cb(res2.minimizer,loss_n_ode(res2.minimizer)...;doplot=true)
-@info "# params" nrparams(res1.minimizer, 0.001)
-
-npu = dudt.layers[1]
-l = paramlength(npu)
-Re,Im,_ = NeuralArithmetic._restructure(npu, res2.minimizer[1:l])
-W = reshape(res2.minimizer[(l+1):end], indim, hdim)
-@info "matrices" Re Im W
+# npu = dudt.layers[1]
+# l = paramlength(npu)
+# Re,Im,_ = NeuralArithmetic._restructure(npu, res2.minimizer[1:l])
+# W = reshape(res2.minimizer[(l+1):end], indim, hdim)
+# @info "matrices" Re Im W
