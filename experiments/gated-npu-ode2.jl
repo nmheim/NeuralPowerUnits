@@ -33,7 +33,7 @@ init(a,b) = Float64.(Flux.glorot_uniform(a,b))/3
 #              NAU(10,2,init=init))
 
 
-hdim = 4
+hdim = 5
 dudt = Chain(GatedNPUX(2,hdim,initRe=init, initIm=zeros),
              NAU(hdim,2,init=init))
 
@@ -47,8 +47,6 @@ dudt = FastChain(NeuralArithmetic.FastGatedNPUX(2,hdim,initRe=init, initIm=zeros
 # dudt = Chain(NPUX([3.0 0.0; 0.0 3.0],
 #                   zeros(2,2)),
 #              NAU([-0.1 2.0; -2.0 -0.1]'))
-
-
 
 # dudt = FastChain(FastDense(2,hdim,tanh),
 #                  FastDense(hdim,hdim,tanh),
@@ -95,7 +93,7 @@ end
 cb(n_ode.p,loss_n_ode(n_ode.p)...)
 #error()
 
-res1 = DiffEqFlux.sciml_train(loss_n_ode, n_ode.p, RMSProp(0.001), cb = Flux.throttle(cb,1), maxiters = 10000)
+res1 = DiffEqFlux.sciml_train(loss_n_ode, n_ode.p, RMSProp(0.0005), cb = Flux.throttle(cb,1), maxiters = 10000)
 cb(res1.minimizer,loss_n_ode(res1.minimizer)...;doplot=true)
 
 # res2 = DiffEqFlux.sciml_train(loss_n_ode, res1.minimizer, RMSProp(0.0005), cb = cb, maxiters = 2000)

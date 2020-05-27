@@ -121,7 +121,7 @@ df = res[:df]
 
 df = combine(groupby(df, ["model","task"])) do gdf
     gdf = sort(DataFrame(gdf),"val")
-    if gdf.model[1]=="nalu" && gdf.task[1]=="add"
+    if gdf.model[1]=="nmu" && gdf.task[1]=="mult"
         display(gdf[!,["model","task","mse","val","βstart","run"]])
     end
     gdf[1:min(10,size(gdf,1)),:]

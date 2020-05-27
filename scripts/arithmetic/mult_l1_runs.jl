@@ -53,20 +53,17 @@ end
 ################################################################################
 
 config = MultL1SearchConfig()
-@progress name="All runs: " for i in 1:10
+@progress name="All runs: " for i in 1:20
     @info config
-    for m in ["gatednpux","nalu","nmu","npux"]
+    for m in ["nmu"]
         config = if m == "nmu"
-            MultL1SearchConfig(run=i, model=m, βstart=1f-7, niters=10000)
-        elseif m == "nalu"
-            MultL1SearchConfig(run=i, model=m,
-                               βstart=0, βend=0, βstep=100000, βgrowth=1)
+            MultL1SearchConfig(run=i, model=m, βstart=1f-9, niters=20000)
         else
             MultL1SearchConfig(run=i, model=m)
         end
         res, fname = produce_or_load(datadir(basename(splitext(@__FILE__)[1])),
                                      config, run, digits=10)
-        @info "Validation error run #$i: $(res[:val])"
+        @info "Validation error run #$i: $(res[:val]) ($m)"
         display(heat(res[:model]))
     end
 end
