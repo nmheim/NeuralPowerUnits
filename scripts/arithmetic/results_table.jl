@@ -9,7 +9,7 @@ using NeuralArithmetic
 using PrettyTables
 
 
-include(joinpath(@__DIR__, "configs.jl"))
+include(joinpath(@__DIR__, "sobolconfigs.jl"))
 include(srcdir("unicodeheat.jl"))
 
 function aggregateruns(dataframe::DataFrame)
@@ -180,10 +180,10 @@ folders = ["addition_npu_l1_search"
           ,"sqrt_npu_l1_search"
           ,"div_npu_l1_search"]
 
-# folders = ["add_l1_runs"
-#           ,"mult_l1_runs"
-#           ,"invx_l1_runs"
-#           ,"sqrt_l1_runs"]
+folders = ["add_l1_runs"
+          ,"mult_l1_runs"
+          ,"invx_l1_runs"
+          ,"sqrt_l1_runs"]
 
 folders = map(datadir, folders)
 
@@ -231,13 +231,34 @@ print_table(table_best_models_tasks(bestav_df,key))
 print_table(table_best_models_tasks(clean_adf,"μ$key"))
 
 using UnicodePlots
-row = find_best(df,"gatednpux","sqrt",key)
+row = find_best(df,"gatednpu","sqrt",key)
 @unpack history,model = load(row.path)
 display(row.config)
 heat(model)
 
-# using Plots
-# pyplot()
-# z = reduce(hcat, get(history, :μz)[2])[1:100,:]
-# plot(z',legend=false)
+# x = collect(0:0.1:10)
+# t = sqrt.(x)
+# plot(x,t)
+# row = find_best(df,"nmu","sqrt",key)
+# @unpack history,model = load(row.path)
+# y = map(x) do i
+#     z = zeros(Float32,100)
+#     z[2] = i
+#     model(z)[1]
+# end
+# plot!(x,y)
+# row = find_best(df,"gatednpux","sqrt",key)
+# @unpack history,model = load(row.path)
+# y = map(x) do i
+#     z = zeros(Float32,100)
+#     z[1] = i
+#     model(z)[1]
+# end
+# plot!(x,y)
+
+
+using Plots
+pyplot()
+z = reduce(hcat, get(history, :μz)[2])[1:100,:]
+plot(z',legend=false)
 
