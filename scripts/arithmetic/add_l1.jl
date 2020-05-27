@@ -32,6 +32,7 @@ include(srcdir("arithmetic_models.jl"))
     uplim::Real     = 1
     subset::Real    = 0.5f0
     overlap::Real   = 0.25f0
+    sampler::String = "sobol"
 
     inlen::Int      = 100
     fstinit::String = "rand"
@@ -41,14 +42,10 @@ end
 
 
 function run(c::AddL1Config)
-    generate = arithmetic_dataset(+, c.inlen,
-        d=Uniform(c.lowlim,c.uplim),
-        subset=c.subset,
-        overlap=c.overlap)
-    test_generate = arithmetic_dataset(+, c.inlen,
-        d=Uniform(c.lowlim-4,c.uplim+4),
-        subset=c.subset,
-        overlap=c.overlap)
+    generate = arithmetic_dataset(add, c.inlen, c.subset, c.overlap, c.lowlim, c.uplim,
+        sampler=c.sampler)
+    test_generate = arithmetic_dataset(add, c.inlen, c.subset, c.overlap, c.lowlim-4, c.uplim+4,
+        sampler=c.sampler)
 
     #togpu = Flux.gpu
     togpu = identity

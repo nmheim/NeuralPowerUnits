@@ -56,7 +56,14 @@ config = AddL1SearchConfig()
 @progress name="All runs: " for i in 1:10
     @info config
     for m in ["gatednpux","nalu","nmu","npux"]
-        config = AddL1SearchConfig(run=i, model=m)
+        config = if m == "nmu"
+            AddL1SearchConfig(run=i, model=m, βstart=1f-7, niters=10000)
+        # elseif m == "nalu"
+        #     AddL1SearchConfig(run=i, model=m,
+        #                        βstart=0, βend=0, βstep=100000, βgrowth=1)
+        else
+            AddL1SearchConfig(run=i, model=m)
+        end
         res, fname = produce_or_load(datadir(basename(splitext(@__FILE__)[1])),
                                      config, run, digits=10)
         display(heat(res[:model]))

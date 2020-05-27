@@ -57,7 +57,7 @@ config = MultL1SearchConfig()
     @info config
     for m in ["gatednpux","nalu","nmu","npux"]
         config = if m == "nmu"
-            MultL1SearchConfig(run=i, model=m, βstart=1e-7)
+            MultL1SearchConfig(run=i, model=m, βstart=1f-7, niters=10000)
         elseif m == "nalu"
             MultL1SearchConfig(run=i, model=m,
                                βstart=0, βend=0, βstep=100000, βgrowth=1)
@@ -66,8 +66,8 @@ config = MultL1SearchConfig()
         end
         res, fname = produce_or_load(datadir(basename(splitext(@__FILE__)[1])),
                                      config, run, digits=10)
-        display(heat(res[:model]))
         @info "Validation error run #$i: $(res[:val])"
+        display(heat(res[:model]))
     end
 end
 

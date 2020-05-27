@@ -34,8 +34,8 @@ function sobol_samples(c)
 end
 
 function sobol_samples(c::DivL1SearchConfig)
-    xs = c.lowlim/5
-    xe = c.lowlim/5
+    xs = -0.5
+    xe = 0
     sobol_samples(xs,xe,c.inlen)
 end
 
@@ -77,6 +77,19 @@ function create_table(df, key)
     return table
 end
 
+function print_table(df::DataFrame)
+    f = (v,i,j) -> (v isa Real ? round(v,digits=7) : v)
+    function high(data,i,j)
+        if data[i,j] isa Real
+            b = data[i,j] == minimum(filter(!ismissing, Array(df[i,2:end])))
+            b isa Missing ? false : b
+        else
+            false
+        end
+    end
+    h = Highlighter(high, bold=true, foreground=:yellow)
+    pretty_table(df,names(df),formatters=f,highlighters=h)
+end
 
 function revalidate(d::Dict)
     @unpack thresh = d
@@ -101,12 +114,18 @@ end
                           force=false)
 df = res[:df]
 
-# remove rows with infs
-# df = combine(groupby(df, ["model","task"])) do gdf
-#     gdf.val[findall(isinf, gdf.val)] .= 1e10
-#     gdf.mse[findall(isinf, gdf.mse)] .= 1e10
-#     gdf[1:min(10,size(gdf,1)),:]
-# end
+# t = filter(r->r.model=="nalu", df)
+# t = filter(r->r.task=="mult",t)
+# error()
+
+
+df = combine(groupby(df, ["model","task"])) do gdf
+    gdf = sort(DataFrame(gdf),"val")
+    if gdf.model[1]=="nalu" && gdf.task[1]=="add"
+        display(gdf[!,["model","task","mse","val","βstart","run"]])
+    end
+    gdf[1:min(10,size(gdf,1)),:]
+end
 
 # average runs
 μdf = combine(groupby(df,["model","task"])) do gdf
@@ -123,6 +142,6 @@ end
 
 
 table = create_table(μdf, "mse")
-@pt table
+print_table(table)
 table = create_table(μdf, "val")
-@pt table
+print_table(table)
