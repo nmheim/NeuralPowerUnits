@@ -16,7 +16,7 @@ df.model = map(df.dudt) do dudt
 end
 
 
-ϵ = 1e-5
+ϵ = 1e-7
 df.nrps = map(p->nrparams(p,ϵ), df.ps)
 sort!(df,["mse","nrps"])
-display(df[!,["mse","nrps","model","βim","βps"]])
+display(df[!,["mse","nrps","model","βim","βps","hdim"]])

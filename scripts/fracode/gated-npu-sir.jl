@@ -40,8 +40,8 @@ function run(d::Dict)
 
     ode_data,u0,t,tspan = fracsir_data()
     dudt = FastChain(
-        NeuralArithmetic.FastGatedNPUX(idim,hdim, initRe=init,initIm=zeros),
-        NeuralArithmetic.FastNAU(hdim,idim,init=init))
+        FastGatedNPU(idim,hdim,init=init),
+        FastNAU(hdim,idim,init=init))
     node = NeuralODE(dudt,tspan,Euler(),saveat=t,dt=1)
     predict(p) = node(u0,p)
 
@@ -49,7 +49,7 @@ function run(d::Dict)
     mse_loss(x) = Flux.mse(x,ode_data)
     function img_loss(p)
         npu = dudt.layers[1]
-        (_,Im,_) = NeuralArithmetic._restructure(npu, p[1:paramlength(npu)])
+        (_,Im) = NeuralArithmetic._restructure(npu, p[1:paramlength(npu)])
         norm(Im,1)
     end
 
@@ -61,9 +61,9 @@ function run(d::Dict)
 
     function plot_chain(p)
         npu = dudt.layers[1]
-        Re,Im,_ = NeuralArithmetic._restructure(npu, p[1:paramlength(npu)])
+        M,g = NeuralArithmetic._restructure(npu, p[1:paramlength(npu)])
         W = reshape(p[(paramlength(npu)+1):end], idim, hdim)
-        UnicodePlots.heatmap(cat(Re,Im,W',dims=2))
+        UnicodePlots.heatmap(cat(M,W',dims=2))
     end
 
     function cb(p,l,pred;doplot=true)
@@ -108,14 +108,14 @@ end
     produce_or_load(datadir("fracsir"),
                     Dict{Symbol,Any}(
                          :hdim=>20,
-                         :βim=>1,
-                         :βps=>1,
+                         :βim=>0,
+                         :βps=>0,
                          :lr=>0.005,
-                         :niters=>2000,
+                         :niters=>3000,
                          :αinit=>0.2,
                          :run=>nr),
                     run,
-                    prefix="gatednpux",
+                    prefix="gatednpu",
                     digits=10,
                     force=false)
 end
