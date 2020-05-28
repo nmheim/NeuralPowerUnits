@@ -107,6 +107,42 @@ function revalidate(d::Dict)
     return @dict(df)
 end
 
+function latex_table(results::DataFrame)
+
+    function latex_row(row)
+        vals = convert(Vector, row[2:end])
+        i  = findmin(vals)[2]
+        ss = map(x->string(round(x,digits=3)), vals)
+        ss = map(s->replace(s,"±"=>"\$\\pm\$"), ss)
+        ss[i] = "\\textbf{$(ss[i])}"
+        srow = DataFrame(Dict(zip(names(row[2:end]),ss)))
+    end
+
+    r1 = latex_row(results[1,:])
+    r2 = latex_row(results[2,:])
+    r3 = latex_row(results[3,:])
+    r4 = latex_row(results[4,:])
+
+    latex_str = (
+raw"""
+\begin{tabular}{lcccc}
+\toprule
+Task & GatedNPU & NALU & NMU & NPU (real)\\
+\midrule
+""" *
+"Add  & $(r1[1,:gatednpux]) & $(r1[1,:nalu]) & $(r1[1,:nmu]) & $(r1[1,:npux]) \\\\\n" *
+"Mult & $(r2[1,:gatednpux]) & $(r2[1,:nalu]) & $(r2[1,:nmu]) & $(r2[1,:npux]) \\\\\n" *
+"Div  & $(r3[1,:gatednpux]) & $(r3[1,:nalu]) & $(r3[1,:nmu]) & $(r3[1,:npux]) \\\\\n" *
+"Sqrt & $(r4[1,:gatednpux]) & $(r4[1,:nalu]) & $(r4[1,:nmu]) & $(r4[1,:npux]) \\\\\n" *
+raw"""\bottomrule
+\end{tabular}
+"""
+    )
+   
+end
+
+
+
 (res,fname) = produce_or_load(datadir("pareto"),
                           Dict(:thresh=>1e-5),
                           revalidate,
@@ -143,5 +179,18 @@ end
 
 table = create_table(μdf, "mse")
 print_table(table)
+
+fname = plotsdir("arithmetic100_mse.tex")
+open(fname, "w") do file
+    @info "Writing dataframe to $fname"
+    write(file, latex_table(table))
+end
+
 table = create_table(μdf, "val")
 print_table(table)
+
+fname = plotsdir("arithmetic100_val.tex")
+open(fname, "w") do file
+    @info "Writing dataframe to $fname"
+    write(file, latex_table(table))
+end
