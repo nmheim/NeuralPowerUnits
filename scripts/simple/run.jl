@@ -151,7 +151,7 @@ end
                              run_dense,
                              prefix="$train_range-dense", force=false, digits=6)
     res, _ = produce_or_load(datadir("simple"),
-                             Dict(:niters=>20000, :lr=>0.005, :run=>run),
+                             Dict(:niters=>20000, :lr=>0.001, :run=>run),
                              run_inalu,
                              prefix="$train_range-inalu", force=false, digits=6)
 end
