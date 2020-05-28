@@ -28,3 +28,21 @@ function fracsir_data()
     ode_data = Array(solve(prob,Tsit5(),saveat=t))
     ode_data, u0, t, tspan
 end
+
+function fracosc!(du,u,p,t)
+  du[1] = u[2]
+  du[2] = -u[2] - 0u[1] - u[1]^(-1)
+end
+
+function fracosc_data()
+    datasize = 40
+    
+    u0 = [1.; 0.]
+    tspan = (0.0,3.0)
+
+    t = range(tspan[1],tspan[2],length=datasize)
+    prob = ODEProblem(fracosc!,u0,tspan)
+    ode_data = Array(solve(prob,Tsit5(),saveat=t))
+    ode_data, u0, t, tspan
+end
+
