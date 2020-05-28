@@ -106,6 +106,19 @@ function run_nalu(c::Dict)
     return result_dict(model,c)
 end
 
+function run_inalu(c::Dict)
+    hdim = 6
+    model = Chain(iNALU(2,hdim),iNALU(hdim,4))
+    ps = params(model)
+    opt = RMSProp(c[:lr])
+    data = (generate() for _ in 1:c[:niters])
+    loss(x,y) = Flux.mse(model(x),y)
+    (x,y) = generate()
+    cb = Flux.throttle(() -> (@info loss(x,y)), 0.1)
+    Flux.train!(loss, ps, data, opt, cb=cb)
+    return result_dict(model,c)
+end
+
 function run_dense(c::Dict)
     model = Chain(Dense(2,10,σ),Dense(10,10,σ),Dense(10,4))
     ps = params(model)
@@ -137,4 +150,8 @@ end
                              Dict(:niters=>20000, :lr=>0.005, :run=>run),
                              run_dense,
                              prefix="$train_range-dense", force=false, digits=6)
+    res, _ = produce_or_load(datadir("simple"),
+                             Dict(:niters=>20000, :lr=>0.005, :run=>run),
+                             run_inalu,
+                             prefix="$train_range-inalu", force=false, digits=6)
 end

@@ -6,6 +6,7 @@ using Statistics
 using Flux
 using NeuralArithmetic
 using PrettyTables
+using Measurements
 include(joinpath(@__DIR__, "dataset.jl"))
 
 train_range = "pos"
@@ -55,6 +56,7 @@ name(m::GatedNPUX) = "GatedNPU"
 name(m::Dense) = "Dense"
 name(m::NALU) = "NALU"
 name(m::NMU) = "NMU"
+name(m::iNALU) = "iNALU"
 name(m::Chain) = name(m[1])
 
 function collect_folder!(folder::String)
