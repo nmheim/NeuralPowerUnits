@@ -31,7 +31,7 @@ end
 
 nrparams(p, thresh) = sum(abs.(p) .> thresh)
 
-function run(d::Dict)
+function run_dense(d::Dict)
     idim = 3
     @unpack hdim, αinit, βps, niters, lr = d
 
@@ -55,7 +55,7 @@ function run(d::Dict)
         return loss, pred
     end
 
-    function cb(p,l,pred;doplot=true)
+    function cb(p,l,pred;doplot=false)
         @info l mse_loss(pred) reg_loss(p)
         if doplot
             display(plot_cb(t,ode_data,pred))
@@ -91,17 +91,17 @@ function run(d::Dict)
     return d
 end
 
-@progress for nr in 1:10
-    produce_or_load(datadir("fracsir"),
-                    Dict{Symbol,Any}(
-                         :hdim=>4,
-                         :βps=>0,
-                         :lr=>0.005,
-                         :niters=>3000,
-                         :αinit=>1,
-                         :run=>nr),
-                    run,
-                    prefix="dense",
-                    digits=10,
-                    force=false)
-end
+# @progress for nr in 1:10
+#     produce_or_load(datadir("fracsir"),
+#                     Dict{Symbol,Any}(
+#                          :hdim=>4,
+#                          :βps=>0,
+#                          :lr=>0.005,
+#                          :niters=>3000,
+#                          :αinit=>1,
+#                          :run=>nr),
+#                     run,
+#                     prefix="dense",
+#                     digits=10,
+#                     force=false)
+# end

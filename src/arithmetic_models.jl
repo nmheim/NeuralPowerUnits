@@ -63,6 +63,13 @@ function get_model(model::String, inlen::Int, fstinit::String, sndinit::String)
                           initNAC=initf(sndinit),
                           initG=initf(sndinit),
                           initb=Flux.zeros))
+    elseif model == "inalu"
+        return Chain(iNALU(inlen, inlen,
+                          initNAC=initf(fstinit),
+                          initG=initf(fstinit)),
+                     iNALU(inlen, 1,
+                          initNAC=initf(sndinit),
+                          initG=initf(sndinit)))
     elseif model == "npux"
         return Chain(NAU(inlen, inlen, init=initf(fstinit)),
                      NPUX(inlen, 1, initRe=initf(sndinit)))

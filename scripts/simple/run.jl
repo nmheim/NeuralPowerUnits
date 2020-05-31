@@ -106,21 +106,38 @@ function run_nalu(c::Dict)
     return result_dict(model,c)
 end
 
+function inalu_reg(p::Array, t::Real)
+    r = min.(-p,p) .+ t
+    sum(max.(r, 0)) ./ t
+end
+
+inalu_reg(ps::Flux.Params,t::Real) = sum(p->inalu_reg(p,t), ps)
+
 function run_inalu(c::Dict)
     hdim = 6
     model = Chain(iNALU(2,hdim),iNALU(hdim,4))
     ps = params(model)
     opt = RMSProp(c[:lr])
-    data = (generate() for _ in 1:c[:niters])
-    loss(x,y) = Flux.mse(model(x),y)
+
+
+    data = (generate() for _ in 1:(c[:niters]/2))
     (x,y) = generate()
-    cb = Flux.throttle(() -> (@info loss(x,y)), 0.1)
+    cb = Flux.throttle(() -> (@info loss(x,y) Flux.mse(model(x),y) inalu_reg(ps,c[:t])), 0.1)
+
+    loss(x,y) = Flux.mse(model(x),y)
     Flux.train!(loss, ps, data, opt, cb=cb)
+
+    regloss(x,y) = Flux.mse(model(x),y) + 1e-5*inalu_reg(ps,c[:t])
+    data = (generate() for _ in 1:(c[:niters]/2))
+    Flux.train!(regloss, ps, data, opt, cb=cb)
+
     return result_dict(model,c)
 end
 
 function run_dense(c::Dict)
-    model = Chain(Dense(2,10,σ),Dense(10,10,σ),Dense(10,4))
+    hdim = 50
+    model = Chain(Dense(2,hdim,σ),Dense(hdim,hdim,σ),Dense(hdim,4))
+    #model = Chain(Dense(2,hdim,σ),Dense(hdim,4))
     ps = params(model)
     opt = ADAM(c[:lr])
     data = (generate() for _ in 1:c[:niters])
@@ -133,8 +150,8 @@ end
 
 
 @progress for run in 1:nr_runs
-    res, _ = produce_or_load(datadir("simple"),
-                             Dict(:niters=>20000, :βl1=>1e-5, :lr=>0.005, :run=>run),
+    res, _ = produce_or_load(datadir("simple-npu-reg"),
+                             Dict(:niters=>40000, :βl1=>1e-3, :lr=>0.005, :run=>run),
                              run_npu,
                              prefix="$train_range-gatednpux",
                              force=false, digits=6)
@@ -146,11 +163,12 @@ end
                              Dict(:niters=>20000, :lr=>0.005, :run=>run),
                              run_nmu,
                              prefix="$train_range-nmu", force=false, digits=6)
-    res, _ = produce_or_load(datadir("simple"),
-                             Dict(:niters=>20000, :lr=>0.005, :run=>run),
+    res, _ = produce_or_load(datadir("simple-densehdim"),
+                             Dict(:niters=>40000, :lr=>0.005, :run=>run),
                              run_dense,
                              prefix="$train_range-dense", force=false, digits=6)
     res, _ = produce_or_load(datadir("simple"),
+                             #Dict(:niters=>20000, :t=>20, :lr=>0.001, :run=>run),
                              Dict(:niters=>20000, :lr=>0.001, :run=>run),
                              run_inalu,
                              prefix="$train_range-inalu", force=false, digits=6)

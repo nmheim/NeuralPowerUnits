@@ -7,8 +7,6 @@ concat(m::Chain{<:Tuple{<:NAU,<:NPUX}}) =
 concat(m::Chain{<:Tuple{<:NALU,<:NALU}}) =
     cat(m[1].nac.M, m[1].nac.W, m[2].nac.M', m[2].nac.W', dims=2)
 
-concat(m::Chain) = cat(m[1].W, m[2].W', dims=2)
-
 function concat(m::Chain{<:Tuple{<:NALU,<:NALU,<:NALU}})
     cat(m[1].nac.M,
         m[1].nac.W,

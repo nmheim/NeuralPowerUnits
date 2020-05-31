@@ -86,7 +86,7 @@ Creates table like this:
 """
 function table_models_tasks(df::DataFrame, key)
     result = DataFrame(Union{Measurement,Missing}, 4, length(df.model)+1)
-    rename!(result, vcat(["task"], df.model))
+    rename!(result, vcat(["task"], unique(df.model)))
     result[!,1] = ["Add", "Mult", "Div", "Sqrt"]
 
     for m in df.model
@@ -160,11 +160,12 @@ raw"""\bottomrule
    
 end
 
-df = collect_folder!(datadir("simple"))
+df = collect_folder!(datadir("simple-densehdim"))
+#df = collect_folder!(datadir("simple"))
 sort!(df,"model")
 adf = aggregateruns(df)
 best = find_best(df,"val")
-print_table(best[!,["model",key,"add_val","mult_val","div_val","sqrt_val","path"]])
+print_table(best[!,["model","val","add_val","mult_val","div_val","sqrt_val","path"]])
 
 @info "Training MSE Table"
 r = table_models_tasks(adf,"mse")

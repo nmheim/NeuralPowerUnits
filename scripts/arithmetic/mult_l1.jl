@@ -20,7 +20,7 @@ include(srcdir("arithmetic_models.jl"))
 
 @with_kw struct MultL1Config
     batch::Int      = 128
-    niters::Int     = 300000
+    niters::Int     = 10000
     lr::Real        = 5e-3
 
     βstart::Real    = 1f-9
@@ -37,7 +37,7 @@ include(srcdir("arithmetic_models.jl"))
     inlen::Int      = 100
     fstinit::String = "rand"
     sndinit::String = "rand"
-    model::String   = "nmu"
+    model::String   = "inalu"
 
 end
 

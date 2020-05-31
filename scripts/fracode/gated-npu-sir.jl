@@ -32,7 +32,7 @@ end
 
 nrparams(p, thresh) = sum(abs.(p) .> thresh)
 
-function run(d::Dict)
+function run_gatednpu(d::Dict)
     idim = 3
     @unpack hdim, αinit, βps, βim, niters, lr = d
 
@@ -66,7 +66,7 @@ function run(d::Dict)
         UnicodePlots.heatmap(cat(M,W',dims=2))
     end
 
-    function cb(p,l,pred;doplot=true)
+    function cb(p,l,pred;doplot=false)
         @info l mse_loss(pred) reg_loss(p) img_loss(p)
         if doplot
             display(plot_cb(t,ode_data,pred))
@@ -104,21 +104,21 @@ function run(d::Dict)
     return d
 end
 
-@progress for nr in 1:10
-    produce_or_load(datadir("fracsir"),
-                    Dict{Symbol,Any}(
-                         :hdim=>20,
-                         :βim=>0,
-                         :βps=>0,
-                         :lr=>0.005,
-                         :niters=>3000,
-                         :αinit=>0.2,
-                         :run=>nr),
-                    run,
-                    prefix="gatednpu",
-                    digits=10,
-                    force=false)
-end
+# @progress for nr in 1:10
+#     produce_or_load(datadir("fracsir"),
+#                     Dict{Symbol,Any}(
+#                          :hdim=>20,
+#                          :βim=>0,
+#                          :βps=>0,
+#                          :lr=>0.005,
+#                          :niters=>3000,
+#                          :αinit=>0.2,
+#                          :run=>nr),
+#                     run,
+#                     prefix="gatednpu",
+#                     digits=10,
+#                     force=false)
+# end
 
 # npu = dudt.layers[1]
 # l = paramlength(npu)
