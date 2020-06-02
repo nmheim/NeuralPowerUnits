@@ -25,27 +25,16 @@ function aggregateruns(dataframe::DataFrame)
     combine(gdf) do df
         (μmse  = mean(df.mse),
          μval  = mean(df.val),
+         μadd  = mean(df.add_val),
+         μmult = mean(df.mult_val),
+         μdiv  = mean(df.div_val),
+         μsqrt = mean(df.sqrt_val),
          σmse  = std(df.mse),
          σval  = std(df.val),
-
-         μval_add  = mean(df.add_val),
-         μval_mult = mean(df.mult_val),
-         μval_div  = mean(df.div_val),
-         μval_sqrt = mean(df.sqrt_val),
-         σval_add  = std(df.add_val),
-         σval_mult = std(df.mult_val),
-         σval_div  = std(df.div_val),
-         σval_sqrt = std(df.sqrt_val),
-
-         μmse_add  = mean(df.add_trn),
-         μmse_mult = mean(df.mult_trn),
-         μmse_div  = mean(df.div_trn),
-         μmse_sqrt = mean(df.sqrt_trn),
-         σmse_add  = std(df.add_trn),
-         σmse_mult = std(df.mult_trn),
-         σmse_div  = std(df.div_trn),
-         σmse_sqrt = std(df.sqrt_trn),
-
+         σadd  = std(df.add_val),
+         σmult = std(df.mult_val),
+         σdiv  = std(df.div_val),
+         σsqrt = std(df.sqrt_val),
          nr    = length(df.model),
          model = first(df.model))
     end
@@ -63,7 +52,7 @@ function delete_from_savename(path,key)
     joinpath(dir, savename(dict,digits=20))
 end
 
-name(m::GatedNPUX) = "GatedNPU"
+name(m::GatedNPUX) = "NPU"
 name(m::Dense) = "Dense"
 name(m::NALU) = "NALU"
 name(m::NMU) = "NMU"
@@ -84,16 +73,16 @@ end
 Creates table like this:
 | task | npu | npux | ... |
 """
-function table_models_tasks(df::DataFrame, key)
+function table_models_tasks(df::DataFrame)
     result = DataFrame(Union{Measurement,Missing}, 4, length(df.model)+1)
-    rename!(result, vcat(["task"], unique(df.model)))
+    rename!(result, vcat(["task"], df.model))
     result[!,1] = ["Add", "Mult", "Div", "Sqrt"]
 
     for m in df.model
         mdf = filter(:model=>model->model==m, df)
         @assert size(mdf,1) == 1
-        μcol = [mdf[1,k] for k in ["μ$(key)_add","μ$(key)_mult","μ$(key)_div","μ$(key)_sqrt"]]
-        σcol = [mdf[1,k] for k in ["σ$(key)_add","σ$(key)_mult","σ$(key)_div","σ$(key)_sqrt"]]
+        μcol = [mdf[1,k] for k in ["μadd","μmult","μdiv","μsqrt"]]
+        σcol = [mdf[1,k] for k in ["σadd","σmult","σdiv","σsqrt"]]
         result[!,m] = measurement.(μcol,σcol ./sqrt.(mdf.nr))
     end
     return result
@@ -144,15 +133,15 @@ function latex_table(results::DataFrame)
 
     latex_str = (
 raw"""
-\begin{tabular}{lcccc}
+\begin{tabular}{lccccc}
 \toprule
-Task & GatedNPU & NALU & NMU & Dense\\
+Task & GatedNPU & NMU & NALU & iNALU & Dense\\
 \midrule
 """ *
-"Add  & $(r1[1,:GatedNPU]) & $(r1[1,:NALU]) & $(r1[1,:NMU]) & $(r1[1,:Dense]) \\\\\n" *
-"Mult & $(r2[1,:GatedNPU]) & $(r2[1,:NALU]) & $(r2[1,:NMU]) & $(r2[1,:Dense]) \\\\\n" *
-"Div  & $(r3[1,:GatedNPU]) & $(r3[1,:NALU]) & $(r3[1,:NMU]) & $(r3[1,:Dense]) \\\\\n" *
-"Sqrt & $(r4[1,:GatedNPU]) & $(r4[1,:NALU]) & $(r4[1,:NMU]) & $(r4[1,:Dense]) \\\\\n" *
+"Add  & $(r1[1,:GatedNPU]) & $(r1[1,:NMU]) & $(r1[1,:NALU]) & $(r1[1,:iNALU]) & $(r1[1,:Dense]) \\\\\n" *
+"Mult & $(r2[1,:GatedNPU]) & $(r2[1,:NMU]) & $(r2[1,:NALU]) & $(r2[1,:iNALU]) & $(r2[1,:Dense]) \\\\\n" *
+"Div  & $(r3[1,:GatedNPU]) & $(r3[1,:NMU]) & $(r3[1,:NALU]) & $(r3[1,:iNALU]) & $(r3[1,:Dense]) \\\\\n" *
+"Sqrt & $(r4[1,:GatedNPU]) & $(r4[1,:NMU]) & $(r4[1,:NALU]) & $(r4[1,:iNALU]) & $(r4[1,:Dense]) \\\\\n" *
 raw"""\bottomrule
 \end{tabular}
 """
@@ -160,22 +149,17 @@ raw"""\bottomrule
    
 end
 
-df = collect_folder!(datadir("simple-densehdim"))
-#df = collect_folder!(datadir("simple"))
+df = collect_folder!(datadir("simple"))
 sort!(df,"model")
 adf = aggregateruns(df)
-best = find_best(df,"val")
-print_table(best[!,["model","val","add_val","mult_val","div_val","sqrt_val","path"]])
+key = "val"
+best = find_best(df,key)
+print_table(best[!,["model",key,"add_val","mult_val","div_val","sqrt_val","path"]])
 
-@info "Training MSE Table"
-r = table_models_tasks(adf,"mse")
+r = table_models_tasks(adf)
 print_table(r, :row)
 
-@info "Validation MSE Table"
-r = table_models_tasks(adf,"val")
-print_table(r, :row)
-
-fname = papersdir("simple_err.tex")
+fname = plotsdir("simple_err.tex")
 open(fname, "w") do file
     @info "Writing dataframe to $fname"
     write(file, latex_table(r))

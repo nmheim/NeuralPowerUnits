@@ -111,8 +111,8 @@ function latex_table(results::DataFrame)
 
     function latex_row(row)
         vals = convert(Vector, row[2:end])
-        i  = findmin(vals)[2]
-        ss = map(x->string(round(x,digits=3)), vals)
+        i  = findmin(map(x->isinf(x) ? 1e30 : x,vals))[2]
+        ss = map(x->string(round(x,digits=7)), vals)
         ss = map(s->replace(s,"±"=>"\$\\pm\$"), ss)
         ss[i] = "\\textbf{$(ss[i])}"
         srow = DataFrame(Dict(zip(names(row[2:end]),ss)))
@@ -127,7 +127,7 @@ function latex_table(results::DataFrame)
 raw"""
 \begin{tabular}{lcccc}
 \toprule
-Task & GatedNPU & NALU & NMU & NPU (real)\\
+Task & NPU & NALU & NMU & NaiveNPU\\
 \midrule
 """ *
 "Add  & $(r1[1,:gatednpux]) & $(r1[1,:nalu]) & $(r1[1,:nmu]) & $(r1[1,:npux]) \\\\\n" *

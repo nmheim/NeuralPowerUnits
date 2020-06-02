@@ -28,4 +28,5 @@ TerminalLoggers = "5d786b92-1e48-4d6f-9151-6b4477ca9bed"
 UnicodePlots = "b8865327-cd53-5732-bb35-84acbb429228"
 
 [compat]
+NeuralArithmetic = "0.3"
 julia = "1.4.0"

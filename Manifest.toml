@@ -14,9 +14,9 @@ version = "0.3.3"
 
 [[Adapt]]
 deps = ["LinearAlgebra"]
-git-tree-sha1 = "c88cfc7f9c1f9f8633cddf0b56e86302b70f64c5"
+git-tree-sha1 = "fd04049c7dd78cfef0b06cdc1f0f181467655712"
 uuid = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
-version = "1.0.1"
+version = "1.1.0"
 
 [[ArgCheck]]
 git-tree-sha1 = "59c256cf71c3982484ae4486ee86a3d7da891dea"
@@ -264,9 +264,9 @@ uuid = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 
 [[DiffEqBase]]
 deps = ["ArrayInterface", "ChainRulesCore", "ConsoleProgressMonitor", "DataStructures", "Distributed", "DocStringExtensions", "FunctionWrappers", "IterativeSolvers", "IteratorInterfaceExtensions", "LabelledArrays", "LinearAlgebra", "Logging", "LoggingExtras", "MuladdMacro", "Parameters", "Printf", "ProgressLogging", "RecipesBase", "RecursiveArrayTools", "RecursiveFactorization", "Requires", "Roots", "SparseArrays", "StaticArrays", "Statistics", "SuiteSparse", "TableTraits", "TerminalLoggers", "TreeViews", "ZygoteRules"]
-git-tree-sha1 = "b269aefc5885524cd885f4bee9a233e7b6b6b6e5"
+git-tree-sha1 = "a37901f10b63ed3e413db3320cd6c305c771430d"
 uuid = "2b5f629d-d688-5b77-993f-72d75c75574e"
-version = "6.35.2"
+version = "6.36.3"
 
 [[DiffEqCallbacks]]
 deps = ["DataStructures", "DiffEqBase", "ForwardDiff", "LinearAlgebra", "NLsolve", "OrdinaryDiffEq", "RecipesBase", "RecursiveArrayTools", "StaticArrays"]
@@ -282,21 +282,21 @@ version = "1.11.0"
 
 [[DiffEqJump]]
 deps = ["Compat", "DataStructures", "DiffEqBase", "FunctionWrappers", "LinearAlgebra", "Parameters", "PoissonRandom", "Random", "RandomNumbers", "RecursiveArrayTools", "StaticArrays", "Statistics", "TreeViews"]
-git-tree-sha1 = "a3a329e7a078cba4a3f5a00d2d788f4a974677a1"
+git-tree-sha1 = "4c960b9cf209426b72de274334f5f77b4d9a4dad"
 uuid = "c894b116-72e5-5b58-be3c-e6d8d4ac2b12"
-version = "6.7.5"
+version = "6.7.6"
 
 [[DiffEqNoiseProcess]]
 deps = ["DataStructures", "DiffEqBase", "Distributions", "LinearAlgebra", "PoissonRandom", "Random", "RandomNumbers", "RecipesBase", "RecursiveArrayTools", "Requires", "ResettableStacks", "StaticArrays", "Statistics"]
-git-tree-sha1 = "e6bdd71354d19e2e83c1b36718baed9ae098dbcd"
+git-tree-sha1 = "084b8c9bdd0109a0cd458447627db44e42a28b9f"
 uuid = "77a26b50-5914-5dd7-bc55-306e6241c503"
-version = "4.1.4"
+version = "4.1.6"
 
 [[DiffEqSensitivity]]
 deps = ["Adapt", "DiffEqBase", "DiffEqCallbacks", "DiffEqNoiseProcess", "Distributions", "FFTW", "FiniteDiff", "ForwardDiff", "LinearAlgebra", "Parameters", "QuadGK", "QuasiMonteCarlo", "RecursiveArrayTools", "Requires", "ReverseDiff", "Statistics", "StochasticDiffEq", "Tracker", "Zygote", "ZygoteRules"]
-git-tree-sha1 = "233cb998f6cd0b2f70a9860deea7afa5925cb7dd"
+git-tree-sha1 = "7edcfa11d37693da6ccf6a8938c47cc95d3933ff"
 uuid = "41bf760c-e81c-5289-8e54-58b1f1f8abe2"
-version = "6.17.0"
+version = "6.19.0"
 
 [[DiffResults]]
 deps = ["StaticArrays"]
@@ -363,9 +363,9 @@ version = "4.1.0+3"
 
 [[FFTW]]
 deps = ["AbstractFFTs", "FFTW_jll", "IntelOpenMP_jll", "Libdl", "LinearAlgebra", "MKL_jll", "Reexport"]
-git-tree-sha1 = "b6a74f6dfd9e9d16b765397dc90df03e5a00532e"
+git-tree-sha1 = "14536c95939aadcee44014728a459d2fe3ca9acf"
 uuid = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
-version = "1.2.1"
+version = "1.2.2"
 
 [[FFTW_jll]]
 deps = ["Libdl", "Pkg"]
@@ -437,9 +437,9 @@ uuid = "9fa8497b-333b-5362-9e8d-4d0656e87820"
 
 [[GPUArrays]]
 deps = ["AbstractFFTs", "Adapt", "LinearAlgebra", "Printf", "Random", "Serialization"]
-git-tree-sha1 = "5f90fd4385ae86ab56cdd9bd4717f7bd2ff2acdf"
+git-tree-sha1 = "d887693eb1bd5e1fd573262a978745481895ec7d"
 uuid = "0c68f7d7-f131-5f86-a1c3-88cf8149b2d7"
-version = "3.4.0"
+version = "3.4.1"
 
 [[GPUCompiler]]
 deps = ["Cthulhu", "DataStructures", "InteractiveUtils", "LLVM", "Libdl", "TimerOutputs"]
@@ -607,15 +607,15 @@ version = "0.4.1"
 
 [[LoopVectorization]]
 deps = ["DocStringExtensions", "LinearAlgebra", "OffsetArrays", "SIMDPirates", "SLEEFPirates", "UnPack", "VectorizationBase"]
-git-tree-sha1 = "525d6a27998afeac6b30a92e5cd3bfe4ae246652"
+git-tree-sha1 = "132e6b82e3434a04992a0be60e194f817101c846"
 uuid = "bdcacae8-1622-11e9-2a5c-532679323890"
-version = "0.8.1"
+version = "0.8.2"
 
 [[MKL_jll]]
 deps = ["IntelOpenMP_jll", "Libdl", "Pkg"]
-git-tree-sha1 = "720629cc8cbd12c146ca01b661fd1a6cf66e2ff4"
+git-tree-sha1 = "0ce9a7fa68c70cf83c49d05d2c04d91b47404b08"
 uuid = "856f044c-d86e-5d09-b602-aeab76dc8ba7"
-version = "2019.0.117+2"
+version = "2020.1.216+0"
 
 [[MacroTools]]
 deps = ["Markdown", "Random"]
@@ -695,11 +695,9 @@ version = "0.4.4"
 
 [[NeuralArithmetic]]
 deps = ["Flux", "Requires", "Zygote"]
-git-tree-sha1 = "174f4bd09261004ed1dfb046bcc297ccd2ed3ef6"
-repo-rev = "master"
-repo-url = "https://github.com/nmheim/NeuralArithmetic.jl.git"
+git-tree-sha1 = "b949ad20bfff306b8906dc207ab658ffaeccaa9f"
 uuid = "ab1feca7-9272-4c7d-b713-789d3461e743"
-version = "0.2.0"
+version = "0.3.0"
 
 [[Observables]]
 git-tree-sha1 = "11832878355305984235a2e90d0e3737383c634c"
@@ -955,9 +953,9 @@ uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
 
 [[SIMDPirates]]
 deps = ["VectorizationBase"]
-git-tree-sha1 = "1d175ca1d6e104ae7040f9f93acc34357667af90"
+git-tree-sha1 = "7ac32930e05d1fcb152d792495b9cc4823ca004f"
 uuid = "21efa798-c60a-11e8-04d3-e1a92915a26a"
-version = "0.8.4"
+version = "0.8.5"
 
 [[SLEEFPirates]]
 deps = ["Libdl", "SIMDPirates", "VectorizationBase"]
@@ -1051,9 +1049,9 @@ version = "0.14.6"
 
 [[StochasticDiffEq]]
 deps = ["ArrayInterface", "DataStructures", "DiffEqBase", "DiffEqJump", "DiffEqNoiseProcess", "FillArrays", "FiniteDiff", "ForwardDiff", "LinearAlgebra", "Logging", "MuladdMacro", "NLsolve", "OrdinaryDiffEq", "Random", "RandomNumbers", "RecursiveArrayTools", "Reexport", "SparseArrays", "SparseDiffTools", "StaticArrays", "UnPack"]
-git-tree-sha1 = "b36e83662402bbb156c47664db90233136b01305"
+git-tree-sha1 = "2006e15cb3967afec91af1cb33b965eebea4f573"
 uuid = "789caeaf-c7a9-5a7d-9973-96adeb23e2a0"
-version = "6.23.0"
+version = "6.23.1"
 
 [[SuiteSparse]]
 deps = ["Libdl", "LinearAlgebra", "Serialization", "SparseArrays"]
@@ -1131,9 +1129,9 @@ version = "1.2.0"
 
 [[VectorizationBase]]
 deps = ["CpuId", "LinearAlgebra"]
-git-tree-sha1 = "13463c5703d9e75b2eab93f6c94239426af49221"
+git-tree-sha1 = "a7eeff8fae4f11bd1ec140169ae2b10e26adf673"
 uuid = "3d5dd08c-fd9d-11e8-17fa-ed2836048c2f"
-version = "0.12.3"
+version = "0.12.6"
 
 [[VertexSafeGraphs]]
 deps = ["LightGraphs"]

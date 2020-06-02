@@ -8,99 +8,109 @@ global_logger(TerminalLogger(right_justify=80))
 
 using Plots
 using LaTeXStrings
+using DataFrames
+using Flux
+using NeuralArithmetic
 pgfplotsx()
+#pyplot()
 
 include(joinpath(@__DIR__, "sobolconfigs.jl"))
 include(srcdir("arithmetic_dataset.jl"))
 
 res = load(datadir("pareto","thresh=1e-5.bson"))
 df = combine(groupby(res[:df], ["model","task"])) do gdf
+    gdf = sort(DataFrame(gdf),"val")
     gdf[1:min(10,size(gdf,1)),:]
 end
+df.nrps = zeros(length(df.model))
+ϵ = 1e-2
+for row in eachrow(df)
+    row.nrps = sum(abs.(Flux.destructure(row.modelps)[1]) .> ϵ)
+end
 
-models = Dict("npux"=>"NPU",
-              "gatednpux"=>"GatedNPU",
+models = Dict("npux"=>"NaiveNPU",
+              "gatednpux"=>"NPU",
               "nalu"=>"NALU",
               "nmu"=>"NMU")
 ms     = 4
 alpha  = 0.7
 xscale = :log10
 yscale = :log10
-plotmodels = ["gatednpux","nalu","nmu","npux"]
+plotmodels = [(:circle,"gatednpux"),(:pentagon,"nalu"),(:diamond,"nmu"),(:utriangle,"npux")]
 #plotmodels = ["gatednpux","nalu","nmu"]
 
-s1 = plot(title="Addition +")
+s1,s2,s3,s4=plot(),plot(),plot(),plot()
 pdf  = filter(row->row.task=="add", df)
-for m in plotmodels
-    mdf = filter(row->row.model==m, pdf)
-    scatter!(s1, mdf.reg, mdf.val,
-             label=models[m], yscale=yscale, xscale=xscale, alpha=alpha, ms=ms,
-             ylabel="Validation MSE", legend=false)
+for (marker,model) in plotmodels
+    mdf = filter(row->row.model==model, pdf)
+    scatter!(s1, mdf.nrps, mdf.val, marker=marker,
+             label=models[model], yscale=yscale, xscale=xscale, alpha=alpha, ms=ms,
+             ylabel="Testing MSE", legend=false, xlabel="Nr. Parameters")
 end
 
-s2 = plot(title="Multiplication \$\\times\$")
 pdf  = filter(row->row.task=="mult", df)
-for m in plotmodels
-    mdf = filter(row->row.model==m, pdf)
-    scatter!(s2, mdf.reg, mdf.val,
-             label=models[m], yscale=yscale, xscale=xscale, alpha=alpha, ms=ms)
+for (marker,model) in plotmodels
+    mdf = filter(row->row.model==model, pdf)
+    scatter!(s2, mdf.nrps, mdf.val, marker=marker,
+             label=models[model], yscale=yscale, xscale=xscale, alpha=alpha, ms=ms,
+             legend=false, xlabel="Nr. Parameters", ylim=(1e-1,1e5))
 end
 
-s3 = plot(title="Division \$\\div\$")
 pdf  = filter(row->row.task=="invx", df)
-for m in plotmodels
-    mdf = filter(row->row.model==m, pdf)
-    scatter!(s3, mdf.reg, mdf.val,
-             label=models[m], yscale=yscale, xscale=xscale, alpha=alpha, ms=ms,
-             ylabel="Validation MSE",
-             xlabel="Nr. Parameters", legend=false)
+for (marker,model) in plotmodels
+    mdf = filter(row->row.model==model, pdf)
+    scatter!(s3, mdf.nrps, mdf.val, m=marker,
+             label=models[model], yscale=yscale, xscale=xscale, alpha=alpha, ms=ms,
+             legend=false, xlabel="Nr. Parameters")
 end
 
-s4 = plot(title="Square root \$\\sqrt\\cdot\$")
 pdf  = filter(row->row.task=="sqrt", df)
-for m in plotmodels
-    mdf = filter(row->row.model==m, pdf)
-    scatter!(s4, mdf.reg, mdf.val,
-             label=models[m], yscale=yscale, xscale=xscale, alpha=alpha, ms=ms,
-             xlabel="Nr. Parameters", legend=false)
+for (marker,model) in plotmodels
+    mdf = filter(row->row.model==model, pdf)
+    scatter!(s4, mdf.nrps, mdf.val, marker=marker,
+             label=models[model], yscale=yscale, xscale=xscale, alpha=alpha, ms=ms,
+             legend=false, xlabel="Nr. Parameters")
 end
 
-p1 = plot(s1,s2,s3,s4,layout=(2,2))
+p1 = plot(s1,s2,s3,s4,layout=(1,4), size=(900,200))
 
 s1 = plot(title="Addition +")
+s2 = plot(title="Multiplication \$\\times\$")
+s3 = plot(title="Division \$\\div\$")
+s4 = plot(title="Square root \$\\sqrt\\cdot\$")
 pdf  = filter(row->row.task=="add", df)
-for m in plotmodels
-    mdf = filter(row->row.model==m, pdf)
-    scatter!(s1, mdf.reg, mdf.mse,
-             label=models[m], yscale=yscale, xscale=xscale, alpha=alpha, ms=ms,
+for (marker,model) in plotmodels
+    mdf = filter(row->row.model==model, pdf)
+    scatter!(s1, mdf.nrps, mdf.mse, marker=marker,
+             label=models[model], yscale=yscale, xscale=xscale, alpha=alpha, ms=ms,
              ylabel="Traingin MSE", legend=false)
 end
 
-s2 = plot(title="Multiplication \$\\times\$")
 pdf  = filter(row->row.task=="mult", df)
-for m in plotmodels
-    mdf = filter(row->row.model==m, pdf)
-    scatter!(s2, mdf.reg, mdf.mse,
-             label=models[m], yscale=yscale, xscale=xscale, alpha=alpha, ms=ms)
+for (marker,model) in plotmodels
+    mdf = filter(row->row.model==model, pdf)
+    scatter!(s2, mdf.nrps, mdf.mse, marker=marker,
+             label=models[model], yscale=yscale,
+             legend=false, xscale=xscale, alpha=alpha, ms=ms)
 end
 
-s3 = plot(title="Division \$\\div\$")
 pdf  = filter(row->row.task=="invx", df)
-for m in plotmodels
-    mdf = filter(row->row.model==m, pdf)
-    scatter!(s3, mdf.reg, mdf.mse,
-             label=models[m], yscale=yscale, xscale=xscale, alpha=alpha, ms=ms,
-             ylabel="Traingin MSE",
-             xlabel="Nr. Parameters", legend=false)
+for (marker,model) in plotmodels
+    mdf = filter(row->row.model==model, pdf)
+    scatter!(s3, mdf.nrps, mdf.mse, marker=marker,
+             label=models[model], yscale=yscale, xscale=xscale, alpha=alpha, ms=ms,
+             legend=false)
 end
 
-s4 = plot(title="Square root \$\\sqrt\\cdot\$")
 pdf  = filter(row->row.task=="sqrt", df)
-for m in plotmodels
-    mdf = filter(row->row.model==m, pdf)
-    scatter!(s4, mdf.reg, mdf.mse,
-             label=models[m], yscale=yscale, xscale=xscale, alpha=alpha, ms=ms,
-             xlabel="Nr. Parameters", legend=false, ylim=(1e-3,1e4))
+for (marker,model) in plotmodels
+    mdf = filter(row->row.model==model, pdf)
+    scatter!(s4, mdf.nrps, mdf.mse, marker=marker,
+             label=models[model], yscale=yscale, xscale=xscale, alpha=alpha, ms=ms,
+             legend=:topleft, ylim=(1e-3,1e4))
 end
 
-p2 = plot(s1,s2,s3,s4,layout=(2,2))
+p2 = plot(s1,s2,s3,s4,layout=(1,4), size=(900,200))
+#p = plot(p2,p1,layout=(2,1),size=(900,400))
+savefig(p1, plotsdir("pareto.tikz"))
+display(p1)
