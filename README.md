@@ -4,8 +4,23 @@ This repository contains all the code to reproduce our NIPS submission. It is
 written in Julia and all necessary dependencies can be installed from the Julia
 REPL.  To start Julia with this project environment run `julia --project` from
 this directory.
+And then, to install all necessary dependencies, run `]instantiate` from the REPL.
+```julia
+$ julia --project
+               _
+   _       _ _(_)_     |  Documentation: https://docs.julialang.org
+  (_)     | (_) (_)    |
+   _ _   _| |_  __ _   |  Type "?" for help, "]?" for Pkg help.
+  | | | | | | |/ _` |  |
+  | | |_| | | | (_| |  |  Version 1.3.0 (2019-11-26)
+ _/ |\__'_|_|_|\__'_|  |  Official https://julialang.org/ release
+|__/                   |
 
-To install all necessary dependencies, run `]instantiate` from the REPL.
+julia> ]
+(NIPS_2020_NPU) pkg> instantiate
+...
+```
+
 All neural arithmetic units are defined in the [src](src) folder. The differnt types of NPUs
 can be found [here](src/npu.jl).
 Note that the three NPU types are not named as in the paper. The list
