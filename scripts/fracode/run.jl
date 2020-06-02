@@ -1,5 +1,5 @@
 using DrWatson
-@quickactivate "NIPS_2020_NMUX"
+@quickactivate "NIPS_2020_NPU"
 
 include(joinpath(@__DIR__, "gated-npux-sir.jl"))
 include(joinpath(@__DIR__, "gated-npu-sir.jl"))

@@ -1,5 +1,5 @@
 using DrWatson
-@quickactivate "NIP_2020_NMUX"
+@quickactivate "NIPS_2020_NPU"
 
 using Logging
 using TerminalLoggers

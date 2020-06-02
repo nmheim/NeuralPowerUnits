@@ -1,5 +1,5 @@
 using DrWatson
-@quickactivate "npu"
+@quickactivate "NIPS_2020_NPU"
 
 using Flux
 using LinearAlgebra

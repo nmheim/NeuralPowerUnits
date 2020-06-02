@@ -1,5 +1,5 @@
 using DrWatson
-@quickactivate "NIPS_2020_NMUX"
+@quickactivate "NIPS_2020_NPU"
 
 using DataFrames
 using Plots
