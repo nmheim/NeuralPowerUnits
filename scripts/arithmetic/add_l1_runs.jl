@@ -58,9 +58,6 @@ config = AddL1SearchConfig()
     for m in ["gatednpux","nalu","nmu","npux"]
         config = if m == "nmu"
             AddL1SearchConfig(run=i, model=m, βstart=1f-7, niters=10000)
-        # elseif m == "nalu"
-        #     AddL1SearchConfig(run=i, model=m,
-        #                        βstart=0, βend=0, βstep=100000, βgrowth=1)
         else
             AddL1SearchConfig(run=i, model=m)
         end
