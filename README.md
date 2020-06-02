@@ -5,7 +5,7 @@ written in Julia and all necessary dependencies can be installed from the Julia
 REPL.  To start Julia with this project environment run `julia --project` from
 this directory.
 And then, to install all necessary dependencies, run `]instantiate` from the REPL.
-```julia
+```
 $ julia --project
                _
    _       _ _(_)_     |  Documentation: https://docs.julialang.org
