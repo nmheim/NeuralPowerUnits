@@ -150,8 +150,8 @@ end
 
 
 @progress for run in 1:nr_runs
-    res, _ = produce_or_load(datadir("simple-npu-reg"),
-                             Dict(:niters=>40000, :βl1=>1e-3, :lr=>0.005, :run=>run),
+    res, _ = produce_or_load(datadir("simple"),
+                             Dict(:niters=>20000, :βl1=>0, :lr=>0.005, :run=>run),
                              run_npu,
                              prefix="$train_range-gatednpux",
                              force=false, digits=6)
@@ -163,12 +163,11 @@ end
                              Dict(:niters=>20000, :lr=>0.005, :run=>run),
                              run_nmu,
                              prefix="$train_range-nmu", force=false, digits=6)
-    res, _ = produce_or_load(datadir("simple-densehdim"),
-                             Dict(:niters=>40000, :lr=>0.005, :run=>run),
+    res, _ = produce_or_load(datadir("simple"),
+                             Dict(:niters=>20000, :lr=>0.005, :run=>run),
                              run_dense,
                              prefix="$train_range-dense", force=false, digits=6)
     res, _ = produce_or_load(datadir("simple"),
-                             #Dict(:niters=>20000, :t=>20, :lr=>0.001, :run=>run),
                              Dict(:niters=>20000, :lr=>0.001, :run=>run),
                              run_inalu,
                              prefix="$train_range-inalu", force=false, digits=6)
