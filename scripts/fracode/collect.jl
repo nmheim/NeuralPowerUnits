@@ -15,27 +15,14 @@ name(m::FastGatedNPU) = "FastGatedNPU"
 name(m::FastChain) = name(m.layers[1])
 
 
-ϵ = 1e-7
+ϵ = 1e-3
 df = collect_results!(datadir("fracsir"), black_list=[:pred,:dudt,:ps,:nrps],
                       special_list=[:model => data -> name(data[:dudt]),
                                     :nrps  => data -> nrparams(data[:ps], ϵ)])
 
-# df.model = map(df.dudt) do dudt
-#     Base.typename(typeof(dudt.layers[1]))
-# end
+ff = filter(r->r.model=="FastGatedNPU", df)
+sort!(ff,["nrps"])
+display(ff[!,["mse","nrps","model","βim","βps","hdim","path"]])
 
-sort!(df,["mse","nrps"])
-display(df[!,["mse","nrps","model","βim","βps","hdim"]])
-error()
-
-
-# df = collect_results!(datadir("fracosc"))
-# 
-# df.model = map(df.dudt) do dudt
-#     Base.typename(typeof(dudt.layers[1]))
-# end
-# 
-# ϵ = 1e-7
-# df.nrps = map(p->nrparams(p,ϵ), df.ps)
-# sort!(df,["mse","nrps"])
-# display(df[!,["mse","nrps","model","βim","βps","hdim","lr"]])
+sort!(df, "mse")
+display(df[!,["mse","nrps","model","βim","βps","hdim","path"]])

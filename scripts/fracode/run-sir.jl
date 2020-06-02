@@ -5,10 +5,11 @@ include(joinpath(@__DIR__, "gated-npux-sir.jl"))
 include(joinpath(@__DIR__, "gated-npu-sir.jl"))
 include(joinpath(@__DIR__, "dense-sir.jl"))
 
-@progress for nr in 1:10
+@progress for nr in 1:5
     hdims = [6,9,12,15,20]
     βpss  = [0., 1e-2, 1e-1, 1.]
-    for (hdim,βps) in Iterators.product(hdims, βpss)
+    @progress for (hdim,βps) in Iterators.product(hdims, βpss)
+
         produce_or_load(datadir("fracsir"),
                         Dict{Symbol,Any}(
                              :hdim=>hdim,
