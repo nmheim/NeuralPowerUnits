@@ -2,10 +2,10 @@ TARGETS = main.pdf
 SOURCES = $(shell find . -name '*.tex')
 
 main.pdf: main.tex $(SOURCES)
-	lualatex main.tex
+	pdflatex main.tex
 	bibtex main
-	lualatex main.tex
-	lualatex main.tex
+	pdflatex main.tex
+	pdflatex main.tex
 
 clean:
 	rm main.pdf
