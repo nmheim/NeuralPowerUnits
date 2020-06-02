@@ -7,13 +7,12 @@ this directory.
 
 To install all necessary dependencies, run `]instantiate` from the REPL.
 
-Note that the various NPU types are not named as in the paper. The list
+Note that the three NPU types are not named as in the paper. The list
 below maps paper NPU names to type names used in this repo.
 ```julia
 "NPU"           => "GatedNPUX"
 "NaiveNPU"      => "NPUX"
 "real NPU"      => "GatedNPU"
-"real NaiveNPU" => "NPU"
 ```
 
 All scripts that produce our experiments (Sec. 4) are in the [scripts](scripts) folder:
