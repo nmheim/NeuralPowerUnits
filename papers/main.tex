@@ -642,11 +642,16 @@ parameters from Tab.~\ref{tab:dataset_params_large_scale}.
   t_{\text{add}} = a + b, && t_{\text{mul}} = a \times b, &&
   t_{\text{div}} = 1 / a, && t_{\text{sqrt}} = \sqrt{a},
 \end{align}
-where starting and
-ending values $s_{i,\text{start}},s_{i,\text{end}}$ of the summations are chosen
-such that $a$ and $b$ come from subsets of the input vector $\bm x$ with a
-given overlap.  Specifics of the used models are defined in
-Tab.~\ref{tab:models_large_task}.  \cite{madsen_neural_2020} perform an
+where starting and ending values $s_{i,\text{start}},s_{i,\text{end}}$ of the
+summations are chosen such that $a$ and $b$ come from subsets of the input
+vector $\bm x$ with a given overlap.  The training objective is standard MSE,
+regularized with L1:
+\begin{equation}
+  \mathcal{L} = \text{MSE}(\text{model}(\bm x), t) + \beta||\bm\theta||_1,
+\end{equation}
+where $\beta$ is scheduled to be low in the beginning of training and stronger
+towards the end.  Specifics of the used models and their hyper-parameters are defined in
+Tab.~\ref{tab:models_large_task} \& \ref{tab:training_large_scale}.  \cite{madsen_neural_2020} perform an
 extensive analysis of this task with different subset and overlap ratios,
 varying model and input sizes, and much more, establishing that the combination
 of NAU/NMU outperforms the NALU. We focus on the
@@ -657,15 +662,13 @@ We also compare to the NaiveNPU (without the relevance gate) to show
 how important the gating mechanism is for both sparsity and overall
 performance.
 
-Fig.~\ref{fig:pareto} plots training and testing errors over the number of
-non-zero parameters for all models and tasks.
-The addition column shows that all models except NaiveNPU learn ($+$) on the
-training set, with the NMU converging to the sparsest models. The NMU also
-performs best on the testing set, with the NPU as a close second.\\
-On ($\times$), the best NMU models also outperform the NPU, but some of
-them do not converge at all, which is why the NPU has a better testing MSE on
-average (see also Tab.~\ref{tab:arithmetic100_val}). The testing MSE of the
-NALU is so large that is excluded from the plot.\\
+Fig.~\ref{fig:pareto} plots testing errors over the number of non-zero
+parameters for all models and tasks.  The addition plot shows only NMU and NPU
+can extrapolate on ($+$) with the NMU converging to the sparsest models.\\
+On ($\times$), the best NMU models outperform the NPU, but some of them do not
+converge at all, which is why the NPU has a better testing MSE on average (see
+also Tab.~\ref{tab:arithmetic100_val}). The testing MSE of the NALU is so large
+that is excluded from the plot.\\
 On ($\div,\sqrt{\cdot}$) the NPU clearly outperforms all other layers
 in MSE and sparsity. Generally, the difference between the NaiveNPU and the NPU
 is very significant and demonstrates how important the relevance gate is both
@@ -699,14 +702,12 @@ We introduced the \emph{Neural Arithmetic Unit} that addresses the deficiencies
 of current arithmetic units: it can learn arbitrary power functions for
 positive, negative, and small numbers. We showed that the NPU outperforms its
 main competitor (NALU) and reaches performance that is on par with the
-multiplication specialist NMU.  For tasks that are known to contain only
-addition and multiplication a stack of NAU and NMU can be a better choice than
-the NPU, because they might be easier to train. For more complicated problems
-that involve division or power functions, the NPU is the better choice.
-
-Additionally we have demonstrated how the NPU can be used as an interpretable
-model that can recover governing equations of dynamical systems purely from
-data.
+multiplication specialist NMU (Sec.~\ref{sub:simple_arithmetic_task} \&
+\ref{sub:large_scale_arithmetic_task}).\\
+Additionally we have demonstrated that the NPU converges consistently, even on
+sequential tasks and that can be used as a highly interpretable by recovering
+the  governing equations of dynamical systems purely from data
+(Sec.~\ref{sub:fractional_sir_model}).
 
 \section{Statement of Broader Impact}%
 \label{sec:statement_of_broader_impact}
@@ -732,6 +733,7 @@ DifferentialEquations.jl~\citep{rackauckas_differentialequationsjl_2017}).
 \bibliographystyle{plainnat}
 \bibliography{refs}
 
+\newpage
 \appendix
 \section*{Appendix}%
 \label{sec:appendix}
@@ -741,10 +743,26 @@ DifferentialEquations.jl~\citep{rackauckas_differentialequationsjl_2017}).
 
 \begin{table}[h]
   \centering
-  \caption{Validation error of the different models (i.e. mean of each heatmap
-  in Fig.~\ref{fig:simple_err}). Each value is obtained by averaging the error
-  of 20 models.
-  }
+  \caption{Model definitions for the fSIR task.}
+  \label{tab:fsir_models}
+  \begin{tabular}{llll}
+    \toprule
+    Model & Layer 1 & Layer 2 & Layer 3 \\
+    \midrule
+    NPU & $\npu(3,\,h)$ & $\nau(h,\,3)$ & -- \\
+    NPU & NPU$_{\text{real}}(3,\,h)$ & $\nau(h,\,3)$ & -- \\
+    Dense & $\dense(2,\,h,\sigma)$ & $\dense(h,\,h,\,\sigma)$ & $\dense(h,\,3)$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+
+
+\begin{table}[h]
+  \centering
+  \caption{Testing error on the simple arithmetic task for the different models
+  (i.e. mean of each heatmap in Fig.~\ref{fig:simple_err}). Each value is
+  obtained by averaging the error of 20 models.}
   \label{tab:simple_err}
   \input{../plots/simple_err.tex}
 \end{table}
@@ -752,7 +770,7 @@ DifferentialEquations.jl~\citep{rackauckas_differentialequationsjl_2017}).
 
 \begin{table}[h]
   \centering
-  \caption{Model definitions for the simple arithmetic task}
+  \caption{Model definitions for the simple arithmetic task.}
   \label{tab:models_simple_task}
   \begin{tabular}{llll}
     \toprule
@@ -768,7 +786,8 @@ DifferentialEquations.jl~\citep{rackauckas_differentialequationsjl_2017}).
 \end{table}
 
 \begin{table}[h]
-  \caption{Model definitions for the large scale arithmetic task}
+  \centering
+  \caption{Model definitions for the large scale arithmetic task.}
   \label{tab:models_large_task}
   \begin{tabular}{llll}
     \toprule
@@ -801,18 +820,21 @@ DifferentialEquations.jl~\citep{rackauckas_differentialequationsjl_2017}).
 
 \begin{table}[h]
   \centering
-  \caption{fSIR model definitions}
-  \label{tab:fsir_models}
-  \begin{tabular}{llll}
+  \caption{Training parameters for the large scale arithmetic task. The
+  $\beta$-parameters define the stepwise exponential growth of the L1
+  regularization with start, step, growth, and end.}
+  \label{tab:training_large_scale}
+  \begin{tabular}{lcccccc}
     \toprule
-    Model & Layer 1 & Layer 2 & Layer 3 \\
+    Task & Learning rate & Iterations & $\beta_{\text{start}}$ &
+      $\beta_{\text{end}}$ & $\beta_{\text{step}}$  & $\beta_{\text{growth}}$ \\
     \midrule
-    NPU & $\npu(3,\,h)$ & $\nau(h,\,3)$ & -- \\
-    NPU & NPU$_{\text{real}}(3,\,h)$ & $\nau(h,\,3)$ & -- \\
-    Dense & $\dense(2,\,h,\sigma)$ & $\dense(h,\,h,\,\sigma)$ & $\dense(h,\,3)$ \\
+    Add  & 1e-2 & 1e5 & 1e-5 & 1e-4 & 10\,000 & 10 \\
+    Mult & 5e-3 & 1e5 & 1e-5 & 1e-7 & 10\,000 & 10 \\
+    Div  & 5e-3 & 1e5 & 1e-9 & 1e-7 & 10\,000 & 10 \\
+    Sqrt & 5e-3 & 1e5 & 1e-6 & 1e-4 & 10\,000 & 10 \\
     \bottomrule
   \end{tabular}
 \end{table}
-
 
 \end{document}
