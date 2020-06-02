@@ -27,7 +27,7 @@ julia> include("scripts/fracode/collect.jl")
 All created models are stored in a `data` directory at the root of this repo.
 Now you can create our plots by running
 ```julia
-julia> include("scripts/fracode/model-ps.jl")  # not that this does not necessarily plot the best model
+julia> include("scripts/fracode/model-ps.jl")  # note that this does not necessarily plot the best model!
 julia> include("scripts/fracode/pareto-sir.jl")
 ```
 
