@@ -8,10 +8,8 @@ using DataFrames
 using Plots
 using LaTeXStrings
 
-
-include(srcdir("turbocmap.jl"))
 include(joinpath(@__DIR__, "dataset.jl"))
-#pgfplotsx()
+
 
 nantozero(z) = isnan(z) ? 0 : z
 function inftoextreme(z)
@@ -26,6 +24,8 @@ end
 folder = datadir("simple")
 run = 19
 npu = load(joinpath(folder, "pos-gatednpux_lr=0.005_niters=20000_run=10_βl1=0.bson"))[:model]
+run = 1
+realnpu = load(joinpath(folder, "pos-realnpu_lr=0.005_niters=20000_run=$(run)_βl1=0.bson"))[:model]
 run = 8
 nalu = load(joinpath(folder, "pos-nalu_lr=0.005_niters=20000_run=$(run).bson"))[:model]
 run = 4
@@ -41,8 +41,8 @@ posnegy = Float32.(collect(-4.1:0.2:4))
 posx = Float32.(collect(0.1:0.1:5))
 posy = Float32.(collect(0.1:0.1:5))
 
-plotsize = (800,200)
-layout = grid(1,4,widths=[0.23,0.23,0.23,0.25])
+plotsize = (1000,200)
+layout = grid(1,5)
 cmap = cgrad(:inferno, rev=true)
 
 clim = (-3,2)
@@ -71,6 +71,12 @@ inalu_sqrtloss(x,y) = rminvalid(log10(sqrtloss(inalu,x,y)))
 nmu_sqrtloss(x,y)   = rminvalid(log10(sqrtloss(nmu,x,y)))
 dense_sqrtloss(x,y) = rminvalid(log10(sqrtloss(dense,x,y)))
 
+realnpu_addloss(x,y)    = rminvalid(log10(addloss(realnpu,x,y)))
+realnpu_multloss(x,y)   = rminvalid(log10(multloss(realnpu,x,y)))
+realnpu_divloss(x,y)    = rminvalid(log10(divloss(realnpu,x,y)))
+realnpu_sqrtloss(x,y)   = rminvalid(log10(sqrtloss(realnpu,x,y)))
+
+
 pyplot()
 @info "Plotting NPU..."
 npuadd = contour(posnegx, posnegy, (x,y)->npu_addloss(x,y),
@@ -83,6 +89,20 @@ npudiv = contour(posnegx, posnegy, (x,y)->npu_divloss(x,y),
              c=cmap, clim=clim,
              levels=levels, fill=true, colorbar=false, aspect_ratio=:equal)
 npusqrt = contour(posx, posy, (x,y)->npu_sqrtloss(x,y),
+             c=cmap, clim=clim,
+             levels=levels, fill=true, colorbar=false, aspect_ratio=:equal)
+
+@info "Plotting RealNPU..."
+realnpuadd = contour(posnegx, posnegy, (x,y)->realnpu_addloss(x,y),
+             c=cmap, clim=clim,
+             levels=levels, fill=true, colorbar=false, aspect_ratio=:equal)
+realnpumult = contour(posnegx, posnegy, (x,y)->realnpu_multloss(x,y),
+             c=cmap, clim=clim,
+             levels=levels, fill=true, colorbar=false, aspect_ratio=:equal)
+realnpudiv = contour(posnegx, posnegy, (x,y)->realnpu_divloss(x,y),
+             c=cmap, clim=clim,
+             levels=levels, fill=true, colorbar=false, aspect_ratio=:equal)
+realnpusqrt = contour(posx, posy, (x,y)->realnpu_sqrtloss(x,y),
              c=cmap, clim=clim,
              levels=levels, fill=true, colorbar=false, aspect_ratio=:equal)
 
@@ -144,36 +164,40 @@ densesqrt = contour(posx, posy, (x,y)->dense_sqrtloss(x,y),
              levels=levels, fill=true, colorbar=false, aspect_ratio=:equal)
 
 row1 = plot(plot!(npuadd,title="NPU", ylabel="Addition\ny", xticks=false),
+            plot!(realnpuadd,title="RealNPU", xticks=false, yticks=false),
             plot!(nmuadd,title="NMU", xticks=false, yticks=false),
             plot!(naluadd,title="NALU", xticks=false, yticks=false),
             plot!(inaluadd,title="iNALU", xticks=false, yticks=false),
             plot!(denseadd,title="Dense",colorbar=true, xticks=false, yticks=false,
                   colorbar_title=L"\log(|t_1-\hat{t}_1|)"),
-            size=plotsize,layout=grid(1,5))
+            size=plotsize,layout=grid(1,6))
 
 row2 = plot(plot!(npumult, ylabel="Multiplication\ny", xticks=false),
+            plot!(realnpumult, xticks=false, yticks=false),
             plot!(nmumult, xticks=false, yticks=false),
             plot!(nalumult, xticks=false, yticks=false),
             plot!(inalumult, xticks=false, yticks=false),
             plot!(densemult,xticks=false, yticks=false,
                   colorbar=true,colorbar_title=L"\log(|t_2-\hat{t}_2|)"),
-            size=plotsize,layout=grid(1,5))
+            size=plotsize,layout=grid(1,6))
 
 row3 = plot(plot!(npudiv, ylabel="Division\ny"),
+            plot!(realnpudiv, yticks=false),
             plot!(nmudiv, yticks=false),
             plot!(naludiv, yticks=false),
             plot!(inaludiv, yticks=false),
             plot!(densediv, yticks=false,
                   colorbar=true,colorbar_title=L"\log(|t_3-\hat{t}_3|)"),
-            size=plotsize,layout=grid(1,5))
+            size=plotsize,layout=grid(1,6))
 
 row4 = plot(plot!(npusqrt,ylabel="Square-root\ny",xlabel="x"),
+            plot!(realnpusqrt,xlabel="x", yticks=false),
             plot!(nmusqrt,xlabel="x", yticks=false),
             plot!(nalusqrt,xlabel="x", yticks=false),
             plot!(inalusqrt,xlabel="x", yticks=false),
             plot!(densesqrt, yticks=false,
                   colorbar=true,xlabel="x",colorbar_title=L"\log(|t_4-\hat{t}_4|)"),
-            size=plotsize,layout=grid(1,5))
+            size=plotsize,layout=grid(1,6))
 
 p = plot(row1,row2,row3,row4,layout=(4,1),size=(800,600))
 #savefig(p,plotsdir("simple_err.pdf"))

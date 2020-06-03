@@ -16,7 +16,6 @@ include(joinpath(@__DIR__, "dataset.jl"))
 train_range = "pos"
 nr_runs = 20
 
-
 function generate()
     if train_range == "pos-neg"
         return generate_pos_neg()
@@ -70,6 +69,19 @@ end
 function run_npu(c::Dict)
     hdim = 6
     model = Chain(GatedNPUX(2,hdim),NAU(hdim,4))
+    ps = params(model)
+    opt = ADAM(c[:lr])
+    data = (generate() for _ in 1:c[:niters])
+    loss(x,y) = Flux.mse(model(x),y) + c[:βl1]*norm(ps, 1) #+ 0.1norm(model.Im,1)
+    (x,y) = generate()
+    cb = Flux.throttle(() -> (@info loss(x,y)), 0.1)
+    Flux.train!(loss, ps, data, opt, cb=cb)
+    return result_dict(model,c)
+end
+
+function run_realnpu(c::Dict)
+    hdim = 6
+    model = Chain(GatedNPU(2,hdim),NAU(hdim,4))
     ps = params(model)
     opt = ADAM(c[:lr])
     data = (generate() for _ in 1:c[:niters])
@@ -154,6 +166,11 @@ end
                              Dict(:niters=>20000, :βl1=>0, :lr=>0.005, :run=>run),
                              run_npu,
                              prefix="$train_range-gatednpux",
+                             force=false, digits=6)
+    res, _ = produce_or_load(datadir("simple"),
+                             Dict(:niters=>20000, :βl1=>0, :lr=>0.005, :run=>run),
+                             run_realnpu,
+                             prefix="$train_range-realnpu",
                              force=false, digits=6)
     res, _ = produce_or_load(datadir("simple"),
                              Dict(:niters=>20000, :lr=>0.005, :run=>run),
