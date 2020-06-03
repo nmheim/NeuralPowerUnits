@@ -55,7 +55,7 @@ end
 config = MultL1SearchConfig()
 @progress name="All runs: " for i in 1:20
     @info config
-    for m in ["gatednpux","nalu","nmu","npux"]
+    for m in ["gatednpux","nmu","npux","gatednpu"]
         config = if m == "nmu"
             MultL1SearchConfig(run=i, model=m, βstart=1f-9, niters=20000)
         else

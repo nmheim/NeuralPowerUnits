@@ -56,7 +56,7 @@ end
 config = DivL1SearchConfig()
 @progress name="All runs: " for i in 1:10
     @info config
-    for m in ["gatednpux","nalu","nmu","npux"]
+    for m in ["gatednpux","nalu","nmu","npux","gatednpu"]
         config = DivL1SearchConfig(run=i, model=m)
         res, fname = produce_or_load(datadir(basename(splitext(@__FILE__)[1])),
                                      config, run, digits=10)
