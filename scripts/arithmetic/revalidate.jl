@@ -161,9 +161,10 @@ df = res[:df]
 
 df = combine(groupby(df, ["model","task"])) do gdf
     gdf = sort(DataFrame(gdf),"val")
-    if gdf.model[1]=="nmu" && gdf.task[1]=="mult"
-        display(gdf[!,["model","task","mse","val","βstart","run"]])
-    end
+    println( gdf[1,"path"])
+    #if gdf.model[1]=="nmu" && gdf.task[1]=="mult"
+    #     display(gdf[!,["model","task","mse","val","βstart","run"]])
+    # end
     gdf[1:min(10,size(gdf,1)),:]
 end
 
