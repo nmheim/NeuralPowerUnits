@@ -47,7 +47,8 @@ nrparams(m::GatedNPUX, thresh) = sum(map(x->nrparams(x,thresh), [m.Re,m.Im,m.g])
 nrparams(m::GatedNPU, thresh) = sum(map(x->nrparams(x,thresh), [m.W,m.g]))
 nrparams(m::NAC, thresh) = sum(map(x->nrparams(x,thresh), [m.W,m.M]))
 nrparams(m::NALU, thresh) = sum(map(x->nrparams(x,thresh), [m.nac,m.G,m.b]))
-nrparams(m::Chain, thres) = sum(map(x->nrparams(x,thres), m))
+nrparams(m::iNALU, thresh) = sum(map(x->nrparams(x,thresh), [m.m_nac,m.a_nac,m.G]))
+nrparams(m::Chain, thresh) = sum(map(x->nrparams(x,thresh), m))
 
 task(x::Array,c::SqrtL1SearchConfig) = sqrt(x,c.subset)
 task(x::Array,c::DivL1SearchConfig) = invx(x,c.subset)
@@ -66,9 +67,11 @@ function create_table(df, key)
     table = DataFrame()
     table.task = unique(df.task)
     table.gatednpux = Vector{}(undef, 4)
+    table.gatednpu = Vector{}(undef, 4)
     table.nalu = Vector{}(undef, 4)
     table.nmu = Vector{}(undef, 4)
     table.npux = Vector{}(undef, 4)
+    table.inalu = Any[missing for i=1:4]
     
     for gdf in groupby(μdf, ["model","task"])
         row = gdf[1,:]
@@ -125,15 +128,15 @@ function latex_table(results::DataFrame)
 
     latex_str = (
 raw"""
-\begin{tabular}{lcccc}
+\begin{tabular}{lccccc}
 \toprule
-Task & NPU & NALU & NMU & NaiveNPU\\
+Task & NPU & RealNPU & NALU & NMU & NaiveNPU\\
 \midrule
 """ *
-"Add  & $(r1[1,:gatednpux]) & $(r1[1,:nalu]) & $(r1[1,:nmu]) & $(r1[1,:npux]) \\\\\n" *
-"Mult & $(r2[1,:gatednpux]) & $(r2[1,:nalu]) & $(r2[1,:nmu]) & $(r2[1,:npux]) \\\\\n" *
-"Div  & $(r3[1,:gatednpux]) & $(r3[1,:nalu]) & $(r3[1,:nmu]) & $(r3[1,:npux]) \\\\\n" *
-"Sqrt & $(r4[1,:gatednpux]) & $(r4[1,:nalu]) & $(r4[1,:nmu]) & $(r4[1,:npux]) \\\\\n" *
+"Add  & $(r1[1,:gatednpux]) & $(r1[1,:gatednpu]) &$(r1[1,:nalu]) & $(r1[1,:nmu]) & $(r1[1,:npux]) \\\\\n" *
+"Mult & $(r2[1,:gatednpux]) & $(r2[1,:gatednpu]) &$(r2[1,:nalu]) & $(r2[1,:nmu]) & $(r2[1,:npux]) \\\\\n" *
+"Div  & $(r3[1,:gatednpux]) & $(r3[1,:gatednpu]) &$(r3[1,:nalu]) & $(r3[1,:nmu]) & $(r3[1,:npux]) \\\\\n" *
+"Sqrt & $(r4[1,:gatednpux]) & $(r4[1,:gatednpu]) &$(r4[1,:nalu]) & $(r4[1,:nmu]) & $(r4[1,:npux]) \\\\\n" *
 raw"""\bottomrule
 \end{tabular}
 """
@@ -176,8 +179,10 @@ end
     )
 end
 
+output_cols = ["task","gatednpux","gatednpu","nalu","nmu","npux"]
 
 table = create_table(μdf, "mse")
+table = table[:,output_cols]
 print_table(table)
 
 fname = plotsdir("arithmetic100_mse.tex")
@@ -187,6 +192,7 @@ open(fname, "w") do file
 end
 
 table = create_table(μdf, "val")
+table = table[:,output_cols]
 print_table(table)
 
 fname = plotsdir("arithmetic100_val.tex")
