@@ -24,7 +24,7 @@ end
 folder = datadir("simple")
 run = 19
 npu = load(joinpath(folder, "pos-gatednpux_lr=0.005_niters=20000_run=10_βl1=0.bson"))[:model]
-run = 11
+run = 9
 realnpu = load(joinpath(folder, "pos-realnpu_lr=0.005_niters=20000_run=$(run)_βl1=0.bson"))[:model]
 run = 8
 nalu = load(joinpath(folder, "pos-nalu_lr=0.005_niters=20000_run=$(run).bson"))[:model]
@@ -45,7 +45,7 @@ plotsize = (1000,200)
 layout = grid(1,5)
 cmap = cgrad(:inferno, rev=true)
 
-clim = (-3,2)
+clim = (-4,2)
 clip(x) = max(min(x,clim[2]),clim[1])
 levels = range(clim..., length=10)
 rminvalid = clip ∘ nantozero ∘ inftoextreme

@@ -53,6 +53,7 @@ function delete_from_savename(path,key)
 end
 
 name(m::GatedNPUX) = "NPU"
+name(m::GatedNPU) = "RealNPU"
 name(m::Dense) = "Dense"
 name(m::NALU) = "NALU"
 name(m::NMU) = "NMU"
@@ -74,9 +75,8 @@ Creates table like this:
 | task | npu | npux | ... |
 """
 function table_models_tasks(df::DataFrame)
-    result = DataFrame(Union{Measurement,Missing}, 4, length(df.model)+1)
-    rename!(result, vcat(["task"], df.model))
-    result[!,1] = ["Add", "Mult", "Div", "Sqrt"]
+    result = DataFrame()
+    result.task = ["Add", "Mult", "Div", "Sqrt"]
 
     for m in df.model
         mdf = filter(:model=>model->model==m, df)
@@ -133,15 +133,15 @@ function latex_table(results::DataFrame)
 
     latex_str = (
 raw"""
-\begin{tabular}{lccccc}
+\begin{tabular}{lcccccc}
 \toprule
-Task & NPU & NMU & NALU & iNALU & Dense\\
+Task & NPU & RealNPU & NMU & NALU & iNALU & Dense\\
 \midrule
 """ *
-"Add  & $(r1[1,:GatedNPU]) & $(r1[1,:NMU]) & $(r1[1,:NALU]) & $(r1[1,:iNALU]) & $(r1[1,:Dense]) \\\\\n" *
-"Mult & $(r2[1,:GatedNPU]) & $(r2[1,:NMU]) & $(r2[1,:NALU]) & $(r2[1,:iNALU]) & $(r2[1,:Dense]) \\\\\n" *
-"Div  & $(r3[1,:GatedNPU]) & $(r3[1,:NMU]) & $(r3[1,:NALU]) & $(r3[1,:iNALU]) & $(r3[1,:Dense]) \\\\\n" *
-"Sqrt & $(r4[1,:GatedNPU]) & $(r4[1,:NMU]) & $(r4[1,:NALU]) & $(r4[1,:iNALU]) & $(r4[1,:Dense]) \\\\\n" *
+"\$+\$  & $(r1[1,:NPU]) & $(r1[1,:RealNPU]) & $(r1[1,:NMU]) & $(r1[1,:NALU]) & $(r1[1,:iNALU]) & $(r1[1,:Dense]) \\\\\n" *
+"\$\\times\$ & $(r2[1,:NPU]) & $(r2[1,:RealNPU]) & $(r2[1,:NMU]) & $(r2[1,:NALU]) & $(r2[1,:iNALU]) & $(r2[1,:Dense]) \\\\\n" *
+"\$\\div\$  & $(r3[1,:NPU]) & $(r3[1,:RealNPU]) & $(r3[1,:NMU]) & $(r3[1,:NALU]) & $(r3[1,:iNALU]) & $(r3[1,:Dense]) \\\\\n" *
+"\$\\sqrt{\\cdot}\$ & $(r4[1,:NPU]) & $(r4[1,:RealNPU]) & $(r4[1,:NMU]) & $(r4[1,:NALU]) & $(r4[1,:iNALU]) & $(r4[1,:Dense]) \\\\\n" *
 raw"""\bottomrule
 \end{tabular}
 """
