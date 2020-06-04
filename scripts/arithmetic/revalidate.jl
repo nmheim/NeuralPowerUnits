@@ -133,10 +133,10 @@ raw"""
 Task & NPU & RealNPU & NALU & NMU & NaiveNPU\\
 \midrule
 """ *
-"Add  & $(r1[1,:gatednpux]) & $(r1[1,:gatednpu]) &$(r1[1,:nalu]) & $(r1[1,:nmu]) & $(r1[1,:npux]) \\\\\n" *
-"Mult & $(r2[1,:gatednpux]) & $(r2[1,:gatednpu]) &$(r2[1,:nalu]) & $(r2[1,:nmu]) & $(r2[1,:npux]) \\\\\n" *
-"Div  & $(r3[1,:gatednpux]) & $(r3[1,:gatednpu]) &$(r3[1,:nalu]) & $(r3[1,:nmu]) & $(r3[1,:npux]) \\\\\n" *
-"Sqrt & $(r4[1,:gatednpux]) & $(r4[1,:gatednpu]) &$(r4[1,:nalu]) & $(r4[1,:nmu]) & $(r4[1,:npux]) \\\\\n" *
+"\$+\$  & $(r1[1,:gatednpux]) & $(r1[1,:gatednpu]) &$(r1[1,:nalu]) & $(r1[1,:nmu]) & $(r1[1,:npux]) \\\\\n" *
+"\$\\times\$ & $(r2[1,:gatednpux]) & $(r2[1,:gatednpu]) &$(r2[1,:nalu]) & $(r2[1,:nmu]) & $(r2[1,:npux]) \\\\\n" *
+"\$\\div\$  & $(r3[1,:gatednpux]) & $(r3[1,:gatednpu]) &$(r3[1,:nalu]) & $(r3[1,:nmu]) & $(r3[1,:npux]) \\\\\n" *
+"\$\\sqrt{\\cdot}\$ & $(r4[1,:gatednpux]) & $(r4[1,:gatednpu]) &$(r4[1,:nalu]) & $(r4[1,:nmu]) & $(r4[1,:npux]) \\\\\n" *
 raw"""\bottomrule
 \end{tabular}
 """
