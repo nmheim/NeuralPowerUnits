@@ -56,7 +56,7 @@ end
 config = SqrtL1SearchConfig()
 @progress name="All runs: " for i in 1:10
     @info config
-    for m in ["gatednpux","nalu","nmu","npux","inalu"]
+    for m in ["gatednpux","nalu","nmu","npux","gatednpu","inalu"]
         config = SqrtL1SearchConfig(run=i, model=m)
         res, fname = produce_or_load(datadir(basename(splitext(@__FILE__)[1])),
                                      config, run, digits=10)

@@ -1,10 +1,10 @@
-\begin{tabular}{lcccc}
+\begin{tabular}{lccccc}
 \toprule
-Task & NPU & NALU & NMU & NaiveNPU\\
+Task & NPU & RealNPU & NALU & NMU & NaiveNPU\\
 \midrule
-$+$  & 0.091 $\pm$ 0.048 & 1700.0 $\pm$ 2900.0 & \textbf{0.009 $\pm$ 0.012} & 17000.0 $\pm$ 52000.0 \\
-$\times$ & \textbf{4.7 $\pm$ 1.8} & 4.0e94 $\pm$ 1.2e95 & 10000.0 $\pm$ 14000.0 & 3600.0 $\pm$ 1500.0 \\
-$\div$  & \textbf{2.0e-7 $\pm$ 2.0e-7} & 740.0 $\pm$ 620.0 & 1.69 $\pm$ 0.24 & Inf $\pm$ NaN \\
-$\sqrt{\cdot}$ & \textbf{0.09 $\pm$ 0.1} & 4.0e6 $\pm$ 1.1e7 & 10.8 $\pm$ 1.2 & Inf $\pm$ NaN \\
+Add  & 0.091 $\pm$ 0.048 & 0.065 $\pm$ 0.039 &1700.0 $\pm$ 2900.0 & \textbf{0.009 $\pm$ 0.012} & 17000.0 $\pm$ 52000.0 \\
+Mult & 4.7 $\pm$ 1.8 & \textbf{3.4 $\pm$ 1.6} &4.0e94 $\pm$ 1.2e95 & 10000.0 $\pm$ 14000.0 & 3100.0 $\pm$ 1600.0 \\
+Div  & \textbf{2.0e-7 $\pm$ 2.0e-7} & 1.7e-6 $\pm$ 1.0e-6 &740.0 $\pm$ 620.0 & 1.69 $\pm$ 0.24 & Inf $\pm$ NaN \\
+Sqrt & 0.09 $\pm$ 0.1 & \textbf{0.026 $\pm$ 0.023} &4.0e6 $\pm$ 1.1e7 & 10.8 $\pm$ 1.2 & Inf $\pm$ NaN \\
 \bottomrule
 \end{tabular}

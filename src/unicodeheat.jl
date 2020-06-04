@@ -1,6 +1,9 @@
 concat(m::Chain{<:Tuple{<:NAU,<:GatedNPUX}}) =
     cat(m[1].W, m[2].Re', m[2].Im',dims=2)
 
+concat(m::Chain{<:Tuple{<:NAU,<:GatedNPU}}) =
+    cat(m[1].W, m[2].W' ,dims=2)
+
 concat(m::Chain{<:Tuple{<:NAU,<:NPUX}}) =
     cat(m[1].W, m[2].Re', m[2].Im',dims=2)
 
