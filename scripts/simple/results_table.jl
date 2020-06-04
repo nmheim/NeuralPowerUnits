@@ -135,7 +135,7 @@ function latex_table(results::DataFrame)
 raw"""
 \begin{tabular}{lccccc}
 \toprule
-Task & GatedNPU & NMU & NALU & iNALU & Dense\\
+Task & NPU & NMU & NALU & iNALU & Dense\\
 \midrule
 """ *
 "Add  & $(r1[1,:GatedNPU]) & $(r1[1,:NMU]) & $(r1[1,:NALU]) & $(r1[1,:iNALU]) & $(r1[1,:Dense]) \\\\\n" *

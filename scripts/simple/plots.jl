@@ -24,7 +24,7 @@ end
 folder = datadir("simple")
 run = 19
 npu = load(joinpath(folder, "pos-gatednpux_lr=0.005_niters=20000_run=10_βl1=0.bson"))[:model]
-run = 1
+run = 11
 realnpu = load(joinpath(folder, "pos-realnpu_lr=0.005_niters=20000_run=$(run)_βl1=0.bson"))[:model]
 run = 8
 nalu = load(joinpath(folder, "pos-nalu_lr=0.005_niters=20000_run=$(run).bson"))[:model]

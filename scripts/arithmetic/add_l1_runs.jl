@@ -55,7 +55,7 @@ end
 config = AddL1SearchConfig()
 @progress name="All runs: " for i in 1:10
     @info config
-    for m in ["gatednpux","nalu","nmu","npux"]
+    for m in ["gatednpux","nalu","nmu","npux","inalu"]
         config = if m == "nmu"
             AddL1SearchConfig(run=i, model=m, βstart=1f-7, niters=10000)
         else
