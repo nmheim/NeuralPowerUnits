@@ -144,6 +144,7 @@ raw"""\bottomrule
    
 end
 
+mad(x) = median(abs.(x .- median(x)))
 
 
 (res,fname) = produce_or_load(datadir("pareto"),
@@ -168,14 +169,14 @@ end
 
 # average runs
 μdf = combine(groupby(df,["model","task"])) do gdf
-    σmse = std(gdf.mse)
-    σval = std(gdf.val)
+    σmse = mad(gdf.mse)
+    σval = mad(gdf.val)
     σmse = isinf(σmse) ? 1e20 : σmse
     σval = isinf(σval) ? 1e20 : σval
     (task = gdf.task[1],
      model = gdf.model[1],
-     mse = measurement(mean(gdf.mse), σmse),
-     val = measurement(mean(gdf.val), σval),
+     mse = measurement(median(gdf.mse), σmse),
+     val = measurement(median(gdf.val), σval),
     )
 end
 
