@@ -22,6 +22,7 @@ function delete_from_savename(path,key)
     joinpath(dir, savename(dict,digits=20))
 end
 
+#@unpack df = load("/home/niklas/repos/npu/data/results_fracsir.bson")
 @unpack df = load(datadir("results_fracsir.bson"))
 df.hash = delete_from_savename.(df.path, "run")
 
@@ -92,7 +93,7 @@ plot!(p1, dense_nrps[dense_idx], dense_mse[dense_idx],
 plot!(p1, npux_nrps[npux_idx], npux_mse[npux_idx],
       c=cmap[3], label="NPU", lw=2)
 plot!(p1, npu_nrps[npu_idx], npu_mse[npu_idx],
-      c=cmap[2], label="NPU (real)", lw=2, ls=:dashdot)
+      c=cmap[2], label="RealNPU", lw=2, ls=:dashdot)
 
 plot!(p1, yscale=:log10, xscale=:log10, xlabel="Nr. Paramters", ylabel="MSE",
       ylim=(5e-3,1e4))
@@ -106,6 +107,7 @@ plot!(p2, t, x[3,:], lw=4, c=:gray, alpha=0.8, label=false)
 
 sort!(df,"mse")
 x̂ = load(datadir("fracsir", basename(df[1,"path"])))[:pred]
+#x̂ = load(joinpath("/home/niklas/repos/npu/data","fracsir", basename(df[1,"path"])))[:pred]
 scatter!(p2, t, x̂[1,:], label=L"$\hat S$", lw=2, c=cmap[1])
 scatter!(p2, t, x̂[2,:], label=L"$\hat I$", lw=2, c=cmap[2])
 scatter!(p2, t, x̂[3,:], label=L"$\hat R$", lw=2, c=cmap[3])

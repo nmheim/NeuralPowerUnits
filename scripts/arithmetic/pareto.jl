@@ -38,8 +38,8 @@ ms     = 4
 alpha  = 0.7
 xscale = :log10
 yscale = :log10
-plotmodels = [(:circle,"gatednpux"),(:pentagon,"nalu"),(:diamond,"nmu"),
-              (:utriangle,"npux"),(:rect,"gatednpu")]
+plotmodels = [(:circle,"gatednpux"),(:rect,"gatednpu"),(:pentagon,"nalu"),(:diamond,"nmu"),
+              (:utriangle,"npux")]
 #plotmodels = ["gatednpux","nalu","nmu"]
 
 s1 = plot(title="Addition +")
