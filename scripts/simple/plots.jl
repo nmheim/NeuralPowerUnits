@@ -81,88 +81,90 @@ pyplot()
 @info "Plotting NPU..."
 npuadd = contour(posnegx, posnegy, (x,y)->npu_addloss(x,y),
              c=cmap, clim=clim,
-             levels=levels, fill=true, colorbar=false, aspect_ratio=:equal)
+             levels=levels, fill=true, colorbar=false)
 npumult = contour(posnegx, posnegy, (x,y)->npu_multloss(x,y),
              c=cmap, clim=clim,
-             levels=levels, fill=true, colorbar=false, aspect_ratio=:equal)
+             levels=levels, fill=true, colorbar=false)
 npudiv = contour(posnegx, posnegy, (x,y)->npu_divloss(x,y),
              c=cmap, clim=clim,
-             levels=levels, fill=true, colorbar=false, aspect_ratio=:equal)
+             levels=levels, fill=true, colorbar=false)
 npusqrt = contour(posx, posy, (x,y)->npu_sqrtloss(x,y),
              c=cmap, clim=clim,
-             levels=levels, fill=true, colorbar=false, aspect_ratio=:equal)
+             levels=levels, fill=true, colorbar=false)
 
 @info "Plotting RealNPU..."
 realnpuadd = contour(posnegx, posnegy, (x,y)->realnpu_addloss(x,y),
              c=cmap, clim=clim,
-             levels=levels, fill=true, colorbar=false, aspect_ratio=:equal)
+             levels=levels, fill=true, colorbar=false)
 realnpumult = contour(posnegx, posnegy, (x,y)->realnpu_multloss(x,y),
              c=cmap, clim=clim,
-             levels=levels, fill=true, colorbar=false, aspect_ratio=:equal)
+             levels=levels, fill=true, colorbar=false)
 realnpudiv = contour(posnegx, posnegy, (x,y)->realnpu_divloss(x,y),
              c=cmap, clim=clim,
-             levels=levels, fill=true, colorbar=false, aspect_ratio=:equal)
+             levels=levels, fill=true, colorbar=false)
 realnpusqrt = contour(posx, posy, (x,y)->realnpu_sqrtloss(x,y),
              c=cmap, clim=clim,
-             levels=levels, fill=true, colorbar=false, aspect_ratio=:equal)
+             levels=levels, fill=true, colorbar=false)
 
 @info "Plotting NALU..."
 naluadd = contour(posnegx, posnegy, (x,y)->nalu_addloss(x,y),
              c=cmap, clim=clim,
-             levels=levels, fill=true, colorbar=false, aspect_ratio=:equal)
+             levels=levels, fill=true, colorbar=false)
 nalumult = contour(posnegx, posnegy, (x,y)->nalu_multloss(x,y),
              c=cmap, clim=clim,
-             levels=levels, fill=true, colorbar=false, aspect_ratio=:equal)
+             levels=levels, fill=true, colorbar=false)
 naludiv = contour(posnegx, posnegy, (x,y)->nalu_divloss(x,y),
              c=cmap, clim=clim,
-             levels=levels, fill=true, colorbar=false, aspect_ratio=:equal)
+             levels=levels, fill=true, colorbar=false)
 nalusqrt = contour(posx, posy, (x,y)->nalu_sqrtloss(x,y),
              c=cmap, clim=clim,
-             levels=levels, fill=true, colorbar=false, aspect_ratio=:equal)
+             levels=levels, fill=true, colorbar=false)
 
 @info "Plotting iNALU..."
 inaluadd = contour(posnegx, posnegy, (x,y)->inalu_addloss(x,y),
              c=cmap, clim=clim,
-             levels=levels, fill=true, colorbar=false, aspect_ratio=:equal)
+             levels=levels, fill=true, colorbar=false)
 inalumult = contour(posnegx, posnegy, (x,y)->inalu_multloss(x,y),
              c=cmap, clim=clim,
-             levels=levels, fill=true, colorbar=false, aspect_ratio=:equal)
+             levels=levels, fill=true, colorbar=false)
 inaludiv = contour(posnegx, posnegy, (x,y)->inalu_divloss(x,y),
              c=cmap, clim=clim,
-             levels=levels, fill=true, colorbar=false, aspect_ratio=:equal)
+             levels=levels, fill=true, colorbar=false)
 inalusqrt = contour(posx, posy, (x,y)->inalu_sqrtloss(x,y),
              c=cmap, clim=clim,
-             levels=levels, fill=true, colorbar=false, aspect_ratio=:equal)
+             levels=levels, fill=true, colorbar=false)
 
 
 @info "Plotting NMU..."
 nmuadd = contour(posnegx, posnegy, (x,y)->nmu_addloss(x,y),
              c=cmap, clim=clim,
-             levels=levels, fill=true, colorbar=false, aspect_ratio=:equal)
+             levels=levels, fill=true, colorbar=false)
 nmumult = contour(posnegx, posnegy, (x,y)->nmu_multloss(x,y),
              c=cmap, clim=clim,
-             levels=levels, fill=true, colorbar=false, aspect_ratio=:equal)
+             levels=levels, fill=true, colorbar=false)
 nmudiv = contour(posnegx, posnegy, (x,y)->nmu_divloss(x,y),
              c=cmap, clim=clim,
-             levels=levels, fill=true, colorbar=false, aspect_ratio=:equal)
+             levels=levels, fill=true, colorbar=false)
 nmusqrt = contour(posx, posy, (x,y)->nmu_sqrtloss(x,y),
              c=cmap, clim=clim,
-             levels=levels, fill=true, colorbar=false, aspect_ratio=:equal)
+             levels=levels, fill=true, colorbar=false)
 
 @info "Plotting Dense..."
 denseadd = contour(posnegx, posnegy, (x,y)->dense_addloss(x,y),
              c=cmap, clim=clim,
-             levels=levels, fill=true, colorbar=false, aspect_ratio=:equal)
+             levels=levels, fill=true, colorbar=false)
 densemult = contour(posnegx, posnegy, (x,y)->dense_multloss(x,y),
              c=cmap, clim=clim,
-             levels=levels, fill=true, colorbar=false, aspect_ratio=:equal)
+             levels=levels, fill=true, colorbar=false)
 densediv = contour(posnegx, posnegy, (x,y)->dense_divloss(x,y),
              c=cmap, clim=clim,
-             levels=levels, fill=true, colorbar=false, aspect_ratio=:equal)
+             levels=levels, fill=true, colorbar=false)
 densesqrt = contour(posx, posy, (x,y)->dense_sqrtloss(x,y),
              c=cmap, clim=clim,
-             levels=levels, fill=true, colorbar=false, aspect_ratio=:equal)
+             levels=levels, fill=true, colorbar=false)
 
+widths = ones(6) .* 0.166
+widths[end] = 1 - sum(widths[1:end-1])
 row1 = plot(plot!(npuadd,title="NPU", ylabel="Addition\ny", xticks=false),
             plot!(realnpuadd,title="RealNPU", xticks=false, yticks=false),
             plot!(nmuadd,title="NMU", xticks=false, yticks=false),
@@ -170,7 +172,7 @@ row1 = plot(plot!(npuadd,title="NPU", ylabel="Addition\ny", xticks=false),
             plot!(inaluadd,title="iNALU", xticks=false, yticks=false),
             plot!(denseadd,title="Dense",colorbar=true, xticks=false, yticks=false,
                   colorbar_title=L"\log(|t_1-\hat{t}_1|)"),
-            size=plotsize,layout=grid(1,6))
+            size=plotsize,layout=grid(1,6,widths=widths))
 
 row2 = plot(plot!(npumult, ylabel="Multiplication\ny", xticks=false),
             plot!(realnpumult, xticks=false, yticks=false),
@@ -179,7 +181,7 @@ row2 = plot(plot!(npumult, ylabel="Multiplication\ny", xticks=false),
             plot!(inalumult, xticks=false, yticks=false),
             plot!(densemult,xticks=false, yticks=false,
                   colorbar=true,colorbar_title=L"\log(|t_2-\hat{t}_2|)"),
-            size=plotsize,layout=grid(1,6))
+            size=plotsize,layout=grid(1,6,widths=widths))
 
 row3 = plot(plot!(npudiv, ylabel="Division\ny"),
             plot!(realnpudiv, yticks=false),
@@ -188,7 +190,7 @@ row3 = plot(plot!(npudiv, ylabel="Division\ny"),
             plot!(inaludiv, yticks=false),
             plot!(densediv, yticks=false,
                   colorbar=true,colorbar_title=L"\log(|t_3-\hat{t}_3|)"),
-            size=plotsize,layout=grid(1,6))
+            size=plotsize,layout=grid(1,6,widths=widths))
 
 row4 = plot(plot!(npusqrt,ylabel="Square-root\ny",xlabel="x"),
             plot!(realnpusqrt,xlabel="x", yticks=false),
@@ -197,8 +199,8 @@ row4 = plot(plot!(npusqrt,ylabel="Square-root\ny",xlabel="x"),
             plot!(inalusqrt,xlabel="x", yticks=false),
             plot!(densesqrt, yticks=false,
                   colorbar=true,xlabel="x",colorbar_title=L"\log(|t_4-\hat{t}_4|)"),
-            size=plotsize,layout=grid(1,6))
+            size=plotsize,layout=grid(1,6,widths=widths))
 
-p = plot(row1,row2,row3,row4,layout=(4,1),size=(800,600))
-#savefig(p,plotsdir("simple_err.pdf"))
+p = plot(row1,row2,row3,row4,layout=(4,1),size=(1000,640))
+savefig(p,plotsdir("simple_err.pdf"))
 display(p)
