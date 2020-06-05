@@ -87,15 +87,7 @@
 \renewcommand{\arraystretch}{1.2}
 
 \title{Neural Power Units}
-\author{
-  Niklas Heim,
-  Tom\'a\v s Pevn\'y,
-  V\'aclav \v Sm\'idl\\
-  Artificial Intelligence Center\\
-  Czech Technical University\\
-  Prague, CZ 120 00\\
-  \texttt{\{niklas.heim, vasek.smidl, tomas.pevny\}@aic.fel.cvut.cz}\\
-}
+\author{Anonymous Authors}
 
 \begin{document}
 
@@ -139,14 +131,14 @@ tasks.
 
 Including Neural Arithmetic Units in standard neural networks, promises to
 significantly increase their extrapolation capabilities due to their inductive
-bias towards numerical computation. This is especially true for tasks in which
-the data generating process contains mathematical relationships.  Additionally,
-they promise to reduce the number of parameters that are needed for a given
-task, and can therefore drastically improve the explainability of the model.
-We demonstrate how a \emph{Neural Ordinary Differential Equation} (NODE,
-\cite{chen_neural_2019}) composed of small neural arithmetic units can
-outperform a much larger NODE built from dense layers (Sec.~\ref{sub:fractional_sir_model}).
-In fact, our new unit can be used to directly read out the correct generating ODE
+bias towards numerical computation. This is especially important for tasks in which
+the data generating process contains mathematical relationships.  They also
+promise to reduce the number of parameters needed for a given
+task, which can improve the explainability of the model.
+We demonstrate this in a \emph{Neural Ordinary Differential Equation} (NODE,
+\cite{chen_neural_2019}), where a handful of neural arithmetic units can
+outperform a much bigger network built from dense layers (Sec.~\ref{sub:fractional_sir_model}).
+Moreover, our new unit can be used to directly read out the correct generating ODE
 from the fitted model.  This is in line with recent efforts to build
 \emph{interpretable} models instead of \emph{explaining} black-box models
 \citep{rudin_stop_2019}, like conventional neural networks.
@@ -160,7 +152,7 @@ addition ($+$, including subtraction), multiplication ($\times$), and division
 NALU is quite fragile due to an internal gating mechanism between addition and
 multiplication paths as well as the use of a logarithm which is problematic for
 small inputs.  Recently, \cite{schlor_inalu_2020} introduced the \emph{improved NALU} (iNALU,
-to fix the NALU's shortcomings. However, it significantly increases its complexity, and we
+to fix the NALU's shortcomings. It significantly increases its complexity, and we
 observe only a slight improvement in performance.
 \cite{madsen_neural_2020} solve ($+,\times$) with two new units: the
 \emph{Neural Addition Unit} (NAU), and the \emph{Neural Multiplication Unit}
@@ -376,8 +368,7 @@ A diagram of the NaiveNPU is shown in Fig.~\ref{fig:npu_diagram}.
 
 The NaiveNPU has difficulties to converge on large scale tasks, and to reach
 sparse results in cases where the input to a given row is small. We
-demonstrate this on a toy example of learning the identity on one of two inputs
-(neglecting the second one):
+demonstrate this on a toy example of learning the identity on one of two inputs and neglecting the second one, $f(x_1,x_2) = x_1$:
 \begin{align}
   \nonumber
   \mathcal{L} &= |\text{m}(x_1,x_2) - x_1|, \quad \text{where}
@@ -482,7 +473,7 @@ problematic and has to be performed retrospectively. The class of models based o
 SINDy is interpretable by design, however it can only provide explanation
 within a linear combination of predefined set of basis functions. Thus, it
 cannot learn models with unknown fractional powers. We will demonstrate that the NPU
-is capable to do so.
+is capable of doing so.
 An example of an ODE that contains powers is a modification of the classical
 epidemiological SIR model \citep{kermack1927contribution} to fractional powers
 (fSIR, \cite{taghvaei_fractional_2020}), which was shown to be a beneficial
@@ -527,8 +518,8 @@ with $h\in \{6,9,12,15,20\}$ and $\beta\in\{0,0.01,0.1,1\}$, where each
 hyper-parameter pair is run five times. The resulting Pareto front is shown on
 the left of Fig.~\ref{fig:pareto_sir}. The NPU reaches much sparser and
 better solutions than the dense network.
-The RealNPU has problems to converge in the majority of cases.
-However, there are a few models in the bottom left that
+The RealNPU has problems to converge in the majority of cases, however, 
+there are a few models in the bottom left that
 reach a very low MSE and have very few parameters. The best of these models is
 shown in Fig.~\ref{fig:sir_gatednpu_modelps}.  It looks strikingly similar to
 the fSIR model in matrix form:
