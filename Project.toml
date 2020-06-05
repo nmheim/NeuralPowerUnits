@@ -1,4 +1,4 @@
-name = "NIPS_2020_NMUX"
+name = "NIPS_2020_NPU"
 
 [deps]
 BSON = "fbb218c0-5317-5bc6-957e-2ee96dd4b1f0"
