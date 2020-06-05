@@ -159,7 +159,7 @@ print_table(best[!,["model",key,"add_val","mult_val","div_val","sqrt_val","path"
 r = table_models_tasks(adf)
 print_table(r, :row)
 
-fname = plotsdir("simple_err.tex")
+fname = plotsdir("simple_err_table.tex")
 open(fname, "w") do file
     @info "Writing dataframe to $fname"
     write(file, latex_table(r))
