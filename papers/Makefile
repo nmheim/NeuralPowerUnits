@@ -19,6 +19,7 @@ open:
 	evince $(TARGETS) &
 
 zip:
+	cp main.tex main.tex.backup
 	sed -i 's/\.\.\///g' main.tex
 	cp -r ../plots .
 	cp -r ../tikz .
@@ -30,6 +31,7 @@ zip:
 			tikz \
 			plots
 	rm -r plots tikz
+	mv main.tex.backup main.tex
 	echo "Attention!"
 	echo "To revert sed changes: git checkout main.tex"
 
