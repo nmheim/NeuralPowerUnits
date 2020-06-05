@@ -1,9 +1,17 @@
 # Neural Arithmetic Units
 
-This repository contains all the code to reproduce our NIPS submission. It is
-written in Julia and all necessary dependencies can be installed from the Julia
-REPL.  To start Julia with this project environment run `julia --project` from
-this directory.
+This repository contains all appendices and the code to reproduce our NIPS submission.
+
+## Appendix
+
+The appendix can be found [here](appendix.pdf)
+
+
+## Code
+
+The code to reproduce our results is written in Julia and all necessary
+dependencies can be installed from the Julia REPL.  To start Julia with this
+project environment run `julia --project` from this directory.
 And then, to install all necessary dependencies, run `]instantiate` from the REPL.
 ```
 $ julia --project
