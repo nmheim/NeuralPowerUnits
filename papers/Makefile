@@ -17,3 +17,19 @@ clean:
 
 open:
 	evince $(TARGETS) &
+
+zip:
+	sed -i 's/\.\.\///g' main.tex
+	cp -r ../plots .
+	cp -r ../tikz .
+	zip -r latexsource.zip \
+			main.tex \
+			refs.bib \
+			main.bbl \
+			neurips_2020.sty \
+			tikz \
+			plots
+	rm -r plots tikz
+	echo "Attention!"
+	echo "To revert sed changes: git checkout main.tex"
+

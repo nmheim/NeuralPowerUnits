@@ -9,7 +9,7 @@
 
 % to compile a preprint version, e.g., for submission to arXiv, add add the
 % [preprint] option:
-\usepackage{neurips_2020}
+\usepackage[preprint]{neurips_2020}
 
 % to compile a camera-ready version, add the [final] option, e.g.:
 %     \usepackage[final]{neurips_2020}
@@ -107,7 +107,7 @@
   training.  \emph{Neural Arithmetic Units} aim to overcome this difficulty,
   but current arithmetic units are either limited to operate on positive
   numbers or can only represent a subset of arithmetic operations. We introduce
-  the \emph{Neural Power Unit} (NPU) that operates on the \emph{full domain of
+  the \emph{Neural Power Unit} (NPU\footnote{Implementation of all used neural arithmetic units: \url{https://github.com/nmheim/NeuralArithmetic.jl} }) that operates on the \emph{full domain of
   real numbers} and is capable of \emph{learning arbitrary power functions} in
   a single layer.  The NPU thus fixes the shortcomings of existing arithmetic
   units and extends their expressivity. We achieve this by using
