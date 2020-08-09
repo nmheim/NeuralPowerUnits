@@ -14,7 +14,7 @@ using NeuralArithmetic
 include(joinpath(@__DIR__, "dataset.jl"))
 
 train_range = "pos"
-nr_runs = 20
+nr_runs = 100
 
 function generate()
     if train_range == "pos-neg"
@@ -68,7 +68,7 @@ end
 
 function run_npu(c::Dict)
     hdim = 6
-    model = Chain(GatedNPUX(2,hdim),NAU(hdim,4))
+    model = Chain(NPU(2,hdim),NAU(hdim,4))
     ps = params(model)
     opt = ADAM(c[:lr])
     data = (generate() for _ in 1:c[:niters])
@@ -81,7 +81,7 @@ end
 
 function run_realnpu(c::Dict)
     hdim = 6
-    model = Chain(GatedNPU(2,hdim),NAU(hdim,4))
+    model = Chain(RealNPU(2,hdim),NAU(hdim,4))
     ps = params(model)
     opt = ADAM(c[:lr])
     data = (generate() for _ in 1:c[:niters])
@@ -165,7 +165,7 @@ end
     res, _ = produce_or_load(datadir("simple"),
                              Dict(:niters=>20000, :βl1=>0, :lr=>0.005, :run=>run),
                              run_npu,
-                             prefix="$train_range-gatednpux",
+                             prefix="$train_range-npu",
                              force=false, digits=6)
     res, _ = produce_or_load(datadir("simple"),
                              Dict(:niters=>20000, :βl1=>0, :lr=>0.005, :run=>run),
@@ -185,7 +185,7 @@ end
                              run_dense,
                              prefix="$train_range-dense", force=false, digits=6)
     res, _ = produce_or_load(datadir("simple"),
-                             Dict(:niters=>20000, :lr=>0.001, :run=>run),
+                             Dict(:niters=>20000, :lr=>0.001, :run=>run, :t=>20),
                              run_inalu,
                              prefix="$train_range-inalu", force=false, digits=6)
 end

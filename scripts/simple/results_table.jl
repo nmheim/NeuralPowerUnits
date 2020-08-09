@@ -52,8 +52,8 @@ function delete_from_savename(path,key)
     joinpath(dir, savename(dict,digits=20))
 end
 
-name(m::GatedNPUX) = "NPU"
-name(m::GatedNPU) = "RealNPU"
+name(m::NPU) = "NPU"
+name(m::RealNPU) = "RealNPU"
 name(m::Dense) = "Dense"
 name(m::NALU) = "NALU"
 name(m::NMU) = "NMU"
@@ -65,7 +65,8 @@ function collect_folder!(folder::String)
                          data[:div_val], data[:sqrt_val]])
     _df = collect_results!(datadir(folder), black_list=[:model,:val],
                            special_list=[:model=>data->name(data[:model]),
-                                         :val  =>data->sum_val(data)])
+                                         :val  =>data->sum_val(data)],
+                           rpath=projectdir())
     _df.hash = delete_from_savename.(_df.path, "run")
     return _df
 end
