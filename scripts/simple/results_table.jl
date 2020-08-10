@@ -9,32 +9,23 @@ using PrettyTables
 using Measurements
 include(joinpath(@__DIR__, "dataset.jl"))
 
-train_range = "pos"
-function generate()
-    if train_range == "pos-neg"
-        return generate_pos_neg()
-    elseif train_range == "pos"
-        return generate_pos()
-    else
-        error("Unknown train range: $train_range")
-    end
-end
+mad(x) = median(abs.(x .- median(x)))
 
 function aggregateruns(dataframe::DataFrame)
     gdf = groupby(dataframe, :hash)
     combine(gdf) do df
-        (μmse  = mean(df.mse),
-         μval  = mean(df.val),
-         μadd  = mean(df.add_val),
-         μmult = mean(df.mult_val),
-         μdiv  = mean(df.div_val),
-         μsqrt = mean(df.sqrt_val),
-         σmse  = std(df.mse),
-         σval  = std(df.val),
-         σadd  = std(df.add_val),
-         σmult = std(df.mult_val),
-         σdiv  = std(df.div_val),
-         σsqrt = std(df.sqrt_val),
+        (μmse  = median(df.mse),
+         μval  = median(df.val),
+         μadd  = median(df.add_val),
+         μmult = median(df.mult_val),
+         μdiv  = median(df.div_val),
+         μsqrt = median(df.sqrt_val),
+         σmse  = mad(df.mse),
+         σval  = mad(df.val),
+         σadd  = mad(df.add_val),
+         σmult = mad(df.mult_val),
+         σdiv  = mad(df.div_val),
+         σsqrt = mad(df.sqrt_val),
          nr    = length(df.model),
          model = first(df.model))
     end
@@ -150,7 +141,10 @@ raw"""\bottomrule
    
 end
 
-df = collect_folder!(datadir("simple"))
+umin = 0.01
+umax = 1
+data_directory = datadir("simple_umin=$(umin)_umax=$(umax)")
+df = collect_folder!(data_directory)
 sort!(df,"model")
 adf = aggregateruns(df)
 key = "val"

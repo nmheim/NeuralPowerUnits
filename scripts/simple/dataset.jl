@@ -4,16 +4,12 @@ f3(x::Array) = reshape(x[1,:] ./ x[2,:], 1, :)
 f4(x::Array) = reshape(sqrt.(x[1,:]), 1, :)
 f(x::Array) = cat(f1(x),f2(x),f3(x),f4(x),dims=1)
 
-function generate_pos_neg()
-    x = rand(Float32, 2, 100) .* 4 .- 2
-    y = f(x)
-    (x,y)
-end
+generate_pos_neg() = generate_range(umin=-2, umax=2)
+generate_pos() = generate_range(umin=0.1f0, umax=2)
 
-function generate_pos()
-    #x = rand(Float32, 2, 100) .* 2 .+ 0.01f0
-    x = rand(Float32, 2, 100) .* 2 .+ 0.1f0
-    #x = rand(Float32, 2, 100) .+ 1
+function generate_range(;umin=-2, umax=2)
+    a = umax - umin
+    x = rand(Float32, 2, 100) .* a .+ umin
     y = f(x)
     (x,y)
 end
