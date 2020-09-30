@@ -9,7 +9,7 @@
 
 % to compile a preprint version, e.g., for submission to arXiv, add add the
 % [preprint] option:
-\usepackage{neurips_2020}
+\usepackage[final]{neurips_2020}
 
 % to compile a camera-ready version, add the [final] option, e.g.:
 %     \usepackage[final]{neurips_2020}
@@ -24,6 +24,7 @@
 \usepackage{booktabs}       % professional-quality tables
 \usepackage{amsfonts}       % blackboard math symbols
 \usepackage{amsthm}         % definitions
+\usepackage{amssymb}
 \usepackage{nicefrac}       % compact symbols for 1/2, etc.
 \usepackage{microtype}      % microtypography
 \usepackage{caption}
@@ -87,7 +88,13 @@
 \renewcommand{\arraystretch}{1.2}
 
 \title{Neural Power Units}
-\author{Anonymous Authors}
+\author{
+    Niklas Heim, Tom\'a\v s Pevn\'y, V\'aclav \v Sm\'idl \\
+    Artificial Intelligence Center\\
+    Czech Technical University\\
+    Prague, Czechia\\
+    \texttt{heimnikl@fel.cvut.cz}
+}
 
 \begin{document}
 
@@ -221,17 +228,18 @@ Logic Unit} (NALU), which is capable of learning ($+,\times,\div$).  However,
 the NALU cannot handle negative inputs correctly due to the logarithm in
 Eq.~\ref{eq:nalu_mult}:
 \begin{definition}[{\bf NALU}]
-  The NALU consits of a ($+$) and a ($\times$) path that share their weights $\bm{\hat{W}}$ and $\bm{\hat{M}}$.
+  The NALU consists of a ($+$) and a ($\times$) path that share their weights $\bm{\hat{W}}$ and $\bm{\hat{M}}$.
 \begin{align}
   \label{eq:nalu_add}
-  \text{Addition: }       & \bm a = \bm W \bm x
-                          & \bm{\hat W}& = \tanh(\bm{W}) \odot \sigma(\bm{M}) \\
+  \text{Addition: }       & \bm a = \bm W \bm x,
+                          & \bm{\hat W}& = \tanh(\bm{W}) \odot \sigma(\bm{M}), \\
   \label{eq:nalu_mult}
-  \text{Multiplication: } & \bm m = \exp \bm{\hat W}(\log(|\bm x|+\epsilon)) & &\\
-  \text{Output: }         & \bm y = \bm a \odot \bm g + \bm m \odot (1-\bm g) 
-                          & \bm g& = \sigma(\bm G\bm x)
+  \text{Multiplication: } & \bm m = \exp \bm{\hat W}(\log(|\bm x|+\epsilon)), & &\\
+  \text{Output: }         & \bm y = \bm a \odot \bm g + \bm m \odot (1-\bm g),
+                          & \bm g& = \sigma(\bm G\bm x),
 \end{align}
 \end{definition}
+with inputs $\bm x$ and learnt parameters $\bm W$, $\bm M$, and $\bm G$.
 Additionally, the logarithm destabilizes training to the extent that the chance of success
 can drop below 20\% for ($+,\times$), it becomes practically impossible to
 learn ($\div$) and difficult to learn from small inputs in general
@@ -263,11 +271,12 @@ so-called \emph{Neural Addition Unit} (NAU) in Eq.~\ref{eq:nau}.
   NMU and NAU are two units that can be stacked to model ($+,\times$).
 \begin{align}
   \label{eq:nmu}
-  \text{NMU: } &y_j = \prod_i \hat M_{ij} z_{i} + 1 - \hat M_{ij}  & \hat M_{ij}=\min(\max(M_{ij}, 0), 1)\\
+  \text{NMU: } &y_j = \prod_i \hat M_{ij} x_{i} + 1 - \hat M_{ij}, & \hat M_{ij}=\min(\max(M_{ij}, 0), 1),\\
   \label{eq:nau}
-  \text{NAU: } &\bm y = \bm{\hat{A}} \bm x & \hat A_{ij}=\min(\max(A_{ij}, -1), 1)
+  \text{NAU: } &\bm y = \bm{\hat{A}} \bm x, & \hat A_{ij}=\min(\max(A_{ij}, -1), 1),
 \end{align}
 \end{definition}
+with inputs $\bm x$, and learnt parameters $\bm M$, and $\bm A$.
 Both NMU and NAU are regularized with $\mathcal{R} = \sum_{ij} \min(|W_{ij}|,
 |1-W_{ij}|)$, and their weights are clipped, which biases them towards learning
 an operation or pruning it completely.  The combination of NAU and NMU can thus
@@ -322,16 +331,16 @@ of the output $\bm z$:
     &= \exp(\Wre\log\bm r - \pi\Wim\bm k) \odot \cos(\Wim\log\bm r + \pi\Wre\bm k).
 \end{align}
 Above we have used Euler's formula\footnote{Euler's formula states that for any
-real number $x$: $e^{ix} = \cos x + i\sin x$} and the fact that the complex
-logarithm for real valued inputs is
+real number $x$: $e^{ix} = \cos x + i\sin x$} and that the complex
+logarithm for real valued inputs $x$ is
 \begin{align}
   \log x = \log r + i\theta = \log r + ik\pi,
 \end{align}
-where $k=0$ if $r\geq0$ and $k=1$ if $r<0$.
+where $k=0$ if $x\geq0$ and $k=1$ if $x<0$.
 A diagram of the NaiveNPU is shown in Fig.~\ref{fig:npu_diagram}.
 \begin{definition}[{\bf NaiveNPU}]
   The Naive Neural Power Unit with matrices $\Wre$ and
-  $\Wim$ representing real and imaginary part of the complex numbers defined as
+  $\Wim$ representing real and imaginary part of the complex numbers is defined as
   \begin{gather}
     \label{eq:naivenpu_def}
     \bm z = \exp(\Wre \log\bm r - \pi\Wim\bm k) \odot \cos(\Wim\log \bm r + \pi\Wre\bm k), \text{ where }\\
@@ -339,11 +348,12 @@ A diagram of the NaiveNPU is shown in Fig.~\ref{fig:npu_diagram}.
     \bm r = |\bm x|,
     \quad
     k_i = \begin{cases}
-       0 & x_i \leq 0 \\
-       1 & x_i > 0
-    \end{cases}
+       0 & x_i \geq 0 \\
+       1 & x_i < 0
+    \end{cases},
   \end{gather}
 \end{definition}
+with inputs $\bm x$, and learnt parameters $\Wre$, and $\Wim$.
 
 \begin{figure}
   \begin{minipage}{.45\textwidth}
@@ -392,16 +402,19 @@ A diagram of the NPU is shown in Fig.~\ref{fig:gatednpu_diagram}.
     \label{eq:gatednpu_def}
     \bm z = \exp(\Wre \log\bm r - \pi\Wim\bm k) 
           \odot \cos(\Wim\log \bm r + \pi\Wre\bm k), \text{ where } \\
+    \nonumber
     \bm r = \bm{\hat g} \odot |\bm x| + (1-\bm{\hat g}),
     \quad
     k_i = \begin{cases}
-       0  & x_i \leq 0 \\
-      \hat g_i & x_i > 0
+       0  & x_i \geq 0 \\
+      \hat g_i & x_i < 0
     \end{cases},
     \quad
     \hat g_i = \min(\max(g_i,0),1)
   \end{gather}
 \end{definition}
+with inputs $\bm x$, and learnt parameters $\Wre$, $\Wim$, $\bm g$.
+
 \begin{figure}
   \centering
   \begin{minipage}{0.55\textwidth}
@@ -475,7 +488,7 @@ within a linear combination of predefined set of basis functions. Thus, it
 cannot learn models with unknown fractional powers. We will demonstrate that the NPU
 is capable of doing so.
 An example of an ODE that contains powers is a modification of the classical
-epidemiological SIR model \citep{kermack1927contribution} to fractional powers
+epidemiological SIR model \citep{kermack_contribution_1927} to fractional powers
 (fSIR, \cite{taghvaei_fractional_2020}), which was shown to be a beneficial
 modification for modelling the COVID-19 outbreak.  The classical SIR model is
 built from three variables: $S$ (susceptible), $I$ (infectious), and $R$
