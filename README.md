@@ -1,6 +1,8 @@
-# Neural Arithmetic Units
+# Neural Power Units
 
-This repository contains all appendices and the code to reproduce our NIPS submission.
+This repository contains all appendices and the code to reproduce our paper at NeurIPS 2020.
+The latest implementation of the Neural Arithmetic Units that were used in this paper are
+available in [NeuralArithmetic.jl](https://github.com/nmheim/NeuralArithmetic.jl).
 
 ## Appendix
 
