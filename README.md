@@ -4,10 +4,6 @@ This repository contains all appendices and the code to reproduce our paper at N
 The latest implementation of the Neural Arithmetic Units that were used in this paper are
 available in [NeuralArithmetic.jl](https://github.com/nmheim/NeuralArithmetic.jl).
 
-## Appendix
-
-The appendix can be found [here](appendix.pdf)
-
 
 ## Code
 
@@ -90,3 +86,7 @@ and finally produce the pareto plot and the results table
 julia> include("scripts/arithmetic/pareto.jl")
 julia> include("scripts/arithmetic/results_table.jl")
 ```
+
+## Appendix
+
+The appendix can be found [here](appendix.pdf)
