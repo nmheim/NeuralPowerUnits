@@ -5,7 +5,7 @@ The latest implementation of the Neural Arithmetic Units that were used in this 
 available in [NeuralArithmetic.jl](https://github.com/nmheim/NeuralArithmetic.jl).
 
 
-## Code
+## Reproduce our experiments
 
 The code to reproduce our results is written in Julia and all necessary
 dependencies can be installed from the Julia REPL.  To start Julia with this
