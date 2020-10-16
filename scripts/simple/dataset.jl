@@ -9,7 +9,7 @@ generate_pos() = generate_range(umin=0.1f0, umax=2)
 
 function generate_range(;umin=-2, umax=2)
     a = umax - umin
-    x = rand(Float32, 2, 100) .* a .+ umin
+    x = rand(Float32, 2, 1000) .* a .+ umin
     y = f(x)
     (x,y)
 end

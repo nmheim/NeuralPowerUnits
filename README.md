@@ -20,7 +20,7 @@ $ julia --project
   (_)     | (_) (_)    |
    _ _   _| |_  __ _   |  Type "?" for help, "]?" for Pkg help.
   | | | | | | |/ _` |  |
-  | | |_| | | | (_| |  |  Version 1.4.0 (2020-03-21)
+  | | |_| | | | (_| |  |  Version 1.5.0 (2020-03-21)
  _/ |\__'_|_|_|\__'_|  |  Official https://julialang.org/ release
 |__/                   |
 
@@ -29,16 +29,9 @@ julia> ]
 ...
 ```
 
-All neural arithmetic units are defined in the [src](src) folder. The differnt types of NPUs
-can be found [here](src/npu.jl).
-Note that the three NPU types are not named as in the paper. The list
-below maps paper NPU names to type names used in this repo.
-```julia
-"NPU"           => "GatedNPUX"
-"NaiveNPU"      => "NPUX"
-"real NPU"      => "GatedNPU"
-```
-
+All neural arithmetic units are defined in the package
+[NeuralArithmetic.jl](https://github.com/nmheim/NeuralArithmetic.jl). The
+differnt types of NPUs can be found [here](https://github.com/nmheim/NeuralArithmetic.jl/blob/master/src/npu.jl).
 All scripts that produce our experiments (Sec. 4) are in the [scripts](scripts) folder:
 
 ### 4.1 Fractional SIR identification: [fracode](scripts/fracode)

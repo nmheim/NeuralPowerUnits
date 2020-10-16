@@ -1,5 +1,5 @@
 using DrWatson
-@quickactivate "NIPS_2020_NPU"
+@quickactivate
 
 using Logging
 using TerminalLoggers
@@ -57,6 +57,7 @@ end
 function run_npu(c::Dict)
     @unpack umin, umax = c
     hdim = 6
+    #model = Chain(NPU(2,hdim),NAU(hdim,4))
     model = Chain(NPU(2,hdim),NAU(hdim,4))
     ps = params(model)
     opt = ADAM(c[:lr])
@@ -154,7 +155,8 @@ function run_dense(c::Dict)
     return result_dict(model,c)
 end
 
-train_ranges = [(0.01f0,1), (0.1f0, 0.2f0), (1,2), (1.1f0,1.2f0), (10,20)]
+#train_ranges = [(0.01f0,1), (0.1f0, 0.2f0), (1,2), (1.1f0,1.2f0), (10,20)]
+train_ranges = [(0.01f0,2)]
 nr_runs = 20
 
 for (umin,umax) in train_ranges
@@ -163,30 +165,30 @@ for (umin,umax) in train_ranges
 
     @progress for run in 1:nr_runs
         res, _ = produce_or_load(data_directory,
-                                 Dict(:niters=>20000, :βl1=>0, :lr=>0.005, :run=>run, :umin=>umin, :umax=>umax),
+                                 Dict(:niters=>20000, :βl1=>0, :lr=>0.001, :run=>run, :umin=>umin, :umax=>umax),
                                  run_npu,
                                  prefix="npu",
                                  force=false, digits=6)
         res, _ = produce_or_load(data_directory,
-                                 Dict(:niters=>20000, :βl1=>0, :lr=>0.005, :run=>run, :umin=>umin, :umax=>umax),
+                                 Dict(:niters=>20000, :βl1=>0, :lr=>0.001, :run=>run, :umin=>umin, :umax=>umax),
                                  run_realnpu,
                                  prefix="realnpu",
                                  force=false, digits=6)
-        # res, _ = produce_or_load(data_directory,
-        #                          Dict(:niters=>20000, :lr=>0.005, :run=>run, :umin=>umin, :umax=>umax),
-        #                          run_nalu,
-        #                          prefix="nalu", force=false, digits=6)
         res, _ = produce_or_load(data_directory,
-                                 Dict(:niters=>20000, :lr=>0.005, :run=>run, :umin=>umin, :umax=>umax),
+                                 Dict(:niters=>20000, :lr=>0.001, :run=>run, :umin=>umin, :umax=>umax),
+                                 run_nalu,
+                                 prefix="nalu", force=false, digits=6)
+        res, _ = produce_or_load(data_directory,
+                                 Dict(:niters=>20000, :lr=>0.001, :run=>run, :umin=>umin, :umax=>umax),
                                  run_nmu,
                                  prefix="nmu", force=false, digits=6)
         res, _ = produce_or_load(data_directory,
-                                 Dict(:niters=>20000, :lr=>0.005, :run=>run, :umin=>umin, :umax=>umax),
+                                 Dict(:niters=>20000, :lr=>0.001, :run=>run, :umin=>umin, :umax=>umax),
                                  run_dense,
                                  prefix="dense", force=false, digits=6)
-        # res, _ = produce_or_load(data_directory,
-        #                          Dict(:niters=>20000, :lr=>0.001, :run=>run, :t=>20, :umin=>umin, :umax=>umax),
-        #                          run_inalu,
-        #                          prefix="inalu", force=false, digits=6)
+        res, _ = produce_or_load(data_directory,
+                                 Dict(:niters=>20000, :lr=>0.001, :run=>run, :t=>20, :umin=>umin, :umax=>umax),
+                                 run_inalu,
+                                 prefix="inalu", force=false, digits=6)
     end
 end

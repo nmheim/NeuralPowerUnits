@@ -24,12 +24,10 @@
 \usepackage{booktabs}       % professional-quality tables
 \usepackage{amsfonts}       % blackboard math symbols
 \usepackage{amsthm}         % definitions
-\usepackage{amssymb}
 \usepackage{nicefrac}       % compact symbols for 1/2, etc.
 \usepackage{microtype}      % microtypography
 \usepackage{caption}
 \usepackage{mathtools} 
-\usepackage{amsthm}
 
 \newtheorem*{remark}{Remark}
 
@@ -37,6 +35,7 @@
 
 \usepackage{bm}
 \usepackage{amsmath}
+\usepackage{amssymb}
 \usepackage{graphicx}
 
 % tikz
@@ -82,6 +81,7 @@
 \newcommand{\inalu}{\text{iNALU}}
 \newcommand{\dense}{\text{Dense}}
 \newcommand{\chain}{\text{Chain}}
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
 
 % tables
 \usepackage{booktabs}
@@ -89,11 +89,13 @@
 
 \title{Neural Power Units}
 \author{
-    Niklas Heim, Tom\'a\v s Pevn\'y, V\'aclav \v Sm\'idl \\
-    Artificial Intelligence Center\\
-    Czech Technical University\\
-    Prague, Czechia\\
-    \texttt{heimnikl@fel.cvut.cz}
+  Niklas Heim,
+  Tom\'a\v s Pevn\'y,
+  V\'aclav \v Sm\'idl\\
+  Artificial Intelligence Center\\
+  Czech Technical University\\
+  Prague, CZ 120 00\\
+  \texttt{\{niklas.heim, tomas.pevny, vasek.smidl\}@aic.fel.cvut.cz}\\
 }
 
 \begin{document}
@@ -106,15 +108,20 @@
   training.  \emph{Neural Arithmetic Units} aim to overcome this difficulty,
   but current arithmetic units are either limited to operate on positive
   numbers or can only represent a subset of arithmetic operations. We introduce
-  the \emph{Neural Power Unit} (NPU) that operates on the \emph{full domain of
-  real numbers} and is capable of \emph{learning arbitrary power functions} in
+  the \emph{Neural Power Unit} (NPU)\footnote{
+    Implementation of Neural Arithmetic Units: \url{github.com/nmheim/NeuralArithmetic.jl}.
+    The code to reproduce our experiments is available at \url{github.com/nmheim/NeuralPowerUnits}.
+  }
+  that operates on the \emph{full domain of
+  real numbers} $\mathbb{R}$ and is capable of \emph{learning arbitrary power functions} in
   a single layer.  The NPU thus fixes the shortcomings of existing arithmetic
   units and extends their expressivity. We achieve this by using
   complex arithmetic without requiring a conversion of the network to complex
-  numbers. A simplification of the unit to the \emph{RealNPU} yields a highly interpretable model.
+  numbers $\mathbb{C}$.
+  A simplification of the unit to the \emph{RealNPU} yields a highly transparent model.
   We show that the NPUs outperform their competitors in terms of
   accuracy and sparsity on artificial arithmetic datasets, and that the RealNPU can discover
-  the governing equations of a dynamical systems only from data.
+  the governing equations of a dynamical system only from data.
 \end{abstract}
 
 
@@ -136,7 +143,7 @@ by~\cite{trask_neural_2018}, who also introduced a new class of \emph{Neural
 Arithmetic Units} with good extrapolation performance on some arithmetic
 tasks.
 
-Including Neural Arithmetic Units in standard neural networks, promises to
+Including Neural Arithmetic Units in standard neural networks promises to
 significantly increase their extrapolation capabilities due to their inductive
 bias towards numerical computation. This is especially important for tasks in which
 the data generating process contains mathematical relationships.  They also
@@ -147,8 +154,10 @@ We demonstrate this in a \emph{Neural Ordinary Differential Equation} (NODE,
 outperform a much bigger network built from dense layers (Sec.~\ref{sub:fractional_sir_model}).
 Moreover, our new unit can be used to directly read out the correct generating ODE
 from the fitted model.  This is in line with recent efforts to build
-\emph{interpretable} models instead of \emph{explaining} black-box models
+\emph{transparent} models instead of attempting to explain black-box models
 \citep{rudin_stop_2019}, like conventional neural networks.
+We refer to the terminology by \cite{lipton_mythos_2017} which defines the
+potential of understanding the parameters of a given model as \emph{transparency by decomposability}.
 
 The currently available arithmetic units all have different strengths and
 weaknesses, but none of them solve simple arithmetic completely.
@@ -185,11 +194,12 @@ the full spectrum of simple arithmetic operations.
 We address the known convergence issues of neural arithmetic units by
 introducing a \emph{relevance gate} that smooths out the loss surface of the
 NPU (Sec.~\ref{sub:npu}). With the relevance gate, which helps to learn to
-ignore variables, the NPU reaches extrapolation error and sparsity that is on
-par with the NMU on ($\times$) and outperform NALU on ($\div,\sqrt{\cdot}$).
+ignore variables, the NPU reaches extrapolation errors and sparsities that are on
+par with the NMU on ($\times$) and outperforms NALU on ($\div,\sqrt{\cdot}$).
 
-\textbf{Interpretability.}
-We show how a power unit can be used as a highly interpretable model for equation discovery
+\textbf{Transparency.}
+We show how a power unit can be used as a highly transparent\footnote{as defined by
+\cite{lipton_mythos_2017}} model for equation discovery
 of dynamical systems. Specifically, we demonstrate its ability to identify
 a model that can be interpreted as a SIR model with fractional powers
 (Sec.~\ref{sub:fractional_sir_model}) that was used to fit the COVID-19
@@ -204,7 +214,7 @@ been studied in recent years. Approaches include Neural GPUs
 Turing Machines \citep{graves_neural_2014}, and Neural Random Access Machines
 \citep{kurach_neural_2016}. They solve tasks like binary addition and
 multiplication, or single-digit arithmetic. The Neural Status Register
-\citep{faber_neural_2020} focusses on control flow.  The Neural Arithmetic
+\citep{faber_neural_2020} focuses on control flow.  The Neural Arithmetic
 Expression Calculator \citep{chen_neural_2018}, a hierarchical reinforcement
 learner, is the only method that solves the division problem, but it operates on
 character sequences of arithmetic expressions. Related is symbolic integration
@@ -212,7 +222,7 @@ with transformers \citep{lample_deep_2019}. Unfortunately, most of the named mod
 have severe problems with extrapolation \citep{madsen_measuring_2019,saxton_analysing_2019}.
 A solution to the extrapolation problem could be Neural Arithmetic Units. They are
 designed with an inductive bias towards systematic, arithmetic computation.
-However, currently, they are limited in their capabilities of expressing the full
+However, currently, they are limited in their capability of expressing the full
 range of simple arithmetic operations ($+,\times,\div$).
 In the following two sections, we briefly describe the currently available
 arithmetic layers, including their advantages and drawbacks.
@@ -222,24 +232,26 @@ arithmetic layers, including their advantages and drawbacks.
 
 \citet{trask_neural_2018} have demonstrated the severity of the extrapolation
 problem of dense networks for even the simplest arithmetic operations, such as
-summing or multiplying two numbers.  In order to increase the power of
+summing or multiplying two numbers.  To increase the power of
 abstraction for arithmetic tasks, they propose the \emph{Neural Arithmetic
 Logic Unit} (NALU), which is capable of learning ($+,\times,\div$).  However,
 the NALU cannot handle negative inputs correctly due to the logarithm in
 Eq.~\ref{eq:nalu_mult}:
+
 \begin{definition}[{\bf NALU}]
-  The NALU consists of a ($+$) and a ($\times$) path that share their weights $\bm{\hat{W}}$ and $\bm{\hat{M}}$.
-\begin{align}
-  \label{eq:nalu_add}
-  \text{Addition: }       & \bm a = \bm W \bm x,
-                          & \bm{\hat W}& = \tanh(\bm{W}) \odot \sigma(\bm{M}), \\
-  \label{eq:nalu_mult}
-  \text{Multiplication: } & \bm m = \exp \bm{\hat W}(\log(|\bm x|+\epsilon)), & &\\
-  \text{Output: }         & \bm y = \bm a \odot \bm g + \bm m \odot (1-\bm g),
-                          & \bm g& = \sigma(\bm G\bm x),
-\end{align}
+  The NALU consists of a ($+$) and a ($\times$) path with shared weights $\bm W$ and $\bm M$.
+  \begin{align}
+    \label{eq:nalu_add}
+    \text{Addition: }       & \bm a = \bm{\hat W} \bm x
+                            & \bm{\hat W}& = \tanh(\bm{W}) \odot \sigma(\bm{M}) \\
+    \label{eq:nalu_mult}
+    \text{Multiplication: } & \bm m = \exp (\bm{\hat W}\log(|\bm x|+\epsilon)) & &\\
+    \text{Output: }         & \bm y = \bm a \odot \bm g + \bm m \odot (1-\bm g) 
+                            & \bm g& = \sigma(\bm G\bm x)
+  \end{align}
+  with inputs $\bm x$ and learnt parameters $\bm W$, $\bm M$, and $\bm G$.
 \end{definition}
-with inputs $\bm x$ and learnt parameters $\bm W$, $\bm M$, and $\bm G$.
+
 Additionally, the logarithm destabilizes training to the extent that the chance of success
 can drop below 20\% for ($+,\times$), it becomes practically impossible to
 learn ($\div$) and difficult to learn from small inputs in general
@@ -256,7 +268,7 @@ reinitialize the network if its loss is not improving during training.  We
 include the iNALU in one of our experiments and find that it only slightly
 improves the NALU's performance (Sec.~\ref{sub:simple_arithmetic_task}) at the
 cost of a significantly more complicated unit. Our NPU avoids all these mechanisms
-by internally using complex arithmetics.
+by internally using complex arithmetic.
 
 \subsection{Neural Multiplication Unit \& Neural Addition Unit}%
 \label{sub:neural_multiplication_unit}
@@ -267,16 +279,18 @@ The \emph{Neural Multiplication Unit} (NMU) uses explicit multiplications and le
 to gate between identity and ($\times$) of inputs. The NMU is
 defined by Eq.~\ref{eq:nmu} and is typically used in conjunction with the
 so-called \emph{Neural Addition Unit} (NAU) in Eq.~\ref{eq:nau}.
+
 \begin{definition}[{\bf NMU \& NAU}]
   NMU and NAU are two units that can be stacked to model ($+,\times$).
-\begin{align}
-  \label{eq:nmu}
-  \text{NMU: } &y_j = \prod_i \hat M_{ij} x_{i} + 1 - \hat M_{ij}, & \hat M_{ij}=\min(\max(M_{ij}, 0), 1),\\
-  \label{eq:nau}
-  \text{NAU: } &\bm y = \bm{\hat{A}} \bm x, & \hat A_{ij}=\min(\max(A_{ij}, -1), 1),
-\end{align}
+  \begin{align}
+    \label{eq:nmu}
+    \text{NMU: } &y_j = \prod_i \hat M_{ij} x_{i} + 1 - \hat M_{ij}  & \hat M_{ij}=\min(\max(M_{ij}, 0), 1)\\
+    \label{eq:nau}
+    \text{NAU: } &\bm y = \bm{\hat{A}} \bm x & \hat A_{ij}=\min(\max(A_{ij}, -1), 1)
+  \end{align}
+  with inputs $\bm x$, and learnt parameters $\bm M$ and $\bm A$.
 \end{definition}
-with inputs $\bm x$, and learnt parameters $\bm M$, and $\bm A$.
+
 Both NMU and NAU are regularized with $\mathcal{R} = \sum_{ij} \min(|W_{ij}|,
 |1-W_{ij}|)$, and their weights are clipped, which biases them towards learning
 an operation or pruning it completely.  The combination of NAU and NMU can thus
@@ -297,7 +311,7 @@ NALU (Eq.~\ref{eq:nalu_mult_2}).
 We suggest to replace the logarithm of the absolute value by the complex logarithm and
 to allow $\bm W$ to be complex as well. Since the complex logarithm is defined for
 negative inputs, the NPU does not have a problem with negative numbers. A complex $\bm W$ 
-improves convergence at the expense of explainability (see
+improves convergence at the expense of transparency (see
 Sec.~\ref{sub:fractional_sir_model}). The improvement during training might be
 explained by the additional imaginary parameters that make it possible to avoid
 regions with an uninformative gradient signal.
@@ -310,50 +324,52 @@ With the modifications introduced above we can extend the multiplication path
 of the NALU from
 \begin{align}
   \label{eq:nalu_mult_2}
-  \bm m = \exp \bm W(\log_{\text{real}}(|\bm x|+\epsilon))
+  \bm m = \exp (\bm W\log_{\text{real}}(|\bm x|+\epsilon))
 \end{align}
 to use the complex logarithm ($\log\coloneqq\log_{\text{complex}}$) and a
 complex weight $\bm W$ to
 \begin{align}
   \label{eq:1}
-  \bm z = \exp(\bm W\log \bm x) = \exp\left((\bm \Wre + i\Wim) \log\bm x\right).
+  \bm y = \exp(\bm W\log \bm x) = \exp\left((\Wre + i\Wim) \log\bm x\right),
 \end{align}
-The complex log in Eq.~\ref{eq:1} lifts the positivity constraint on $\bm x$ resulting
-in a layer that can process both positive and negative numbers correctly.  A complex
-weight matrix $\bm W$ somewhere in a larger network would result in complex
+where the input $\bm x$ is still a vector of real numbers.
+With the polar form for a complex number $z=re^{i\theta}$ the complex log applied
+to a real number $x=re^{ik\pi}$ is
+\begin{align}
+  \log x = \log r + ik\pi,
+\end{align}
+where $k=0$ if $x\geq0$ and $k=1$ if $x<0$.
+Using the complex log in Eq.~\ref{eq:1} lifts the positivity constraint on $\bm x$,
+resulting in a layer that can process both positive and negative numbers correctly.
+A complex weight matrix $\bm W$ somewhere in a larger network would result in complex
 gradients in other layers.  This would effectively result in doubling the
 number of parameters of the whole network. As we are only interested in real
-networks outputs, we can avoid this doubling by considering only the real part
-of the output $\bm z$:
+outputs, we can avoid this doubling by considering only the real part
+of the output $\bm y$:
 \begin{align}
-  \real(\bm z) &= \real(\exp((\Wre + i\Wim)(\log\bm r + i\pi\bm k))) \\
+  \real(\bm y) &= \real(\exp((\Wre + i\Wim)(\log\bm r + i\pi\bm k))) \\
     \label{eq:npumult}
     &= \exp(\Wre\log\bm r - \pi\Wim\bm k) \odot \cos(\Wim\log\bm r + \pi\Wre\bm k).
 \end{align}
-Above we have used Euler's formula\footnote{Euler's formula states that for any
-real number $x$: $e^{ix} = \cos x + i\sin x$} and that the complex
-logarithm for real valued inputs $x$ is
-\begin{align}
-  \log x = \log r + i\theta = \log r + ik\pi,
-\end{align}
-where $k=0$ if $x\geq0$ and $k=1$ if $x<0$.
+Above we have used Euler's formula $e^{ix} = \cos x + i\sin x$.
 A diagram of the NaiveNPU is shown in Fig.~\ref{fig:npu_diagram}.
+
 \begin{definition}[{\bf NaiveNPU}]
-  The Naive Neural Power Unit with matrices $\Wre$ and
-  $\Wim$ representing real and imaginary part of the complex numbers is defined as
+  The Naive Neural Power Unit, with matrices $\Wre$ and
+  $\Wim$ representing real and imaginary part of the complex numbers, is defined as
   \begin{gather}
     \label{eq:naivenpu_def}
-    \bm z = \exp(\Wre \log\bm r - \pi\Wim\bm k) \odot \cos(\Wim\log \bm r + \pi\Wre\bm k), \text{ where }\\
+    \bm y = \exp(\Wre \log\bm r - \pi\Wim\bm k) \odot \cos(\Wim\log \bm r + \pi\Wre\bm k), \text{ where }\\
     \nonumber
-    \bm r = |\bm x|,
+    \bm r = |\bm x| + \epsilon,
     \quad
     k_i = \begin{cases}
        0 & x_i \geq 0 \\
        1 & x_i < 0
     \end{cases},
   \end{gather}
+  with inputs $\bm x$, machine epsilon $\epsilon$, and learnt parameters $\Wre$ and $\Wim$.
 \end{definition}
-with inputs $\bm x$, and learnt parameters $\Wre$, and $\Wim$.
 
 \begin{figure}
   \begin{minipage}{.45\textwidth}
@@ -366,7 +382,7 @@ with inputs $\bm x$, and learnt parameters $\Wre$, and $\Wim$.
   \begin{minipage}{0.54\textwidth}
     \resizebox{\textwidth}{!}{\input{../tikz/gatednpu-diagram.tex}}
     \captionof{figure}{NPU diagram. The NPU has a relevance gate $\bm g$
-    (hatched background) in front of the input to the actual unit to prevent
+    (hatched background) in front of the input to the unit to prevent
     zero gradients.}
     \label{fig:gatednpu_diagram}
   \end{minipage}
@@ -378,71 +394,71 @@ with inputs $\bm x$, and learnt parameters $\Wre$, and $\Wim$.
 
 The NaiveNPU has difficulties to converge on large scale tasks, and to reach
 sparse results in cases where the input to a given row is small. We
-demonstrate this on a toy example of learning the identity on one of two inputs and neglecting the second one, $f(x_1,x_2) = x_1$:
-\begin{align}
-  \nonumber
-  \mathcal{L} &= |\text{m}(x_1,x_2) - x_1|, \quad \text{where}
-  & \text{m} = \npu(2,1), \quad
-  &x_1 \sim \mathcal U(0,2), \quad x_2 \sim \mathcal U(0,0.05).
-\end{align}
-The left plot in Fig.~\ref{fig:id_loss} depicts the gradient norm of NPU and
-NaiveNPU for a batch of two-dimensional inputs. One input is small and
-irrelevant. Even in this simple example, gradient of the NaiveNPU is close to
-zero in large parts of the parameter space This can be explained as follows.
+demonstrate this on a toy example of learning the function
+$f:\mathbb{R}^2 \rightarrow \mathbb{R}$,
+which is the identity on one of two inputs. The task is defined by the loss $\mathcal L$:
+\begin{gather}
+  \mathcal{L} = \sum_i |m(x_1,x_2) - f(x_1,x_2)| = \sum_i |m(x_1,x_2) - x_{1,i}|,\nonumber\\
+  \label{eq:grad_surf}
+  \text{where } m = \naivenpu \text{ with } (\Wre,\Wim) \in \mathbb{R}^{1\times 2} \\
+  \text{and } x_1 \sim \mathcal U(0,2), x_2 \sim \mathcal U(0,0.05). \nonumber
+\end{gather}
+The left plot in Fig.~\ref{fig:id_loss} depicts the gradient norm $\mathcal{G}$
+\begin{equation}
+  \mathcal{G}(\Wre) = \norm{\frac{\partial\mathcal{L}}{\partial\Wre}}_2
+\end{equation}
+of the NaiveNPU for a batch of two-dimensional inputs.
+Even in this simple example, the gradient of the NaiveNPU is close to
+zero in large parts of the parameter space. This can be explained as follows.
 One row of NaiveNPU weights effectively raises each input to a power and
 multiplies them: $x_1^{w_1} x_2^{w_2} \dots x_n^{w_n}$. If a single input $x_i$
 is constantly close to zero (i.e. irrelevant), the whole row will be zero, no
 matter what its weights are and the gradient information on all other weights
-is lost.  Therefore, we introduce a gate on the input of the NPU that can turn
+is lost.  Therefore, we introduce a gate on the input of our layer that can turn
 irrelevant inputs into 1s.
 A diagram of the NPU is shown in Fig.~\ref{fig:gatednpu_diagram}.
+
 \begin{definition}[{\bf NPU}]
   The NPU extends the NaiveNPU by the relevance gate $\bm g$ on the input $\bm x$.
    \begin{gather}
     \label{eq:gatednpu_def}
-    \bm z = \exp(\Wre \log\bm r - \pi\Wim\bm k) 
+    \bm y = \exp(\Wre \log\bm r - \pi\Wim\bm k) 
           \odot \cos(\Wim\log \bm r + \pi\Wre\bm k), \text{ where } \\
-    \nonumber
-    \bm r = \bm{\hat g} \odot |\bm x| + (1-\bm{\hat g}),
+    \bm r = \bm{\hat g} \odot (|\bm x|+\epsilon) + (1-\bm{\hat g}),
     \quad
     k_i = \begin{cases}
        0  & x_i \geq 0 \\
       \hat g_i & x_i < 0
     \end{cases},
     \quad
-    \hat g_i = \min(\max(g_i,0),1)
+    \hat g_i = \min(\max(g_i,0),1),
   \end{gather}
+  with inputs $\bm x$, and learnt parameters $\Wre$, $\Wim$ and $\bm g$.
 \end{definition}
-with inputs $\bm x$, and learnt parameters $\Wre$, $\Wim$, $\bm g$.
 
 \begin{figure}
   \centering
-  \begin{minipage}{0.55\textwidth}
-    \includegraphics[width=\textwidth]{npu_gatednpu_id_grad.pdf}
-  \end{minipage}
-  \begin{minipage}{0.42\textwidth}
-  \end{minipage}
-  \caption{Norm of the gradient of NaiveNPU and NPU for the task
-  of learning the identity on $x_1$. Inputs and
-  loss are defined on the right, gradient surfaces on the left
-  (black areas are beyond the color scale). The correct solution is
+  \includegraphics[width=.6\textwidth]{npu_gatednpu_id_grad.pdf}
+  \caption{Gradient norm $\mathcal G$ of NaiveNPU and NPU for the task of learning
+  the identity on $x_1$ (black areas are beyond the color scale). Inputs and
+  loss are defined in Eq.~\ref{eq:grad_surf}. The correct solution is
   $w_1=1$ and $w_2=0$.  The NaiveNPU has a large zero gradient region for
   $w_2>0.75$, while the NPU's surface is much more informative. The gates
-  for central plot are fixed at $g_1=g_2=0.5$ which corresponds to the initial
-  gate parameters. During training they will adjust as needed, in this case to
+  in the central plot are fixed at $g_1=g_2=0.5$ which corresponds to the initial
+  gate parameters. During training they adjust as needed, in this case to
   $g_1=1$ and $g_2=0$. $\bm W_i$ is set to zero in all plots.
   }%
   \label{fig:id_loss}
 \end{figure}
-The central plot of Fig.~\ref{fig:id_loss} shows the gradient of the NPU
+The central plot of Fig.~\ref{fig:id_loss} shows the gradient norm $\mathcal G$ of the NPU
 on the identity task with its initial gate setting of $g_1=g_2=0.5$. The
 large zero-gradient region of the NaiveNPU is gone. The last plot shows the
-same loss for $g_1=1$ and $g_2=0$, which corresponds to the correct gates at
+same for $g_1=1$ and $g_2=0$, which corresponds to the correct gates at
 the end of NPU training. The gradient is independent of $w_2$, which
-means that it can easily be pruned by a simple regularization such as L1.  In
+means that it can easily be pruned by a simple regularization such as $L_1$. In
 Sec.~\ref{sub:large_scale_arithmetic_task} we show how important the relevance
 gating mechanism is for the convergence and sparsity of large models.  Sparsity
-is especially important in order to use the NPU as an interpretable model.
+is especially important in order to use the NPU as a transparent model.
 
 \textbf{Initialization}%
 \label{sub:initialization}
@@ -463,14 +479,14 @@ the NPU can choose to output 1.
 \label{sec:experiments}
 
 In Sec.~\ref{sub:fractional_sir_model}, we show how the NPU can help to build
-better NODE models. Additionally, we use the RealNPU as a highly interpretable
+better NODE models. Additionally, we use the RealNPU as a highly transparent
 model, from which we can directly recover the generating equation of an ODE
 containing fractional powers.  Subsequent
-Secs.~\ref{sub:simple_arithmetic_task}\,\&\,\ref{sub:large_scale_arithmetic_task}
+Secs.~\ref{sub:simple_arithmetic_task} and \ref{sub:large_scale_arithmetic_task}
 compare the NPU to prior art (NALU and NMU) on arithmetic tasks typically used
 to benchmark arithmetic units.
 
-\subsection{Equation Discovery of an Epidemiological Model}%
+\subsection{A Step Towards Equation Discovery of an Epidemiological Model}%
 \label{sub:fractional_sir_model}
 
 Data-driven models such as \emph{SINDy}~\citep{champion_data-driven_2019} or
@@ -483,14 +499,17 @@ interpretability/explainability of the resulting models.
 
 If an ODE model is composed of dense layers, its direct interpretation is
 problematic and has to be performed retrospectively. The class of models based on
-SINDy is interpretable by design, however it can only provide explanation
+SINDy is transparent by design, however it can only provide explanation
 within a linear combination of predefined set of basis functions. Thus, it
-cannot learn models with unknown fractional powers. We will demonstrate that the NPU
-is capable of doing so.
-An example of an ODE that contains powers is a modification of the classical
+cannot learn models with unknown fractional powers. 
+With this experiment we aim to show that the NPU can \emph{potentially} discover
+exact ODE models\footnote{The demonstration given here is not intended to be
+used in practice. For real-world predictions in such a sensitive area much more
+post-processing is needed to ensure safe predictions.}.
+An example of an ODE that contains powers is a modification of the well-known
 epidemiological SIR model \citep{kermack_contribution_1927} to fractional powers
 (fSIR, \cite{taghvaei_fractional_2020}), which was shown to be a beneficial
-modification for modelling the COVID-19 outbreak.  The classical SIR model is
+modification for modelling the COVID-19 outbreak.  The SIR model is
 built from three variables: $S$ (susceptible), $I$ (infectious), and $R$
 (recovered/removed).  Arguably the most important part of the model is the
 transmission rate $r$, which is typically taken to be proportional to the
@@ -512,14 +531,14 @@ parameters $\alpha=0.05$, $\beta=0.06$, $\eta=0.01$, $\gamma=\kappa=0.5$, in 40
 time steps that are equally spaced in the time interval $T=(0,200)$, such that
 the training data $\bm X = [S_t,I_t,R_t]_{t=1}^{40}$
 contains one time series each for $S$, $I$, and $R$.  The initial conditions
-$\bm u_0=[S_0,I_0,R_0]$ are set to $S_0=100$, $I_0=0.01$, and $R_0=0$, Figure
-\ref{fig:pareto_sir} right.
+$\bm u_0=[S_0,I_0,R_0]$ are set to $S_0=100$, $I_0=0.01$, and $R_0=0$, as shown in Figure
+\ref{fig:pareto_sir} (right).
 We fit the data with three
 different NODEs composed of different model types: a dense network, the NPU, and
 the RealNPU. An exemplary model is: $\npu=\chain(\npu(3,h),\nau(h,3))$ with
 variable hidden size $h$.  The detailed models are defined in
 Tab.~\ref{tab:fsir_models}. The training objective is the loss $\mathcal{L}$
-with L1 regularization.
+with $L_1$ regularization.
 \begin{align}
   \label{eq:sir_loss}
   \mathcal{L} = \text{MSE}(\bm X,\text{NODE}_\theta(\bm u_0)) + \beta||\bm\theta||_1.
@@ -531,6 +550,15 @@ with $h\in \{6,9,12,15,20\}$ and $\beta\in\{0,0.01,0.1,1\}$, where each
 hyper-parameter pair is run five times. The resulting Pareto front is shown on
 the left of Fig.~\ref{fig:pareto_sir}. The NPU reaches much sparser and
 better solutions than the dense network.
+\begin{figure}
+  \centering
+  \resizebox{.9\textwidth}{!}{\input{../plots/pareto_sir.tex}}
+  \caption{Pareto fronts of the dense network, NPU, and RealNPU. The
+  NPU reaches solutions with lower MSE and fewer parameters than the dense
+  net. The RealNPU mostly yields worse results than the NPU. Just in a few
+  cases it converges to very sparse models with good MSE.}%
+  \label{fig:pareto_sir}
+\end{figure}
 The RealNPU has problems to converge in the majority of cases, however, 
 there are a few models in the bottom left that
 reach a very low MSE and have very few parameters. The best of these models is
@@ -555,28 +583,19 @@ Reading Fig.~\ref{fig:sir_gatednpu_modelps} from right to left, we can extract
 the ODE that the RealNPU represents.  The first hidden variable correctly
 identified the transmission rate as a product of two fractional powers $r =
 I^\gamma S^\kappa$ with $\kappa=0.57$ and $\gamma=0.62$, which is close to the
-true values $\gamma=\kappa=0.5$. The second, third and the last hidden variable
+true values $\gamma=\kappa=0.5$. The second, third, and the last hidden variable
 were found to be irrelevant (the relevance gate returns 1). The fourth hidden
 variable is a selector of the second input $I$, and the fifth hidden variable
-is selector of a power of $R$, $R^{0.64}$ In the second layer, the NAU combines
+is selector of a power of $R$, $R^{0.64}$. In the second layer, the NAU combines
 the correct hidden outputs from the NPU such that $\dot S$ is composed of the
 negative transmission rate $r$ and positive $R$.  $\dot I$ and $\dot R$ are
 also composed of the correct hidden variables, with the parameters
 $\alpha,\beta,\eta$ being not far off from the truth.  We conclude that even
-with this very naive approach, the RealNPU can recover a SIR model that
-contains fractional powers. 
+with this very naive approach, the RealNPU can recover something close to the
+true fractional SIR model.
 \begin{figure}
   \centering
-  \resizebox{.7\textwidth}{!}{\input{../plots/pareto_sir.tex}}
-  \caption{Pareto fronts of the dense network, the NPU, and the RealNPU. The
-  NPU reaches solutions with lower  MSE and fewer parameters than the dense
-  net. The RealNPU mostly yields   worse results than the NPU, just in a few
-  cases it converges to very sparse models with good MSE.}%
-  \label{fig:pareto_sir}
-\end{figure}
-\begin{figure}
-  \centering
-  \includegraphics[width=.6\linewidth]{../plots/sir_gatednpu_modelps.pdf}
+  \includegraphics[width=.8\linewidth]{../plots/sir_gatednpu_modelps.pdf}
   \captionof{figure}{Visualization of the best RealNPU. Reading from right
   to left, it takes the SIR variables as an input, then applies the NPU and
   the NAU.  It correctly identifies $r$ as a fractional product in the NPU,
@@ -585,10 +604,10 @@ contains fractional powers.
 \end{figure}
 \\
 In summary, the NPU can work well in sequential tasks, and we have shown
-that we can reach highly interpretable results with the RealNPU, but in practice,
+that we can reach highly transparent results with the RealNPU, but in practice,
 using the RealNPU might be difficult due to its lower success rate. With a more
 elaborate analysis, it should be possible to reach the same solutions with the
-full NPU and e.g. a strong regularization of its imaginary parameters, because
+full NPU and e.g. a strong regularization of its imaginary parameters.
 
 
 
@@ -602,11 +621,13 @@ objective is to learn the function $f: \mathbb{R}^2
 \begin{align}
   \label{eq:simple_f}
   f(x,y) &= (x+y,\, xy,\, x/y,\, \sqrt{x} \text{  })^T \eqqcolon \bm t, \\
-  \mathcal L &= \frac{1}{4} \sum_{i=1}^{n=4}\left(\text{model}(x,y)_i - f(x,y)_i\right)
+  \mathcal L &= \frac{1}{4} \sum_{i=1}^{4}\left(\text{model}(x,y)_i - f(x,y)_i\right)
              = \text{MSE}(\bm{\hat t}, \bm t).
 \end{align}
+Learning the function $f$ includes not only learning the correct arithmetic operation,
+but also to separate them cleanly, which tests the gating mechanisms of the layers.
 Each model has two layers with a hidden dimension $h$.  E.g. the NPU model is
-defined by $\npu=\chain(\npu(2,h=6),\nau(b=6,4))$.  The remaining models that are
+defined by $\npu=\chain(\npu(2,h=6),\nau(h=6,4))$.  The remaining models that are
 used in the tables and plots are given in Tab.~\ref{tab:models_simple_task}.
 To obtain valid results in case of division we train on positive, non-zero
 inputs, but test on negative, non-zero numbers (except for test inputs to the
@@ -625,7 +646,10 @@ of 20 models on each task. Tab.~\ref{tab:simple_err} lists the corresponding
 averaged testing errors of all 20 models.
 
 Both NPUs successfully learn ($+,\times,\div,\sqrt{\cdot}$) and clearly
-outperform NALU and iNALU on all tasks.  The NPUs are on par with the NMU for
+outperform NALU and iNALU on all tasks.
+Surprisingly, the NALU has problems extrapolating in this task, which as
+\cite{schlor_inalu_2020} suggest, might be due to its gating mechanism.
+The NPUs are on par with the NMU for
 ($+$), but the NMU is better at ($\times$) due to its inductive bias. The NMU
 cannot learn ($\div,\sqrt{\cdot}$). The fact that the RealNPU performs slightly better
 than the NPU indicates that the task is easy enough to not require the
@@ -634,7 +658,7 @@ generalizes better because it corresponds to the task it
 is trying to learn.
 \begin{figure}
   \centering
-  \includegraphics[width=0.7\linewidth]{simple_err.pdf}
+  \includegraphics[width=\linewidth]{simple_err.pdf}
   \caption{Comparison of extrapolation quality of different models learning Eq.~\ref{eq:simple_f}. Each
   column represents the best model of 20 runs that were trained on the range
   $\mathcal{U}(0.1,2)$.  Lighter color implies lower error.}%
@@ -664,9 +688,9 @@ parameters from Tab.~\ref{tab:dataset_params_large_scale}.
 where starting and ending values $s_{i,\text{start}},s_{i,\text{end}}$ of the
 summations are chosen such that $a$ and $b$ come from subsets of the input
 vector $\bm x$ with a given overlap.  The training objective is standard MSE,
-regularized with L1:
+regularized with $L_1$:
 \begin{equation}
-  \mathcal{L} = \text{MSE}(\text{model}(\bm x), y) + \beta||\bm\theta||_1,
+  \mathcal{L} = \text{MSE}(\text{model}(\bm x), y) + \beta\norm{\bm\theta}_1,
 \end{equation}
 where $\beta$ is scheduled to be low in the beginning of training and stronger
 towards the end.  Specifics of the used models and their hyper-parameters are defined in
@@ -699,7 +723,7 @@ plateau.
   \centering
   \resizebox{\textwidth}{!}{\input{../plots/pareto.tex}}
   \caption{Testing MSE over number of non-zero parameters ($w_i > 0.001$) of the large scale
-  arithmetic task.  Again, the NMU outperforms the NPU on its
+  arithmetic task. The NMU outperforms the NPU on its
   native tasks, addition and multiplication. The NPU is the best at division
   and square-root.  The NaiveNPU without the relevance gate is far off, because
   it does not have the necessary gradient signal to converge, as discussed in
@@ -720,14 +744,14 @@ plateau.
 \section{Conclusion}%
 \label{sec:conclusion}
 
-We introduced the \emph{Neural Power Unit} that addresses the deficiencies
-of current arithmetic units: it can learn arbitrary power functions for
+We introduced the \emph{Neural Power Unit} which addresses the deficiencies
+of current arithmetic units: it can learn multiplication, division, and arbitrary power functions for
 positive, negative, and small numbers. We showed that the NPU outperforms its
 main competitor (NALU) and reaches performance that is on par with the
-multiplication specialist NMU (Sec.~\ref{sub:simple_arithmetic_task} \&
+multiplication specialist NMU (Sec.~\ref{sub:simple_arithmetic_task} and
 \ref{sub:large_scale_arithmetic_task}).\\
 Additionally, we have demonstrated that the NPU converges consistently, even on
-sequential tasks. The RealNPU can be used as a highly interpretable model that
+sequential tasks. The RealNPU can be used as a transparent model that
 is capable of recovering the governing equations of dynamical systems purely
 from the data (Sec.~\ref{sub:fractional_sir_model}).
 
@@ -740,13 +764,30 @@ ML models are involved in high stakes decisions in e.g. criminal justice,
 healthcare, or control systems.  With the NPU, we hope to contribute to the
 broad topic of interpretable machine learning, with a focus on scientific
 applications.
-
-Additionally, learning to abstract (mathematical) ideas and extrapolate is a
+Additionally, learning to abstract (mathematical) ideas and extrapolating is a
 fundamental goal that might contribute to more reliable machine learning
 systems.
 
+However, the inductive biases that are used to increase transparency in the NPU
+can cause the model to ignore subgroups in the data. This is not an issue for learning
+arithmetic operations, but could lead to biased models in more general use cases.
+
+The methodology presented in the experiments in Sec.~\ref{sub:fractional_sir_model}
+is not indented to be used for real-world epidemiological predictions.
+They are merely demonstrating that the NPU can learn an ODE with fractional powers.
+For an application of the NPU much more post-processing has to be done to ensure
+the reliability of the results.
+
+
+
+
 \section{Acknowledgements}%
 \label{sec:acknowledgements}
+
+The research presented in this work has been supported by the Grant Agency of
+Czech Republic no. 18-21409S. The authors also acknowledge the support of the
+OP VVV MEYS funded project CZ.02.1.01/0.0/0.0/16\_019/0000765 ``Research Center
+for Informatics''.
 
 We thank the authors of the Julia packages
 Flux.jl~\citep{innes_fashionable_2018} and
@@ -788,7 +829,7 @@ DifferentialEquations.jl~\citep{rackauckas_differentialequationsjl_2017}).
   20 models.}
   \label{tab:simple_err}
   \small
-  \input{../plots/simple_err_table.tex}
+  \input{../plots/simple_err.tex}
 \end{table}
 
 
@@ -846,7 +887,7 @@ DifferentialEquations.jl~\citep{rackauckas_differentialequationsjl_2017}).
 \begin{table}[h]
   \centering
   \caption{Training parameters for the large scale arithmetic task. The
-  $\beta$-parameters define the stepwise exponential growth of the L1
+  $\beta$-parameters define the stepwise exponential growth of the $L_1$
   regularization with start, step, growth, and end.}
   \label{tab:training_large_scale}
   \begin{tabular}{lcccccc}

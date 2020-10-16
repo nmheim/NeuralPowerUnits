@@ -142,7 +142,7 @@ raw"""\bottomrule
 end
 
 umin = 0.01
-umax = 1
+umax = 2
 data_directory = datadir("simple_umin=$(umin)_umax=$(umax)")
 df = collect_folder!(data_directory)
 sort!(df,"model")

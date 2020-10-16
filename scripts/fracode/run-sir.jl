@@ -1,15 +1,14 @@
 using DrWatson
-@quickactivate
+@quickactivate "NIPS_2020_NMUX"
 
-include(joinpath(@__DIR__, "npu-sir.jl"))
-include(joinpath(@__DIR__, "realnpu-sir.jl"))
+include(joinpath(@__DIR__, "gated-npux-sir.jl"))
+include(joinpath(@__DIR__, "gated-npu-sir.jl"))
 include(joinpath(@__DIR__, "dense-sir.jl"))
 
 @progress for nr in 1:5
     hdims = [6,9,12,15,20]
     βpss  = [0., 1e-2, 1e-1, 1.]
     @progress for (hdim,βps) in Iterators.product(hdims, βpss)
-
         produce_or_load(datadir("fracsir"),
                         Dict{Symbol,Any}(
                              :hdim=>hdim,
@@ -19,8 +18,8 @@ include(joinpath(@__DIR__, "dense-sir.jl"))
                              :niters=>3000,
                              :αinit=>0.2,
                              :run=>nr),
-                        run_npu,
-                        prefix="npu",
+                        run_gatednpux,
+                        prefix="gatednpux",
                         digits=10,
                         force=false)
 
@@ -33,8 +32,8 @@ include(joinpath(@__DIR__, "dense-sir.jl"))
                              :niters=>3000,
                              :αinit=>0.2,
                              :run=>nr),
-                        run_realnpu,
-                        prefix="realnpu",
+                        run_gatednpu,
+                        prefix="gatednpu",
                         digits=10,
                         force=false)
 

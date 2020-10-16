@@ -32,7 +32,7 @@ end
 
 nrparams(p, thresh) = sum(abs.(p) .> thresh)
 
-function run_gatednpu(d::Dict)
+function run_realnpu(d::Dict)
     idim = 3
     @unpack hdim, αinit, βps, βim, niters, lr = d
 
@@ -40,7 +40,7 @@ function run_gatednpu(d::Dict)
 
     ode_data,u0,t,tspan = fracsir_data()
     dudt = FastChain(
-        FastGatedNPU(idim,hdim,init=init),
+        FastRealNPU(idim,hdim,initRe=init),
         FastNAU(hdim,idim,init=init))
     node = NeuralODE(dudt,tspan,Euler(),saveat=t,dt=1)
     predict(p) = node(u0,p)
@@ -115,7 +115,7 @@ end
 #                          :αinit=>0.2,
 #                          :run=>nr),
 #                     run,
-#                     prefix="gatednpu",
+#                     prefix="realnpu",
 #                     digits=10,
 #                     force=false)
 # end
