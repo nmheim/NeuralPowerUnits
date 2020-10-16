@@ -1,5 +1,5 @@
 using DrWatson
-@quickactivate "NIPS_2020_NPU"
+@quickactivate
 
 using Logging
 using TerminalLoggers
@@ -32,7 +32,7 @@ end
 
 nrparams(p, thresh) = sum(abs.(p) .> thresh)
 
-function run_gatednpux(d::Dict)
+function run_npu(d::Dict)
     idim = 3
     @unpack hdim, αinit, βps, βim, niters, lr = d
 
@@ -40,7 +40,7 @@ function run_gatednpux(d::Dict)
 
     ode_data,u0,t,tspan = fracsir_data()
     dudt = FastChain(
-        FastGatedNPUX(idim,hdim, initRe=init,initIm=zeros),
+        FastNPU(idim,hdim, initRe=init,initIm=zeros),
         FastNAU(hdim,idim,init=init))
     node = NeuralODE(dudt,tspan,Euler(),saveat=t,dt=1)
     predict(p) = node(u0,p)
@@ -115,7 +115,7 @@ end
 #                          :αinit=>0.2,
 #                          :run=>nr),
 #                     run,
-#                     prefix="gatednpux",
+#                     prefix="npu",
 #                     digits=10,
 #                     force=false)
 # end

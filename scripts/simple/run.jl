@@ -1,5 +1,5 @@
 using DrWatson
-@quickactivate "NIPS_2020_NPU"
+@quickactivate
 
 using Logging
 using TerminalLoggers
@@ -13,24 +13,12 @@ using NeuralArithmetic
 
 include(joinpath(@__DIR__, "dataset.jl"))
 
-train_range = "pos"
-nr_runs = 20
-
-function generate()
-    if train_range == "pos-neg"
-        return generate_pos_neg()
-    elseif train_range == "pos"
-        return generate_pos()
-    else
-        error("Unknown train range: $train_range")
-    end
-end
-
 function result_dict(model::Chain, config::Dict)
+    @unpack umin, umax = config
     res = Dict{Symbol,Any}([(k,v) for (k,v) in config])
     res[:model] = model
 
-    (x,y) = generate()
+    (x,y) = generate_range(umin=umin, umax=umax)
     res[:mse] = Flux.mse(model(x),y)
 
     (xt,yt) = test_generate()
@@ -67,52 +55,57 @@ function result_dict(model::Chain, config::Dict)
 end
 
 function run_npu(c::Dict)
+    @unpack umin, umax = c
     hdim = 6
-    model = Chain(GatedNPUX(2,hdim),NAU(hdim,4))
+    #model = Chain(NPU(2,hdim),NAU(hdim,4))
+    model = Chain(NPU(2,hdim),NAU(hdim,4))
     ps = params(model)
     opt = ADAM(c[:lr])
-    data = (generate() for _ in 1:c[:niters])
+    data = (generate_range(umin=umin,umax=umax) for _ in 1:c[:niters])
     loss(x,y) = Flux.mse(model(x),y) + c[:βl1]*norm(ps, 1) #+ 0.1norm(model.Im,1)
-    (x,y) = generate()
+    (x,y) = generate_range(umin=umin,umax=umax)
     cb = Flux.throttle(() -> (@info loss(x,y)), 0.1)
     Flux.train!(loss, ps, data, opt, cb=cb)
     return result_dict(model,c)
 end
 
 function run_realnpu(c::Dict)
+    @unpack umin, umax = c
     hdim = 6
-    model = Chain(GatedNPU(2,hdim),NAU(hdim,4))
+    model = Chain(RealNPU(2,hdim),NAU(hdim,4))
     ps = params(model)
     opt = ADAM(c[:lr])
-    data = (generate() for _ in 1:c[:niters])
+    data = (generate_range(umin=umin,umax=umax) for _ in 1:c[:niters])
     loss(x,y) = Flux.mse(model(x),y) + c[:βl1]*norm(ps, 1) #+ 0.1norm(model.Im,1)
-    (x,y) = generate()
+    (x,y) = generate_range(umin=umin,umax=umax)
     cb = Flux.throttle(() -> (@info loss(x,y)), 0.1)
     Flux.train!(loss, ps, data, opt, cb=cb)
     return result_dict(model,c)
 end
 
 function run_nmu(c::Dict)
+    @unpack umin, umax = c
     hdim = 6
     model = Chain(NMU(2,hdim),NAU(hdim,4))
     ps = params(model)
     opt = ADAM(c[:lr])
-    data = (generate() for _ in 1:c[:niters])
+    data = (generate_range(umin=umin,umax=umax) for _ in 1:c[:niters])
     loss(x,y) = Flux.mse(model(x),y)
-    (x,y) = generate()
+    (x,y) = generate_range(umin=umin,umax=umax)
     cb = Flux.throttle(() -> (@info loss(x,y)), 0.1)
     Flux.train!(loss, ps, data, opt, cb=cb)
     return result_dict(model,c)
 end
 
 function run_nalu(c::Dict)
+    @unpack umin, umax = c
     hdim = 6
     model = Chain(NALU(2,hdim),NALU(hdim,4))
     ps = params(model)
     opt = RMSProp(c[:lr])
-    data = (generate() for _ in 1:c[:niters])
+    data = (generate_range(umin=umin,umax=umax) for _ in 1:c[:niters])
     loss(x,y) = Flux.mse(model(x),y)
-    (x,y) = generate()
+    (x,y) = generate_range(umin=umin,umax=umax)
     cb = Flux.throttle(() -> (@info loss(x,y)), 0.1)
     Flux.train!(loss, ps, data, opt, cb=cb)
     return result_dict(model,c)
@@ -126,66 +119,76 @@ end
 inalu_reg(ps::Flux.Params,t::Real) = sum(p->inalu_reg(p,t), ps)
 
 function run_inalu(c::Dict)
+    @unpack umin, umax = c
     hdim = 6
     model = Chain(iNALU(2,hdim),iNALU(hdim,4))
     ps = params(model)
     opt = RMSProp(c[:lr])
 
 
-    data = (generate() for _ in 1:(c[:niters]/2))
-    (x,y) = generate()
+    data = (generate_range(umin=umin,umax=umax) for _ in 1:(c[:niters]/2))
+    (x,y) = generate_range(umin=umin,umax=umax)
     cb = Flux.throttle(() -> (@info loss(x,y) Flux.mse(model(x),y) inalu_reg(ps,c[:t])), 0.1)
 
     loss(x,y) = Flux.mse(model(x),y)
     Flux.train!(loss, ps, data, opt, cb=cb)
 
     regloss(x,y) = Flux.mse(model(x),y) + 1e-5*inalu_reg(ps,c[:t])
-    data = (generate() for _ in 1:(c[:niters]/2))
+    data = (generate_range(umin=umin,umax=umax) for _ in 1:(c[:niters]/2))
     Flux.train!(regloss, ps, data, opt, cb=cb)
 
     return result_dict(model,c)
 end
 
 function run_dense(c::Dict)
+    @unpack umin, umax = c
     hdim = 50
     model = Chain(Dense(2,hdim,σ),Dense(hdim,hdim,σ),Dense(hdim,4))
     #model = Chain(Dense(2,hdim,σ),Dense(hdim,4))
     ps = params(model)
     opt = ADAM(c[:lr])
-    data = (generate() for _ in 1:c[:niters])
+    data = (generate_range(umin=umin,umax=umax) for _ in 1:c[:niters])
     loss(x,y) = Flux.mse(model(x),y)
-    (x,y) = generate()
+    (x,y) = generate_range(umin=umin,umax=umax)
     cb = Flux.throttle(() -> (@info loss(x,y)), 0.1)
     Flux.train!(loss, ps, data, opt, cb=cb)
     return result_dict(model,c)
 end
 
+#train_ranges = [(0.01f0,1), (0.1f0, 0.2f0), (1,2), (1.1f0,1.2f0), (10,20)]
+train_ranges = [(0.01f0,2)]
+nr_runs = 20
 
-@progress for run in 1:nr_runs
-    res, _ = produce_or_load(datadir("simple"),
-                             Dict(:niters=>20000, :βl1=>0, :lr=>0.005, :run=>run),
-                             run_npu,
-                             prefix="$train_range-gatednpux",
-                             force=false, digits=6)
-    res, _ = produce_or_load(datadir("simple"),
-                             Dict(:niters=>20000, :βl1=>0, :lr=>0.005, :run=>run),
-                             run_realnpu,
-                             prefix="$train_range-realnpu",
-                             force=false, digits=6)
-    res, _ = produce_or_load(datadir("simple"),
-                             Dict(:niters=>20000, :lr=>0.005, :run=>run),
-                             run_nalu,
-                             prefix="$train_range-nalu", force=false, digits=6)
-    res, _ = produce_or_load(datadir("simple"),
-                             Dict(:niters=>20000, :lr=>0.005, :run=>run),
-                             run_nmu,
-                             prefix="$train_range-nmu", force=false, digits=6)
-    res, _ = produce_or_load(datadir("simple"),
-                             Dict(:niters=>20000, :lr=>0.005, :run=>run),
-                             run_dense,
-                             prefix="$train_range-dense", force=false, digits=6)
-    res, _ = produce_or_load(datadir("simple"),
-                             Dict(:niters=>20000, :lr=>0.001, :run=>run),
-                             run_inalu,
-                             prefix="$train_range-inalu", force=false, digits=6)
+for (umin,umax) in train_ranges
+    @info "Running training range: ($umin,$umax)"
+    data_directory = datadir("simple_umin=$(umin)_umax=$(umax)")
+
+    @progress for run in 1:nr_runs
+        res, _ = produce_or_load(data_directory,
+                                 Dict(:niters=>20000, :βl1=>0, :lr=>0.001, :run=>run, :umin=>umin, :umax=>umax),
+                                 run_npu,
+                                 prefix="npu",
+                                 force=false, digits=6)
+        res, _ = produce_or_load(data_directory,
+                                 Dict(:niters=>20000, :βl1=>0, :lr=>0.001, :run=>run, :umin=>umin, :umax=>umax),
+                                 run_realnpu,
+                                 prefix="realnpu",
+                                 force=false, digits=6)
+        res, _ = produce_or_load(data_directory,
+                                 Dict(:niters=>20000, :lr=>0.001, :run=>run, :umin=>umin, :umax=>umax),
+                                 run_nalu,
+                                 prefix="nalu", force=false, digits=6)
+        res, _ = produce_or_load(data_directory,
+                                 Dict(:niters=>20000, :lr=>0.001, :run=>run, :umin=>umin, :umax=>umax),
+                                 run_nmu,
+                                 prefix="nmu", force=false, digits=6)
+        res, _ = produce_or_load(data_directory,
+                                 Dict(:niters=>20000, :lr=>0.001, :run=>run, :umin=>umin, :umax=>umax),
+                                 run_dense,
+                                 prefix="dense", force=false, digits=6)
+        res, _ = produce_or_load(data_directory,
+                                 Dict(:niters=>20000, :lr=>0.001, :run=>run, :t=>20, :umin=>umin, :umax=>umax),
+                                 run_inalu,
+                                 prefix="inalu", force=false, digits=6)
+    end
 end

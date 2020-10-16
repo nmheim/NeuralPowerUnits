@@ -6,12 +6,13 @@ using Flux
 using DiffEqFlux
 using RecursiveArrayTools
 using NeuralArithmetic
-using ValueHistories
+using OrdinaryDiffEq
+using LinearAlgebra
 
 nrparams(p, thresh) = sum(abs.(p) .> thresh)
 name(m::FastDense) = "FastDense"
-name(m::FastGatedNPUX) = "FastGatedNPUX"
-name(m::FastGatedNPU) = "FastGatedNPU"
+name(m::FastNPU) = "FastNPU"
+name(m::FastRealNPU) = "FastRealNPU"
 name(m::FastChain) = name(m.layers[1])
 
 
@@ -20,7 +21,7 @@ df = collect_results!(datadir("fracsir"), black_list=[:pred,:dudt,:ps,:nrps],
                       special_list=[:model => data -> name(data[:dudt]),
                                     :nrps  => data -> nrparams(data[:ps], ϵ)])
 
-ff = filter(r->r.model=="FastGatedNPU", df)
+ff = filter(r->r.model=="FastRealNPU", df)
 sort!(ff,["nrps"])
 display(ff[!,["mse","nrps","model","βim","βps","hdim","path"]])
 
