@@ -2,10 +2,10 @@ TARGETS = main.pdf
 SOURCES = $(shell find . -name '*.tex')
 
 main.pdf: main.tex $(SOURCES)
-	lualatex main.tex
+	pdflatex main.tex
 	bibtex main
-	lualatex main.tex
-	lualatex main.tex
+	pdflatex main.tex
+	pdflatex main.tex
 
 clean:
 	rm main.pdf
@@ -27,3 +27,18 @@ separate-supplementary:
 	pdfseparate -f 12 main.pdf supplementary-%02d.pdf
 	pdfunite supplementary-*.pdf supplementary.pdf
 	rm supplementary-*.pdf
+
+zip:
+	sed -i 's/\.\.\///g' main.tex
+	cp -r ../plots .
+	cp -r ../tikz .
+	zip -r latexsource.zip \
+			main.tex \
+			refs.bib \
+			main.bbl \
+			neurips_2020.sty \
+			tikz \
+			plots
+	rm -r plots tikz
+	echo "Attention!"
+	echo "To revert sed changes: git checkout main.tex"
