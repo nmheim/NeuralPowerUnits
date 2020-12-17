@@ -1,0 +1,145 @@
+\begin{tikzpicture}[/tikz/background rectangle/.style={fill={rgb,1:red,1.0;green,1.0;blue,1.0}, draw opacity={1.0}}, show background rectangle]
+\begin{axis}[point meta max={nan}, point meta min={nan}, legend cell align={left}, title={}, title style={at={{(0.5,1)}}, anchor={south}, font={{\fontsize{14 pt}{18.2 pt}\selectfont}}, color={rgb,1:red,0.0;green,0.0;blue,0.0}, draw opacity={1.0}, rotate={0.0}}, legend style={color={rgb,1:red,0.0;green,0.0;blue,0.0}, draw opacity={1.0}, line width={1}, solid, fill={rgb,1:red,1.0;green,1.0;blue,1.0}, fill opacity={1.0}, text opacity={1.0}, font={{\fontsize{8 pt}{10.4 pt}\selectfont}}, at={(1.02, 1)}, anchor={north west}}, axis background/.style={fill={rgb,1:red,1.0;green,1.0;blue,1.0}, opacity={1.0}}, anchor={north west}, xshift={1.0mm}, yshift={-1.0mm}, width={48.8mm}, height={48.8mm}, scaled x ticks={false}, xlabel={}, x tick style={color={rgb,1:red,0.0;green,0.0;blue,0.0}, opacity={1.0}}, x tick label style={color={rgb,1:red,0.0;green,0.0;blue,0.0}, opacity={1.0}, rotate={0}}, xlabel style={at={(ticklabel cs:0.5)}, anchor=near ticklabel, font={{\fontsize{11 pt}{14.3 pt}\selectfont}}, color={rgb,1:red,0.0;green,0.0;blue,0.0}, draw opacity={1.0}, rotate={0.0}}, xmajorgrids={true}, xmin={-2.12}, xmax={2.12}, xtick={{-2.0,-1.0,0.0,1.0,2.0}}, xticklabels={{$-2$,$-1$,$0$,$1$,$2$}}, xtick align={inside}, xticklabel style={font={{\fontsize{8 pt}{10.4 pt}\selectfont}}, color={rgb,1:red,0.0;green,0.0;blue,0.0}, draw opacity={1.0}, rotate={0.0}}, x grid style={color={rgb,1:red,0.0;green,0.0;blue,0.0}, draw opacity={0.1}, line width={0.5}, solid}, axis x line*={left}, x axis line style={color={rgb,1:red,0.0;green,0.0;blue,0.0}, draw opacity={1.0}, line width={1}, solid}, scaled y ticks={false}, ylabel={}, y tick style={color={rgb,1:red,0.0;green,0.0;blue,0.0}, opacity={1.0}}, y tick label style={color={rgb,1:red,0.0;green,0.0;blue,0.0}, opacity={1.0}, rotate={0}}, ylabel style={at={(ticklabel cs:0.5)}, anchor=near ticklabel, font={{\fontsize{11 pt}{14.3 pt}\selectfont}}, color={rgb,1:red,0.0;green,0.0;blue,0.0}, draw opacity={1.0}, rotate={0.0}}, ymajorgrids={true}, ymin={-0.06254863500595093}, ymax={2.1475031352043152}, ytick={{0.0,0.5,1.0,1.5,2.0}}, yticklabels={{$0.0$,$0.5$,$1.0$,$1.5$,$2.0$}}, ytick align={inside}, yticklabel style={font={{\fontsize{8 pt}{10.4 pt}\selectfont}}, color={rgb,1:red,0.0;green,0.0;blue,0.0}, draw opacity={1.0}, rotate={0.0}}, y grid style={color={rgb,1:red,0.0;green,0.0;blue,0.0}, draw opacity={0.1}, line width={0.5}, solid}, axis y line*={left}, y axis line style={color={rgb,1:red,0.0;green,0.0;blue,0.0}, draw opacity={1.0}, line width={1}, solid}]
+    \addplot[color={rgb,1:red,0.0;green,0.6056;blue,0.9787}, name path={ac8040fa-fff7-4920-ade4-c063268fd00c}, draw opacity={1.0}, line width={1}, solid]
+        table[row sep={\\}]
+        {
+            \\
+            -2.0  2.0  \\
+            -1.9  1.9  \\
+            -1.8  1.8  \\
+            -1.7  1.7  \\
+            -1.6  1.6  \\
+            -1.5  1.5  \\
+            -1.4  1.4  \\
+            -1.3  1.3  \\
+            -1.2  1.2  \\
+            -1.1  1.1  \\
+            -1.0  1.0  \\
+            -0.9  0.9  \\
+            -0.8  0.8  \\
+            -0.7  0.7  \\
+            -0.6  0.6  \\
+            -0.5  0.5  \\
+            -0.4  0.4  \\
+            -0.3  0.3  \\
+            -0.2  0.2  \\
+            -0.1  0.1  \\
+            0.0  0.0  \\
+            0.1  0.1  \\
+            0.2  0.2  \\
+            0.3  0.3  \\
+            0.4  0.4  \\
+            0.5  0.5  \\
+            0.6  0.6  \\
+            0.7  0.7  \\
+            0.8  0.8  \\
+            0.9  0.9  \\
+            1.0  1.0  \\
+            1.1  1.1  \\
+            1.2  1.2  \\
+            1.3  1.3  \\
+            1.4  1.4  \\
+            1.5  1.5  \\
+            1.6  1.6  \\
+            1.7  1.7  \\
+            1.8  1.8  \\
+            1.9  1.9  \\
+            2.0  2.0  \\
+        }
+        ;
+    \addplot[color={rgb,1:red,0.8889;green,0.4356;blue,0.2781}, name path={58e4bce8-946c-4c96-a47e-a2801c48ae57}, draw opacity={1.0}, line width={1}, dashed]
+        table[row sep={\\}]
+        {
+            \\
+            -2.0  1.2146502  \\
+            -1.9  1.2130404  \\
+            -1.8  1.210468  \\
+            -1.7  1.2063661  \\
+            -1.6  1.1998477  \\
+            -1.5  1.1895502  \\
+            -1.4  1.1734347  \\
+            -1.3  1.1486006  \\
+            -1.2  1.1112721  \\
+            -1.1  1.0573483  \\
+            -1.0  0.98409617  \\
+            -0.9  0.89305735  \\
+            -0.8  0.79193693  \\
+            -0.7  0.6909176  \\
+            -0.6  0.5938499  \\
+            -0.5  0.49543518  \\
+            -0.4  0.39129728  \\
+            -0.3  0.28711027  \\
+            -0.2  0.18959016  \\
+            -0.1  0.08753854  \\
+            0.0  0.0072743893  \\
+            0.1  0.08825743  \\
+            0.2  0.19297999  \\
+            0.3  0.2902612  \\
+            0.4  0.3930353  \\
+            0.5  0.4960415  \\
+            0.6  0.59480476  \\
+            0.7  0.69244325  \\
+            0.8  0.7929653  \\
+            0.9  0.89370286  \\
+            1.0  0.98654616  \\
+            1.1  1.0643454  \\
+            1.2  1.1245524  \\
+            1.3  1.16854  \\
+            1.4  1.1994584  \\
+            1.5  1.2206502  \\
+            1.6  1.2349424  \\
+            1.7  1.2444816  \\
+            1.8  1.2508059  \\
+            1.9  1.2549806  \\
+            2.0  1.2577289  \\
+        }
+        ;
+    \addplot[color={rgb,1:red,0.2422;green,0.6433;blue,0.3044}, name path={dcfd1690-c5c5-40a7-a168-d8ed028ad9b4}, draw opacity={1.0}, line width={1}, dashdotted]
+        table[row sep={\\}]
+        {
+            \\
+            -2.0  2.0849545  \\
+            -1.9  1.9720565  \\
+            -1.8  1.8601044  \\
+            -1.7  1.749136  \\
+            -1.6  1.6391871  \\
+            -1.5  1.5302888  \\
+            -1.4  1.4224697  \\
+            -1.3  1.3157496  \\
+            -1.2  1.210142  \\
+            -1.1  1.1056455  \\
+            -1.0  1.0022453  \\
+            -0.9  0.8999029  \\
+            -0.8  0.7985524  \\
+            -0.7  0.69808894  \\
+            -0.6  0.5983573  \\
+            -0.5  0.4991328  \\
+            -0.4  0.4000996  \\
+            -0.3  0.30081475  \\
+            -0.2  0.2006641  \\
+            -0.1  0.0987964  \\
+            0.0  0.0011098385  \\
+            0.1  0.1006847  \\
+            0.2  0.20042723  \\
+            0.3  0.30037892  \\
+            0.4  0.40050787  \\
+            0.5  0.5007406  \\
+            0.6  0.6009805  \\
+            0.7  0.7011212  \\
+            0.8  0.80105436  \\
+            0.9  0.90067387  \\
+            1.0  0.99987984  \\
+            1.1  1.0985794  \\
+            1.2  1.1966882  \\
+            1.3  1.2941289  \\
+            1.4  1.3908343  \\
+            1.5  1.4867432  \\
+            1.6  1.5818037  \\
+            1.7  1.6759676  \\
+            1.8  1.769196  \\
+            1.9  1.8614548  \\
+            2.0  1.9527144  \\
+        }
+        ;
+\end{axis}
+\end{tikzpicture}
