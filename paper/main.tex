@@ -108,8 +108,8 @@
   training.  \emph{Neural Arithmetic Units} aim to overcome this difficulty,
   but current arithmetic units are either limited to operate on positive
   numbers or can only represent a subset of arithmetic operations. We introduce
-  the \emph{Neural Power Unit} (NPU)\footnote{
-    Implementation of Neural Arithmetic Units: \url{github.com/nmheim/NeuralArithmetic.jl}.
+  the \emph{Neural Power Unit} (NPU).\footnote{
+    Implementation of Neural Arithmetic Units: \url{github.com/nmheim/NeuralArithmetic.jl}
     The code to reproduce our experiments is available at \url{github.com/nmheim/NeuralPowerUnits}.
   }
   that operates on the \emph{full domain of
@@ -503,9 +503,9 @@ SINDy is transparent by design, however it can only provide explanation
 within a linear combination of predefined set of basis functions. Thus, it
 cannot learn models with unknown fractional powers. 
 With this experiment we aim to show that the NPU can \emph{potentially} discover
-exact ODE models\footnote{The demonstration given here is not intended to be
+exact ODE models.\footnote{The demonstration given here is not intended to be
 used in practice. For real-world predictions in such a sensitive area much more
-post-processing is needed to ensure safe predictions.}.
+post-processing is needed to ensure safe predictions.}
 An example of an ODE that contains powers is a modification of the well-known
 epidemiological SIR model \citep{kermack_contribution_1927} to fractional powers
 (fSIR, \cite{taghvaei_fractional_2020}), which was shown to be a beneficial
@@ -755,7 +755,7 @@ sequential tasks. The RealNPU can be used as a transparent model that
 is capable of recovering the governing equations of dynamical systems purely
 from the data (Sec.~\ref{sub:fractional_sir_model}).
 
-\section{Statement of Broader Impact}%
+\section*{Broader Impact}%
 \label{sec:statement_of_broader_impact}
 
 Current neural network architectures are often perceived as black box models
@@ -781,7 +781,7 @@ the reliability of the results.
 
 
 
-\section{Acknowledgements}%
+\section*{Acknowledgements and Disclosure of Funding}%
 \label{sec:acknowledgements}
 
 The research presented in this work has been supported by the Grant Agency of
@@ -829,7 +829,7 @@ DifferentialEquations.jl~\citep{rackauckas_differentialequationsjl_2017}).
   20 models.}
   \label{tab:simple_err}
   \small
-  \input{../plots/simple_err.tex}
+  \input{../plots/simple_err_table.tex}
 \end{table}
 
 

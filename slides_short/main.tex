@@ -1,0 +1,259 @@
+\documentclass{beamer}
+
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{bm}
+\usepackage{fontawesome}
+\usepackage{colortbl}
+\usepackage{mathtools} 
+\setbeamerfont{normal text}{size=\small}
+
+% tikz
+\usepackage{tikz}
+\usetikzlibrary{%
+  arrows,%
+  backgrounds,
+  intersections,
+  shapes,
+  shapes.misc,% wg. rounded rectangle
+  shapes.arrows,%
+  chains,%
+  matrix,%
+  positioning,% wg. " of "
+  scopes,%
+  decorations.pathmorphing,% /pgf/decoration/random steps | erste Graphik
+  shadows,%
+  patterns% for hatched rect
+}
+\usepackage{pgfplots}
+\pgfplotsset{compat=newest}
+\usepgfplotslibrary{groupplots}
+\usepgfplotslibrary{polar}
+\usepgfplotslibrary{smithchart}
+\usepgfplotslibrary{statistics}
+\usepgfplotslibrary{dateplot}
+
+
+\usetheme[sectionpage=none, block=fill]{metropolis}
+\setbeamercolor{background canvas}{bg=white}
+
+\newcommand{\real}{\text{Re}}
+\newcommand{\Wre}{\bm W_{r}}
+\newcommand{\Wim}{\bm W_{i}}
+
+\title{Neural Power Units}
+\subtitle{Arithmetic extrapolation with fractional powers\\NeurIPS | 2020}
+\author{Niklas Heim, V\'aclav \v Sm\'idl, Tom\'a\v s Pevn\'y}
+\date{}
+\institute{Artificial Intelligence Center, Czech Technical University\\
+  \\
+  \url{https://github.com/nmheim/NeuralArithmetic.jl}
+}
+
+\begin{document}
+\maketitle
+
+\newcommand{\twocols}[2]{
+  \begin{figure}
+    \begin{minipage}{0.48\textwidth}
+      #1
+    \end{minipage}
+    \hspace{0.01\textwidth}
+    \begin{minipage}{0.48\textwidth}
+      #2
+    \end{minipage}
+  \end{figure}  
+}
+
+\begin{frame}{Arithmetic extrapolation}
+  \twocols{
+    \textrightarrow Neural Networks are great at \alert{\bf interpolation}, but they poorly
+    \alert{\bf extrapolate}.\\
+    % NOTE: lack of understanding/generalization
+
+    \textrightarrow Neural arithmetic assumes that the problem is composed of arithmetic
+    operations.
+    }{
+    \begin{block}{Examples}
+      Function approximation
+      {\small
+      \begin{equation*}
+        f(x,y) = (x+y,\, xy,\, \frac{x}{y},\, \sqrt{x} \text{  })^T 
+      \end{equation*}}
+
+      Differential equations in physical / financial modelling
+      {\tiny
+        \renewcommand*{\arraystretch}{1.3}
+        \begin{equation*}
+          \begin{bmatrix}
+            \dot S \\ \dot I \\ \dot R
+          \end{bmatrix}
+          =
+          \begin{bmatrix}
+            -\beta & 0 & \eta \\
+            \beta & -\alpha & 0 \\
+            0 & \alpha & \eta
+          \end{bmatrix}
+          \begin{bmatrix}
+            I^\gamma S^\kappa \\ I \\ R
+          \end{bmatrix}
+        \end{equation*}
+      }
+
+
+
+    \end{block}
+  }
+\end{frame}
+
+
+\section{Prior Art}%
+\label{sec:prior_art}
+
+\begin{frame}{NALU - Trask et al.}
+  \begin{block}{Definition: Neural Arithmetic Logic Unit (NALU)}
+  \begin{align*}
+    \text{Addition: }       & \bm a = \bm{\hat W} \bm x
+                            & \bm{\hat W}& = \tanh(\bm{W}) \odot \sigma(\bm{M}) \\
+    \text{Multiplication: } & \bm m = \exp (\bm{\hat W}\log(|\bm x|+\epsilon)) & &\\
+    \text{Output: }         & \bm y = \bm a \odot \bm g + \bm m \odot (1-\bm g) 
+                            & \bm g& = \sigma(\bm G\bm x)
+  \end{align*}
+  \end{block}
+  NALU has \alert{constrained weights}, and is gating between an
+  \alert{addition} $(+)$ and \alert{multiplication/division} $(\times,\div)$ path.
+
+  Inconsistent convergence, negative numbers not handled correctly.
+\end{frame}
+
+\begin{frame}{NMU \& NAU - Madsen \& Johansen}
+  \begin{block}{Definition: Neural Multiplication \& Addition Units}
+    \begin{align}
+      \text{NMU: } &y_j = \prod_i \hat M_{ij} x_{i} + 1 - \hat M_{ij}  & \hat M_{ij}=\min(\max(M_{ij}, 0), 1)\\
+      \text{NAU: } &\bm y = \bm{\hat{A}} \bm x & \hat A_{ij}=\min(\max(A_{ij}, -1), 1)
+    \end{align}
+  \end{block}
+  NMU \& NAU have \alert{constrained weights}, and are learning $(+)$ and $(\times)$
+  by \alert{stacking}.
+
+  No division $(\div)$.
+\end{frame}
+
+\begin{frame}{Neural Power Unit}
+  We improved NALU's multiplication path
+  \begin{align*}
+    \bm m = \exp (\bm W\log_{\text{real}}(|\bm x|))
+  \end{align*}
+  by lifting it into \alert{complex space} ($\log \coloneqq \log_{\text{complex}}$)
+  \begin{align*}
+    \bm z = \real(\exp(\bm W_\mathbb{C}\log \bm x)) = \real(\exp\left((\Wre + i\Wim) \log\bm x\right)).
+  \end{align*}
+\end{frame}
+
+\begin{frame}{\emph{Naive} Neural Power Unit (NaiveNPU)}
+  \centering
+  \resizebox{!}{.23\textwidth}{\input{naivenpu.tex}}
+  \begin{block}{Definition: \emph{Naive} Neural Power Unit}
+  \begin{gather*}
+    \bm y = \exp(\Wre \log\bm r - \pi\Wim\bm k)
+      \odot \cos(\Wim\log \bm r + \pi\Wre\bm k), \text{ where }\\
+    \bm r = |\bm x| + \epsilon,
+    \quad
+    k_i = \begin{cases}
+       0 & x_i \geq 0 \\
+       1 & x_i < 0
+    \end{cases},
+  \end{gather*}
+  \end{block} 
+\end{frame}
+
+\begin{frame}{Neural Power Unit (NPU) \& Relevance Gate}
+  \resizebox{!}{.23\textwidth}{\input{npu.tex}}
+  \begin{block}{Definition: Neural Power Unit}
+   \begin{gather*}
+    \bm y = \exp(\Wre \log\bm r - \pi\Wim\bm k) 
+          \odot \cos(\Wim\log \bm r + \pi\Wre\bm k), \text{ where } \\
+    \bm r = \bm{\hat g} \odot (|\bm x|+\epsilon) + (1-\bm{\hat g}), \\
+    \quad
+    k_i = \begin{cases}
+       0  & x_i \geq 0 \\
+      \hat g_i & x_i < 0
+    \end{cases},
+    \quad
+    \hat g_i = \min(\max(g_i,0),1),
+   \end{gather*}
+  \end{block}
+
+\end{frame}
+
+
+\begin{frame}{Learning Simple Arithmetic}
+  \vspace{-0.5cm}
+  \begin{equation*}
+    f(x,y) = (x+y,\, xy,\, \frac{x}{y},\, \sqrt{x} \text{  })^T 
+  \end{equation*}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.9\textwidth]{../plots/simple_err.pdf}
+  \end{figure}
+  \vspace{-0.6cm}
+  \hspace{1cm}
+  {\tiny \emph{\bf RealNPU} denotes the NPU with $W_i=0$.
+  %\emph{iNALU} is an improved NALU by Schl\"or et al.
+  }
+\end{frame}
+
+\begin{frame}{Towards Equation Discovery}
+  \centering
+  The fractional SIR model (fSIR, Taghvaei et al. [2020])
+  \begin{equation*}
+    \begin{bmatrix}
+      \dot S \\ \dot I \\ \dot R
+    \end{bmatrix}
+    =
+    \begin{bmatrix}
+      -\beta & 0 & \eta \\
+      \beta & -\alpha & 0 \\
+      0 & \alpha & \eta
+    \end{bmatrix}
+    \begin{bmatrix}
+      I^\gamma S^\kappa \\ I \\ R
+    \end{bmatrix},
+    \begin{matrix}
+      \alpha=0.05 \\ \beta=0.05 \\ \eta=0.01 \\ \gamma=\kappa=0.5
+    \end{matrix}
+  \end{equation*}
+  \resizebox{.6\textwidth}{!}{\input{fsir.tex}}
+\end{frame}
+
+\begin{frame}{Towards Equation Discovery}
+  \centering
+  The fractional SIR model (fSIR, Taghvaei et al. [2020])
+  \begin{equation*}
+    \begin{bmatrix}
+      \dot S \\ \dot I \\ \dot R
+    \end{bmatrix}
+    =
+    \begin{bmatrix}
+      -\beta & 0 & \eta \\
+      \beta & -\alpha & 0 \\
+      0 & \alpha & \eta
+    \end{bmatrix}
+    \begin{bmatrix}
+      I^\gamma S^\kappa \\ I \\ R
+    \end{bmatrix},
+    \begin{matrix}
+      \alpha=0.05 \\ \beta=0.05 \\ \eta=0.01 \\ \gamma=\kappa=0.5
+    \end{matrix}
+  \end{equation*}
+  \begin{figure}
+    \includegraphics[width=0.8\linewidth]{../plots/sir_gatednpu_modelps.pdf}
+  \end{figure}
+  \vspace{-1.5cm}
+  \hspace{-4cm}
+  {\tiny *Trained with $L_1$-reg. to achieve sparse results.}
+\end{frame}
+
+\maketitle
+
+\end{document}
