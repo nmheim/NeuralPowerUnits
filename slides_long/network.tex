@@ -1,0 +1,26 @@
+\begin{tikzpicture}[
+    neuron/.style={circle, minimum size=.7cm, thick},
+    tip/.style={->}
+  ]
+  % draw neurons
+  \node[neuron, draw] at (-1.5,1) (11) {};
+  \node[neuron, draw] at (-1.5,0) (12) {};
+  \node[neuron, draw] at (-1.5,-1) (13) {};
+  \foreach \n in {21,...,25}{
+    \node[neuron, draw] at (0, \n - 23) (\n) {};}
+  \foreach \n in {31,...,34}{
+    \node[neuron, draw] at (1.5,\n-32.5) (\n) {};}
+  \foreach \n in {41,...,42}{
+    \node[neuron, draw] at (3.0,\n-41.5) (\n) {};}
+
+  % draw connections
+  \foreach \idx in {11,...,13}{
+    \foreach \jdx in {21,...,25}{
+      \path[draw,tip] (\idx) edge (\jdx) node {};}}
+  \foreach \idx in {21,...,25}{
+    \foreach \jdx in {31,...,34}{
+      \path[draw,tip] (\idx) edge (\jdx) node {};}}
+  \foreach \idx in {31,...,34}{
+    \foreach \jdx in {41,...,42}{
+      \path[draw,tip] (\idx) edge (\jdx) node {};}}
+\end{tikzpicture}

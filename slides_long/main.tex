@@ -1,0 +1,469 @@
+\documentclass[aspectratio=169,professionalfont,xcolor={dvipsnames},hyperref={colorlinks=true,urlcolor=MidnightBlue}]{beamer}
+
+\usepackage{bm}
+\usepackage{tikz}
+\usepackage{mathtools}
+\usetikzlibrary{%
+  arrows,%
+  backgrounds,
+  intersections,
+  shapes,
+  shapes.misc,% wg. rounded rectangle
+  shapes.arrows,%
+  chains,%
+  matrix,%
+  positioning,% wg. " of "
+  scopes,%
+  decorations.pathmorphing,% /pgf/decoration/random steps | erste Graphik
+  shadows,%
+  patterns% for hatched rect
+}
+\usepackage{pgfplots}
+\usepackage[bitstream-charter]{mathdesign}
+\usetheme{simple}
+
+\newcommand{\abs}{\,\mathrm{abs}}
+\newcommand{\add}{\,\mathrm{add}}
+\newcommand{\bin}{\,\mathrm{bin}}
+\newcommand{\sign}{\,\mathrm{sign}}
+\newcommand{\mult}{\,\mathrm{mult}}
+\newcommand{\gate}{\,\mathrm{gate}}
+\newcommand{\tanhs}{\,\mathrm{tanh}\sigma}
+\newcommand{\Wre}{\bm W_r}
+\newcommand{\Wim}{\bm W_i}
+\newcommand{\real}{\mathrm{real}}
+\newcommand{\logc}{\mathrm{log}_{\mathbb{C}}}
+
+\begin{document}
+{
+  \setbeamertemplate{background}
+  {\includegraphics[width = \the\paperwidth, height = \the\paperheight]{robot-math.jpg}}
+  \begin{frame}
+    \vspace{-0.1cm}
+    \begin{center}
+      \begin{tikzpicture}[
+          box/.style={fill=white,fill opacity=0.5,text opacity=1,minimum width=\paperwidth, overlay}]
+        \node[box] (title) at (0,0) {\Huge\bf Neural Arithmetic};
+        \node[box] (subtitle) at (0,-0.836) {\large\bf Teaching Math To Neural Networks?};
+      \end{tikzpicture}
+    \end{center}
+    \vspace{7.5cm}\hspace{-1cm}
+    {\tiny Source: \href{
+      https://www.quantamagazine.org/symbolic-mathematics-finally-yields-to-neural-networks-20200520/}{\underline{Quanta Magazine}}}
+  \end{frame}
+}
+
+\begin{frame}
+  \centering
+  {\huge\bf Neural Arithmetic} \\
+  \vspace{.5cm}
+  \textbf{Extrapolating} Beyond The Training Range \\
+  \& Building \textbf{Transparent} Models
+\end{frame}
+
+\begin{frame}{Neural Networks}
+  \begin{columns}
+    \column{.5\textwidth}\centering
+    \input{network.tex}
+
+    \column{.5\textwidth}\centering
+    Composed of \textbf{Dense} layers:
+    \begin{equation*}
+      \bm y = \sigma(\bm W\bm x + \bm b)
+    \end{equation*}
+    {\tiny (No convolutions in this talk.)}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Neural Networks}
+  \begin{columns}
+    \column{.33\textwidth}\centering
+    \resizebox{!}{\textwidth}{\input{julia/x2-interp.tikz}}
+    Universal \textbf{Approximators} 
+
+    \pause
+    \column{.33\textwidth}\centering
+    \resizebox{!}{\textwidth}{\input{julia/x2-extrap.tikz}}
+    Poor \textbf{Extrapolators} 
+
+    \pause
+    \column{.33\textwidth}\centering
+    \begin{tikzpicture}[box/.style={
+        draw,thick,
+        minimum height=4cm,
+        minimum width=4cm,
+        rounded corners=0.2cm,
+        align=center,fill=black,
+        text=white
+    }]
+      \node[box] (b) {Black\\Box};
+    \end{tikzpicture}\\
+    \vspace{.6cm}
+    \textbf{Intransparent}
+    
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Problems With Extrapolation}
+  \resizebox{\textwidth}{!}{\input{julia/1d-extrapolation-nonpu.tikz}}
+\end{frame}
+
+\begin{frame}{Problems With Extrapolation}
+  \resizebox{\textwidth}{!}{\input{julia/1d-extrapolation.tikz}}
+\end{frame}
+
+\begin{frame}{Inductive Bias}
+  \begin{enumerate}
+    \item Assume \textbf{composition} of arithmetic operations.
+    \item Construct layers with \textbf{inductive bias} towards arithmetic operations.
+  \end{enumerate}
+  \vfill
+
+  \begin{columns}[t]
+    \column{.5\textwidth}\centering
+    \textbf{Addition} of inputs
+    \begin{equation*}
+      \phantom{\prod_i}\bm x^\intercal \bm w = x_1w_1 + x_2w_2 + \dots
+    \end{equation*}
+    is simple.
+
+    \column{.5\textwidth}\centering
+    \textbf{Multiplication}/\textbf{power functions}
+    \begin{equation*}
+      \prod_i x_i^{w_i} = \exp(\bm w^\intercal \log \bm x)
+    \end{equation*}
+    a bit more tricky due to complex outputs...
+
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Neural Arithmetic Logic Unit (NALU)}
+  \begin{columns}
+    \column{.5\textwidth}
+      \input{nalu.tex}
+
+    \column{.5\textwidth}
+      \begin{align*}
+        \add(\bm x, \hat{\bm W}) &= \hat{\bm W} \bm x \\
+        \mult(\bm x, \hat{\bm W}) &= \exp(\hat{\bm W} \log |\bm x|+\epsilon) \\
+        \gate(\bm a, \bm m, \bm g) &= \bm g \odot \bm a + (1-\bm g) \odot \bm m \\
+        \tanhs(\bm W, \bm M) &= \tanh(\bm W)\odot\sigma(\bm M)
+      \end{align*}
+      \begin{center}where\end{center}
+      \begin{align*}
+        \bm g = \sigma(\bm G \bm x)
+      \end{align*}
+  \end{columns}
+
+  \vfill
+  {\tiny(\emph{Neural Arithmetic Logic Units}  - Trask et al. 2018)}
+\end{frame}
+
+\begin{frame}
+  \begin{columns}
+    \column{.35\textwidth}\centering
+    Task: Learn $f$ in \emph{one} model
+    \begin{equation*}
+      f(x,y) = (x+y, xy, \frac{x}{y}, \sqrt{y})^\intercal
+    \end{equation*}
+
+    \column{.65\textwidth}
+    \begin{tikzpicture}
+      \node[anchor=south west, inner sep=0] at (0,0) {
+        \includegraphics[width=\linewidth]{../plots/small_simple_err.pdf}};
+      \draw[white, fill=white] (2.5,0) rectangle (7.9,7.6) {};
+    \end{tikzpicture}
+  \end{columns}
+\end{frame}
+
+
+\begin{frame}
+  \begin{columns}
+    \column{.35\textwidth}\centering
+    Task: Learn $f$ in \emph{one} model
+    \begin{equation*}
+      f(x,y) = (x+y, xy, \frac{x}{y}, \sqrt{y})^\intercal
+    \end{equation*}
+
+    \column{.65\textwidth}
+    \begin{tikzpicture}
+      \node[anchor=south west, inner sep=0] at (0,0) {
+        \includegraphics[width=\linewidth]{../plots/small_simple_err.pdf}};
+      \draw[white, fill=white] (4.2,0) rectangle (7.9,7.6) {};
+    \end{tikzpicture}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Simpler Arithmetic Units}
+  \begin{columns}
+    \column{.5\textwidth}\centering
+    \input{nau.tex}
+
+    \column{.5\textwidth}\centering
+    \textbf{Neural Addition Unit (NAU)} 
+    \begin{align*}
+      \bm y &= \mathrm{clip}(\bm A) \cdot \bm x\\
+      \mathrm{clip}(\bm M) &= \min(\max(\bm M,-1),1)
+    \end{align*}
+  \end{columns}
+  \vfill
+  \begin{columns}
+    \column{.5\textwidth}\centering
+    \input{nmu.tex}
+
+    \column{.5\textwidth}\centering
+    \textbf{Neural Multiplication Unit (NMU)} 
+    \begin{align*}
+      \mathrm{prod}(\bm x, \hat{\bm M}_{:,j}) &= \prod_i \hat M_{ij} x_i -1 + \hat M_{ij}\\
+      \mathrm{clip}(\bm M) &= \min(\max(\bm M,0),1)
+    \end{align*}
+  \end{columns}
+
+  \vfill
+  {\tiny(\emph{Neural Arithmetic Units}  - Madsen \& Johansen 2020)}
+\end{frame}
+
+\begin{frame}
+  \begin{columns}
+    \column{.35\textwidth}\centering
+    Task: Learn $f$ in \emph{one} model
+    \begin{equation*}
+      f(x,y) = (x+y, xy, \frac{x}{y}, \sqrt{y})^\intercal
+    \end{equation*}
+
+    \column{.65\textwidth}
+    \begin{tikzpicture}
+      \node[anchor=south west, inner sep=0] at (0,0) {
+        \includegraphics[width=\linewidth]{../plots/small_simple_err.pdf}};
+      \draw[white, fill=white] (6.1,0) rectangle (7.9,7.6) {};
+    \end{tikzpicture}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Complex space}
+  We extend NALU by isolating its multiplication path
+  \begin{align*}
+    \bm m = \exp (\bm W\log|\bm x|)
+  \end{align*}
+  and lifting it into complex space ($\logc$ is the complex logarithm)
+  \begin{align*}
+    \bm z = \real(\exp(\bm W_\mathbb{C}\logc \bm x)) = \real(\exp\left((\Wre + i\Wim) \logc\bm x\right)).
+  \end{align*}
+\end{frame}
+
+
+\begin{frame}{Naive Neural Power Unit}
+  \begin{columns}
+    \column{.5\textwidth}
+    \input{naive-npu.tex}
+
+    \column{.5\textwidth}
+    \begin{align*}
+      \mult(\bm r,\bm k,\Wre,\Wim) &= \exp(\Wre \log \bm r - \pi\Wim \bm k) \\
+      \sign(\bm r,\bm k,\Wre,\Wim) &= \cos(\Wim \log \bm r + \pi\Wre \bm k) \\
+    \end{align*}
+    \begin{align*}
+      \abs(\bm x)              &= \bm r = |\bm x| + \epsilon \\
+      \bin(x_i)            &= k_i = \begin{cases}
+         0  & x_i \geq 0 \\
+         1 & x_i < 0
+      \end{cases}
+    \end{align*}
+
+  \end{columns}
+\end{frame}
+
+
+\begin{frame}{Neural Power Unit}
+  \begin{columns}
+    \column{.5\textwidth}
+      \input{npu.tex}
+
+    \column{.5\textwidth}
+      \begin{align*}
+        \mult(\bm r,\bm k,\Wre,\Wim) &= \exp(\Wre \log \bm r - \pi\Wim \bm k) \\
+        \sign(\bm r,\bm k,\Wre,\Wim) &= \cos(\Wim \log \bm r + \pi\Wre \bm k) \\
+        \gate(\bm x,\bm g)           &= (\bm r,\bm k) \\
+      \end{align*}
+      \begin{center} where \end{center}
+      \begin{align*}
+        \bm r &= \hat{\bm g} \odot (|\bm x|+\epsilon) + (1-\hat{\bm g}), \\
+        k_i &= \begin{cases}
+           0  & x_i \geq 0 \\
+          \hat g_i & x_i < 0
+        \end{cases},\\
+        \hat{\bm g} &= \min(\max(\bm g,0),1),
+      \end{align*}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+  \begin{columns}
+    \column{.35\textwidth}\centering
+    Task: Learn $f$ in \emph{one} model
+    \begin{equation*}
+      f(x,y) = (x+y, xy, \frac{x}{y}, \sqrt{y})^\intercal
+    \end{equation*}
+
+    \column{.65\textwidth}
+    \begin{tikzpicture}
+      \node[anchor=south west, inner sep=0] at (0,0) {
+        \includegraphics[width=\linewidth]{../plots/small_simple_err.pdf}};
+    \end{tikzpicture}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Fractional SIR}
+  \begin{columns}
+    \column{.5\textwidth}\centering
+    \resizebox{\textwidth}{!}{\input{julia/fsir-data.tikz}}
+
+    \column{.5\textwidth}\centering
+    Differential Equation:
+    \begin{equation*}
+      \begin{bmatrix}
+        \dot S \\ \dot I \\ \dot R
+      \end{bmatrix}
+      =
+      \begin{bmatrix}
+        -\beta & 0 & \eta \\
+        \beta & -\alpha & 0 \\
+        0 & \alpha & -\eta
+      \end{bmatrix}
+      \begin{bmatrix}
+        I^\gamma S^\kappa \\ I \\ R
+      \end{bmatrix}
+    \end{equation*}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Black Box Models}
+  \begin{columns}
+    \column{.5\textwidth}\centering
+    \resizebox{\textwidth}{!}{\input{julia/fsir-fit.tikz}}
+
+    \column{.5\textwidth}\centering
+    Differential Equation:
+    \begin{equation*}
+      \begin{bmatrix}
+        \dot S \\ \dot I \\ \dot R
+      \end{bmatrix}
+      =
+      \begin{bmatrix}
+        -\beta & 0 & \eta \\
+        \beta & -\alpha & 0 \\
+        0 & \alpha & -\eta
+      \end{bmatrix}
+      \begin{bmatrix}
+        I^\gamma S^\kappa \\ I \\ R
+      \end{bmatrix}
+    \end{equation*}
+  \end{columns}
+  \vfill
+  \begin{columns}
+    \column{.5\textwidth}\centering
+    \resizebox{.4\textwidth}{!}{\input{network.tex}}
+
+    \column{.5\textwidth}\centering
+    \textbf{Neural} Differential Equation:
+    \begin{equation*}
+      \begin{bmatrix}
+        \dot S\\ \dot I\\ \dot R
+      \end{bmatrix}
+      = \mathrm{NeuralODE}\left(\begin{bmatrix}
+        S \\ I \\ R
+      \end{bmatrix}, \bm\theta
+      \right)
+    \end{equation*}
+  \end{columns}
+\end{frame}
+
+
+\begin{frame}{Fractional SIR}
+  \centering
+  \includegraphics[width=.8\textwidth]{fsir-params.png}
+  \begin{equation*}
+    \begin{bmatrix}
+      \dot S \\ \dot I \\ \dot R
+    \end{bmatrix}
+    =
+    \begin{bmatrix}
+      -\beta & 0 & \eta \\
+      \beta & -\alpha & 0 \\
+      0 & \alpha & -\eta
+    \end{bmatrix}
+    \begin{bmatrix}
+      I^\gamma S^\kappa \\ I \\ R
+    \end{bmatrix}
+  \end{equation*}
+\end{frame}
+
+\begin{frame}{Future Work}
+  \centering
+  \begin{columns}
+    \column{.5\textwidth}\centering
+    \resizebox{!}{.6\textwidth}{\input{julia/1d-extrapolation-sin.tikz}}
+
+    \column{.5\textwidth}\centering
+    \begin{tikzpicture}
+      \node[draw,circle,inner sep=0, minimum size=0.2cm] (top) at (0,0) {};
+      \node[draw,circle,fill=black] (m) at (1,-2.8) {\color{white}{$m$}};
+      \node (l) at (0.75,-1.6) {$l$};
+      \node (p) at (0.18,-1.05) {$\varphi$};
+      \node (mid) at (0,-3.5) {};
+      \node (g1) at (-0.5,-1) {};
+      \node (g2) at (-0.5,-2) {};
+      \node (g) at (-0.8,-1.5) {$g$};
+      \node (eq) at (0,-3.7) {$\ddot a = \frac{g}{l}\sin\varphi$};
+
+      \path [draw,dashed] (top)  --  (mid);
+      \path [draw] (top)  -- (m);
+      \path [draw,->,thick] (g1) -- (g2);
+    \end{tikzpicture}
+
+  \end{columns}
+  \vspace{0.3cm}
+  \begin{columns}
+    \column{.5\textwidth}\centering
+    Trigonometric functions
+    \column{.5\textwidth}\centering
+    Some serious equation discovery
+  \end{columns}
+
+  \vfill
+  \pause
+  {\bf Do you have an application?}
+\end{frame}
+
+
+
+\begin{frame}
+  \centering
+  {\huge\bf Neural Arithmetic} \\
+  \vspace{.5cm}
+  \textbf{Extrapolating} Beyond The Training Range \\
+  \& Building \textbf{Transparent} Models
+  \vfill
+
+  \begin{columns}
+    \column{.33\textwidth}{
+      \circleimage{1.5cm}{niklas.png}
+      \begin{center} Niklas Heim \end{center}
+    }
+     \column{.33\textwidth}{
+       \circleimage{1.5cm}{tomas.jpg}
+       \begin{center} Tom\'a\v s Pevn\'y \end{center}
+    }
+    \column{.33\textwidth}{
+      \circleimage{1.5cm}{vasek.png}
+      \begin{center} V\'aclav \v Sm\'idl \end{center}
+    }
+  \end{columns}
+  \vfill
+
+  \vfill
+  {\small \url{https://github.com/nmheim/NeuralArithmetic.jl}}\\
+  {\small \url{heimnikl@fel.cvut.cz}}
+\end{frame}
+
+\end{document}
