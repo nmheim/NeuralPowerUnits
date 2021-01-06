@@ -21,19 +21,28 @@ function inftoextreme(z)
     end
 end
 
-folder = datadir("simple")
-run = 19
-npu = load(joinpath(folder, "pos-gatednpux_lr=0.005_niters=20000_run=10_βl1=0.bson"))[:model]
-run = 9
-realnpu = load(joinpath(folder, "pos-realnpu_lr=0.005_niters=20000_run=$(run)_βl1=0.bson"))[:model]
+umin = 0.01
+umax = 2
+folder = datadir("simple_lr005_umin=$(umin)_umax=$(umax)")
+
+run  = 2
+file = "npu_lr=0.005_niters=20000_run=$(run)_umax=2_umin=0.01_βl1=0.bson"
+npu = load(joinpath(folder, file))[:model]
+run = 37
+file = "realnpu_lr=0.005_niters=20000_run=$(run)_umax=2_umin=0.01_βl1=0.bson"
+realnpu = load(joinpath(folder, file))[:model]
+run = 15
+file = "nalu_lr=0.005_niters=20000_run=$(run)_umax=2_umin=0.01.bson"
+nalu = load(joinpath(folder, file))[:model]
+run = 36
+file = "inalu_lr=0.005_niters=20000_run=$(run)_t=20_umax=2_umin=0.01.bson"
+inalu = load(joinpath(folder, file))[:model]
 run = 8
-nalu = load(joinpath(folder, "pos-nalu_lr=0.005_niters=20000_run=$(run).bson"))[:model]
-run = 4
-inalu = load(joinpath(folder, "pos-inalu_lr=0.001_niters=20000_run=$(run).bson"))[:model]
-run = 8
-nmu = load(joinpath(folder, "pos-nmu_lr=0.005_niters=20000_run=$(run).bson"))[:model]
-run = 1
-dense = load(joinpath(folder, "pos-dense_lr=0.005_niters=20000_run=$(run).bson"))[:model]
+file = "nmu_lr=0.005_niters=20000_run=$(run)_umax=2_umin=0.01.bson"
+nmu = load(joinpath(folder, file))[:model]
+run = 12
+file = "dense_lr=0.005_niters=20000_run=$(run)_umax=2_umin=0.01.bson"
+dense = load(joinpath(folder, file))[:model]
 
 
 posnegx = Float32.(collect(-4.1:0.2:4))
@@ -77,7 +86,7 @@ realnpu_divloss(x,y)    = rminvalid(log10(divloss(realnpu,x,y)))
 realnpu_sqrtloss(x,y)   = rminvalid(log10(sqrtloss(realnpu,x,y)))
 
 
-pyplot()
+gr()
 @info "Plotting NPU..."
 npuadd = contour(posnegx, posnegy, (x,y)->npu_addloss(x,y),
              c=cmap, clim=clim,
@@ -163,44 +172,33 @@ densesqrt = contour(posx, posy, (x,y)->dense_sqrtloss(x,y),
              c=cmap, clim=clim,
              levels=levels, fill=true, colorbar=false)
 
-widths = ones(6) .* 0.166
-widths[end] = 1 - sum(widths[1:end-1])
-row1 = plot(plot!(npuadd,title="NPU", ylabel="Addition\ny", xticks=false),
-            plot!(realnpuadd,title="RealNPU", xticks=false, yticks=false),
-            plot!(nmuadd,title="NMU", xticks=false, yticks=false),
-            plot!(naluadd,title="NALU", xticks=false, yticks=false),
-            plot!(inaluadd,title="iNALU", xticks=false, yticks=false),
-            plot!(denseadd,title="Dense",colorbar=true, xticks=false, yticks=false,
-                  colorbar_title=L"\log(|t_1-\hat{t}_1|)"),
-            size=plotsize,layout=grid(1,6,widths=widths))
+p = plot(
+    plot!(denseadd, xticks=false, ylabel="Addition\ny", title="Dense"),
+    plot!(naluadd,  xticks=false, yticks=false, title="NALU"),
+    plot!(nmuadd,   xticks=false, yticks=false, title="NMU"),
+    plot!(npuadd,   xticks=false, yticks=false, title="NPU",
+        colorbar=true,colorbar_title="log(error)"),
 
-row2 = plot(plot!(npumult, ylabel="Multiplication\ny", xticks=false),
-            plot!(realnpumult, xticks=false, yticks=false),
-            plot!(nmumult, xticks=false, yticks=false),
-            plot!(nalumult, xticks=false, yticks=false),
-            plot!(inalumult, xticks=false, yticks=false),
-            plot!(densemult,xticks=false, yticks=false,
-                  colorbar=true,colorbar_title=L"\log(|t_2-\hat{t}_2|)"),
-            size=plotsize,layout=grid(1,6,widths=widths))
+    plot!(densemult, xticks=false, ylabel="Multiplication\ny"),
+    plot!(nalumult,  xticks=false, yticks=false),
+    plot!(nmumult,   xticks=false, yticks=false),
+    plot!(npumult,   xticks=false, yticks=false,
+        colorbar=true,colorbar_title="log(error)"),
+    
+    plot!(densediv, ylabel="Division\ny"),
+    plot!(naludiv, yticks=false),
+    plot!(nmudiv,  yticks=false),
+    plot!(npudiv,  yticks=false,
+        colorbar=true,colorbar_title="log(error)"),
+    
+    plot!(densesqrt, ylabel="Square root\ny", xlabel="x"),
+    plot!(nalusqrt, yticks=false, xlabel="x"),
+    plot!(nmusqrt,  yticks=false, xlabel="x"),
+    plot!(npusqrt,  yticks=false, xlabel="x",
+        colorbar=true,colorbar_title="log(error)"),
 
-row3 = plot(plot!(npudiv, ylabel="Division\ny"),
-            plot!(realnpudiv, yticks=false),
-            plot!(nmudiv, yticks=false),
-            plot!(naludiv, yticks=false),
-            plot!(inaludiv, yticks=false),
-            plot!(densediv, yticks=false,
-                  colorbar=true,colorbar_title=L"\log(|t_3-\hat{t}_3|)"),
-            size=plotsize,layout=grid(1,6,widths=widths))
-
-row4 = plot(plot!(npusqrt,ylabel="Square-root\ny",xlabel="x"),
-            plot!(realnpusqrt,xlabel="x", yticks=false),
-            plot!(nmusqrt,xlabel="x", yticks=false),
-            plot!(nalusqrt,xlabel="x", yticks=false),
-            plot!(inalusqrt,xlabel="x", yticks=false),
-            plot!(densesqrt, yticks=false,
-                  colorbar=true,xlabel="x",colorbar_title=L"\log(|t_4-\hat{t}_4|)"),
-            size=plotsize,layout=grid(1,6,widths=widths))
-
-p = plot(row1,row2,row3,row4,layout=(4,1),size=(1000,640))
-savefig(p,plotsdir("simple_err.pdf"))
+    layout = grid(4,4,widths=[0.21,0.21,0.21,0.36]),
+    size = (800,700)
+)
+savefig(p,plotsdir("small_simple_err.pdf"))
 display(p)

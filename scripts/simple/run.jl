@@ -161,33 +161,33 @@ nr_runs = 20
 
 for (umin,umax) in train_ranges
     @info "Running training range: ($umin,$umax)"
-    data_directory = datadir("simple_umin=$(umin)_umax=$(umax)")
+    data_directory = datadir("simple_lr005_umin=$(umin)_umax=$(umax)")
 
     @progress for run in 1:nr_runs
         res, _ = produce_or_load(data_directory,
-                                 Dict(:niters=>20000, :βl1=>0, :lr=>0.001, :run=>run, :umin=>umin, :umax=>umax),
+                                 Dict(:niters=>20000, :βl1=>0, :lr=>0.005, :run=>run, :umin=>umin, :umax=>umax),
                                  run_npu,
                                  prefix="npu",
                                  force=false, digits=6)
         res, _ = produce_or_load(data_directory,
-                                 Dict(:niters=>20000, :βl1=>0, :lr=>0.001, :run=>run, :umin=>umin, :umax=>umax),
+                                 Dict(:niters=>20000, :βl1=>0, :lr=>0.005, :run=>run, :umin=>umin, :umax=>umax),
                                  run_realnpu,
                                  prefix="realnpu",
                                  force=false, digits=6)
         res, _ = produce_or_load(data_directory,
-                                 Dict(:niters=>20000, :lr=>0.001, :run=>run, :umin=>umin, :umax=>umax),
+                                 Dict(:niters=>20000, :lr=>0.005, :run=>run, :umin=>umin, :umax=>umax),
                                  run_nalu,
                                  prefix="nalu", force=false, digits=6)
         res, _ = produce_or_load(data_directory,
-                                 Dict(:niters=>20000, :lr=>0.001, :run=>run, :umin=>umin, :umax=>umax),
+                                 Dict(:niters=>20000, :lr=>0.005, :run=>run, :umin=>umin, :umax=>umax),
                                  run_nmu,
                                  prefix="nmu", force=false, digits=6)
         res, _ = produce_or_load(data_directory,
-                                 Dict(:niters=>20000, :lr=>0.001, :run=>run, :umin=>umin, :umax=>umax),
+                                 Dict(:niters=>20000, :lr=>0.005, :run=>run, :umin=>umin, :umax=>umax),
                                  run_dense,
                                  prefix="dense", force=false, digits=6)
         res, _ = produce_or_load(data_directory,
-                                 Dict(:niters=>20000, :lr=>0.001, :run=>run, :t=>20, :umin=>umin, :umax=>umax),
+                                 Dict(:niters=>20000, :lr=>0.005, :run=>run, :t=>20, :umin=>umin, :umax=>umax),
                                  run_inalu,
                                  prefix="inalu", force=false, digits=6)
     end

@@ -1,9 +1,9 @@
 using DrWatson
-@quickactivate "NIPS_2020_NPU"
 
 using Plots
 using Distributions
 using LaTeXStrings
+using NeuralArithmetic
 using Random
 Random.seed!(2)
 #pgfplotsx()
