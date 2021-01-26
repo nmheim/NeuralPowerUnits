@@ -1,0 +1,64 @@
+\def\@conference{}
+\newcommand*{\conference}[1]{\def\@conference{#1}}
+
+\def\@logoleft{}
+\newcommand*{\logoleft}[1]{\def\@logoleft{#1}}
+
+\def\@logoright{}
+\newcommand*{\logoright}[1]{\def\@logoright{#1}}
+
+\definecolor{SDUwhite}{RGB}{255,255,255}
+\definecolor{SDUblack}{RGB}{16,15,15}
+
+% metropolis colors
+\definecolor{mDarkTeal}{HTML}{23373b}
+\definecolor{mDarkBrown}{HTML}{604c38}
+\definecolor{mLightBrown}{HTML}{EB811B}
+\definecolor{mLightGreen}{HTML}{14B03D}
+
+\definecolorstyle{SDU}{
+}{
+	% Background Colors
+	\colorlet{backgroundcolor}{SDUwhite}
+	\colorlet{framecolor}{mDarkTeal}
+	% Title Colors
+	\colorlet{titlefgcolor}{white}
+	\colorlet{titlebgcolor}{mDarkTeal}
+	% Block Colors
+	\colorlet{blocktitlebgcolor}{SDUwhite}
+	\colorlet{blocktitlefgcolor}{mDarkTeal}
+	\colorlet{blockbodybgcolor}{SDUwhite}
+	\colorlet{blockbodyfgcolor}{SDUblack}
+	% Innerblock Colors
+	\colorlet{innerblocktitlebgcolor}{SDUwhite}
+	\colorlet{innerblocktitlefgcolor}{SDUblack}
+	\colorlet{innerblockbodybgcolor}{SDUwhite}
+	\colorlet{innerblockbodyfgcolor}{SDUblack}
+	% Note colors
+	\colorlet{notefgcolor}{SDUblack}
+	\colorlet{notebgcolor}{SDUwhite}
+	\colorlet{notefrcolor}{SDUwhite}
+}
+
+\defineblockstyle{SDU}{
+    titlewidthscale=1, bodywidthscale=1, titleleft,
+    titleoffsetx=0pt, titleoffsety=0pt, bodyoffsetx=0pt, bodyoffsety=0pt,
+    bodyverticalshift=0pt, roundedcorners=0, linewidth=0pt, titleinnersep=0.7cm,
+    bodyinnersep=0.7cm
+}{
+    \ifBlockHasTitle%
+        \draw[draw=none, fill=blocktitlebgcolor]%
+           (blocktitle.south west) rectangle (blocktitle.north east);
+    \fi%
+	\draw[draw=none, fill=blockbodybgcolor,rounded corners=\blockroundedcorners]%
+        (blockbody.north west) [rounded corners=0] -- (blockbody.south west) --
+        (blockbody.south east) [rounded corners=0]-- (blockbody.north east) -- cycle;
+}
+
+\definelayouttheme{SDU}{
+    \usecolorstyle{SDU}
+    \usebackgroundstyle{Default}
+    \useblockstyle{SDU}
+    \useinnerblockstyle{Default}
+    \usenotestyle{Default}
+}

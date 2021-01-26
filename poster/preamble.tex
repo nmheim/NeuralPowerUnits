@@ -1,0 +1,31 @@
+\usepackage{tikzposterSDU}
+\usepackage{bm}
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{amsmath}
+\usepackage[bitstream-charter]{mathdesign}
+\usepackage[scaled=0.9,sfdefault]{FiraSans}
+
+% set page dimensions
+\geometry{paperwidth=100cm, paperheight=70cm}
+\makeatletter
+\setlength{\TP@visibletextwidth}{\textwidth-2\TP@innermargin}
+\setlength{\TP@visibletextheight}{\textheight-2\TP@innermargin}
+\makeatother
+
+\usetheme{SDU}
+
+% background color
+\colorlet{blockbodybgcolor}{white}
+\colorlet{backgroundcolor}{mDarkTeal}
+
+
+\newcommand{\Wre}{ W_{r}}
+\newcommand{\Wim}{ W_{i}}
+
+\newcommand{\nobackgroundblock}[1]{
+  \colorlet{blockbodybgcolor}{mDarkTeal}
+    \block{}{\color{white}{#1}}
+  \colorlet{blockbodybgcolor}{white}
+}
+
+\tikzposterlatexaffectionproofoff
